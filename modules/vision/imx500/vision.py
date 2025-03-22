@@ -79,7 +79,7 @@ class Vision(BaseModule):
         Subscribes to 'loop' to scan for detections
         - Returns: list of detections
         
-        Publishes to 'vision:detections' with matches
+        Publishes to 'vision/detections' with matches
         - Argument: matches (list) - list of detections
         
         Example output:
@@ -157,7 +157,7 @@ class Vision(BaseModule):
         for i in self.last_results:
             this_capture = [obj.json_out() for obj in self.last_results]
 
-        self.publish('vision:detections', matches=this_capture)
+        self.publish('vision/detections', matches=this_capture)
         return this_capture
 
     def parse_detections(self, metadata: dict):
@@ -171,7 +171,7 @@ class Vision(BaseModule):
             return self.last_detections
         elif self.moving == True:
             self.moving = False
-            self.publish('vision:stable')
+            self.publish('vision/stable')
     
         bbox_normalization = self.intrinsics.bbox_normalization
         threshold = self.args.threshold
