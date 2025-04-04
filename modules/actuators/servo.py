@@ -41,7 +41,7 @@ class Servo(BaseModule):
         self.range = kwargs.get('range')
         self.power = kwargs.get('power', False)
 
-        self.start = kwargs.get('start_pos', 50)
+        self.start = kwargs.get('start', 50)
         self.pos = self.translate(self.start)
         self.buffer = kwargs.get('buffer', 0)  # PWM amount to specify as acceleration / deceleration buffer
         self.delta = kwargs.get('delta', 1.5)  # amount of change in acceleration / deceleration (as a multiple)

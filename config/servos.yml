@@ -46,7 +46,7 @@ servos:
       id: 8
       pin: 4
       range: [0, 180]
-      start: 180
+      start: 100
     - name: "hip_r"
       id: 9
       pin: 5
