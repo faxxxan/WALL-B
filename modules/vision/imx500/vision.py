@@ -14,7 +14,7 @@ from libcamera import Transform
 from modules.base_module import BaseModule
 
 
-class Detection(BaseModule):
+class Detection:
     def __init__(self, imx500, picam2, selfref, coords, category, conf, metadata):
         """Create a Detection object, recording the bounding box, category and confidence."""
         self.category = category
@@ -57,7 +57,7 @@ class Detection(BaseModule):
             'distance_y': self.distance_y
         }
         
-class Vision:
+class Vision(BaseModule):
     def __init__(self, **kwargs):
         """
         Vision class
@@ -79,7 +79,7 @@ class Vision:
         Subscribes to 'loop' to scan for detections
         - Returns: list of detections
         
-        Publishes to 'vision:detections' with matches
+        Publishes to 'vision/detections' with matches
         - Argument: matches (list) - list of detections
         
         Example output:
@@ -152,11 +152,12 @@ class Vision:
 
     def scan(self):
         self.last_results = self.parse_detections(self.picam2.capture_metadata())
+        # self.log(f"Vision detections: {self.last_results}")
         this_capture = []
         for i in self.last_results:
             this_capture = [obj.json_out() for obj in self.last_results]
 
-        self.publish('vision:detections', matches=this_capture)
+        self.publish('vision/detections', matches=this_capture)
         return this_capture
 
     def parse_detections(self, metadata: dict):
@@ -170,7 +171,7 @@ class Vision:
             return self.last_detections
         elif self.moving == True:
             self.moving = False
-            self.publish('vision:stable')
+            self.publish('vision/stable')
     
         bbox_normalization = self.intrinsics.bbox_normalization
         threshold = self.args.threshold

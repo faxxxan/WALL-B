@@ -42,6 +42,16 @@ servos:
       pin: 3
       range: [30, 150]
       start: 50
+    - name: "hip_l"
+      id: 8
+      pin: 4
+      range: [0, 180]
+      start: 100
+    - name: "hip_r"
+      id: 9
+      pin: 5
+      range: [0, 180]
+      start: 0
   dependencies:
     python:
       - pigpio

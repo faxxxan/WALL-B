@@ -17,16 +17,16 @@ class Tracking(BaseModule):
         :param camera: camera object (optional)
         :param filter: category to filter (e.g., 'person')
         
-        Subscribes to 'vision:detections' to receive new detections
-        Subscribes to 'vision:stable' to unfreeze tracking
+        Subscribes to 'vision/detections' to receive new detections
+        Subscribes to 'vision/stable' to unfreeze tracking
         Subscribes to 'rest' to set tracking state to active
         Subscribes to 'wake' to set tracking state to active
         Subscribes to 'sleep' to set tracking state to inactive
         Subscribes to 'exit' to set tracking state to inactive
         
         Example:
-        self.publish('vision:detections', matches=matches)
-        self.publish('vision:stable')
+        self.publish('vision/detections', matches=matches)
+        self.publish('vision/stable')
         self.publish('rest')
         self.publish('wake')
         self.publish('sleep')
@@ -39,8 +39,8 @@ class Tracking(BaseModule):
 
     def setup_messaging(self):
         """Subscribe to necessary topics."""
-        self.subscribe('vision:detections', self.handle)
-        self.subscribe('vision:stable', self.unfreeze, )
+        self.subscribe('vision/detections', self.handle)
+        self.subscribe('vision/stable', self.unfreeze, )
 
     def set_state(self, active):
         """Set the tracking state (active/inactive)."""
@@ -64,6 +64,8 @@ class Tracking(BaseModule):
         """Handle new detections by processing in an asynchronous thread."""
         if not self.active or self.moving:
             return
+        # print("Handling matches")
+        # print(matches)
         asyncio.run(self.process_matches(matches))
 
     @staticmethod
