@@ -67,7 +67,6 @@ class Personality(BaseModule):
             'head_shake',
             'head_left',
             'head_right',
-            'wake',
             'look_down',
             'look_up',
             'celebrate'

@@ -57,3 +57,5 @@ class Animate(BaseModule):
                     led.on()
                 else:
                     led.off()
+            elif 'piservo/move' == cmd:  # New condition for piservo
+                self.publish(cmd, angle=args[0])
