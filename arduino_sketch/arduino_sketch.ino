@@ -63,6 +63,13 @@ void setup()
 
   // Custom log message (enable DEBUG in Config.h to see this)
   cLog("Start loop");
+
+  // if (servoMode == 2)
+  // {
+  //   stationarySteps();
+  //   servoManager.moveServos(PosStand);
+  // }
+  
 }
 
 /**
@@ -114,18 +121,28 @@ void doRest()
 }
 
 void stationarySteps() {
-  int left[SERVO_COUNT] = {PosMin[0], PosMin[1], PosMin[2], PosMax[3], PosMax[4], PosMax[5]};
-  int right[SERVO_COUNT] = {PosMax[0], PosMax[1], PosMax[2], PosMin[3], PosMin[4], PosMin[5]};
-  uint16_t speed = SERVO_SPEED_MIN; // 20 - 60 recommended
-  unsigned long delayTime = 200;
+  int right[SERVO_COUNT] = {PosStart[0], PosStart[1], PosStart[2], PosStand[3], PosStand[4], PosStand[5], NOVAL, NOVAL, PosMax[8], PosMax[9]};
+  int left[SERVO_COUNT] = {PosStand[0], PosStand[1], PosStand[2], PosStart[3], PosStart[4], PosStart[5], NOVAL, NOVAL, PosMin[8], PosMin[9]};
+  uint16_t speed = SERVO_SPEED_MAX; // 20 - 60 recommended
+  unsigned long delayTime = 2000;
   servoManager.setSpeed(speed);
   boolean moveLeft = true;
-  while (true)
+  int stepNum = 2;
+  for (int i = 0; i <= stepNum; i++)
   {
+    // Serial.println("Step " + String(i));
     if (moveLeft)
+    {
+      // Serial.println("Moving left");
       servoManager.moveServos(left);
+      moveLeft = false; 
+    }
     else
+    {
+      // Serial.println("Moving left");
       servoManager.moveServos(right);
+      moveLeft = true;
+    }
 
     setEaseToForAllServosSynchronizeAndStartInterrupt(servoManager.getSpeed());
 
