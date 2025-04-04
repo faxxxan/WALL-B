@@ -39,7 +39,7 @@
 
 // #define DEBUG
 
-#define SERVO_COUNT 8 // Number of servos to be controlled by ServoEasing
+#define SERVO_COUNT 10 // Number of servos to be controlled by ServoEasing
 
 #define LEG_IK_MIN 75 // Min solvable height of leg between hip and ankle
 #define LEG_IK_MAX 180 // Max solvable height of leg between hip and ankle
@@ -56,31 +56,31 @@
 
 // Arrays to store servo min / max positions to avoid mechanical issues due
 // NOTE: attach() disregards this, set PosRest to be within range of the servo's physical boundaries
-int PosMin[SERVO_COUNT] = {0, 0, 5, 0, 0, 20, 60, 30};
-int PosMax[SERVO_COUNT] = {180, 180, 165, 180, 180, 180, 120, 150};
-int PosSleep[SERVO_COUNT] = {40, 60, 95, 140, 120, 85, PosMax[7], 90};
+int PosMin[SERVO_COUNT] = {0, 0, 5, 0, 0, 20, 60, 30, 0, 0};
+int PosMax[SERVO_COUNT] = {180, 180, 165, 180, 180, 180, 120, 150, 180, 180};
+int PosSleep[SERVO_COUNT] = {40, 60, 95, 140, 120, 85, PosMax[7], 90, 180, 0};
 //int PrepRestFromSleep[SERVO_COUNT] = {80, PosMin[1], PosMax[2], 100, PosMax[4], PosMin[5], S7_REST, 80, S9_REST};
 //int PrepSleepFromRest[SERVO_COUNT] = {S1_REST, S2_REST, S3_REST, S4_REST, S5_REST, S6_REST, S7_REST, 80, S9_REST};
 
 // Starting positions
 //0, 3 = HIP
-int PosStart[SERVO_COUNT] = {60, 0, 165, 120, 180, 20, 90, 90};
+int PosStart[SERVO_COUNT] = {60, 0, 165, 120, 180, 30, 90, 90, 180, 0};
 
-int PosBackpack[SERVO_COUNT] = {30, 5, 90, 130, 120, 160, 90, 90}; // Position legs to support when mounted to backpack
-int PosStraight[SERVO_COUNT] = {45, 90, 165, 135, 90, 20, 90, 90}; // straighten legs and point feet to fit in backpack upright
+int PosBackpack[SERVO_COUNT] = {30, 5, 90, 130, 120, 160, 90, 90, 180, 0}; // Position legs to support when mounted to backpack
+int PosStraight[SERVO_COUNT] = {45, 90, 165, 135, 90, 20, 90, 90, 180, 0}; // straighten legs and point feet to fit in backpack upright
 
 //int PosRest[SERVO_COUNT] = {S1_REST, S2_REST, S3_REST, S4_REST, S5_REST, S6_REST, S7_REST, S8_REST, S9_REST};
-int PosRest[SERVO_COUNT] = {60, 0, 165, 120, 180, 20, 90, 90};
+int PosRest[SERVO_COUNT] = {60, 0, 165, 120, 180, 20, 90, 90, 180, 0};
 
-int PosConfig[SERVO_COUNT] = {90, 90, 90, 90, 90, 90, 90, 90};
+int PosConfig[SERVO_COUNT] = {90, 90, 90, 90, 90, 90, 90, 90, 180, 0};
 
 // Poses
-int PosStand[SERVO_COUNT] = {45, 70, 80, 135, 110, 100, NOVAL, NOVAL};
-int PosLookLeft[SERVO_COUNT] = {NOVAL, NOVAL, NOVAL, NOVAL, NOVAL, NOVAL, NOVAL, 180};
-int PosLookRight[SERVO_COUNT] = {NOVAL, NOVAL, NOVAL, NOVAL, NOVAL,  NOVAL, NOVAL, 0};
-int PosLookRandom[SERVO_COUNT] = {NOVAL, NOVAL, NOVAL, NOVAL, NOVAL, NOVAL, -1, -1}; // Made random by calling the function moveRandom() if the value is -1
-int PosLookUp[SERVO_COUNT] = {NOVAL, NOVAL, NOVAL, NOVAL, NOVAL, NOVAL, 60, 90};
-int PosLookDown[SERVO_COUNT] = {NOVAL, NOVAL, NOVAL, NOVAL, NOVAL, NOVAL, 120, 90};
+int PosStand[SERVO_COUNT] = {45, 70, 80, 135, 110, 100, NOVAL, NOVAL, 180, 0};
+int PosLookLeft[SERVO_COUNT] = {NOVAL, NOVAL, NOVAL, NOVAL, NOVAL, NOVAL, NOVAL, 180, 180, 0};
+int PosLookRight[SERVO_COUNT] = {NOVAL, NOVAL, NOVAL, NOVAL, NOVAL,  NOVAL, NOVAL, 0, 180, 0};
+int PosLookRandom[SERVO_COUNT] = {NOVAL, NOVAL, NOVAL, NOVAL, NOVAL, NOVAL, -1, -1, 180, 0}; // Made random by calling the function moveRandom() if the value is -1
+int PosLookUp[SERVO_COUNT] = {NOVAL, NOVAL, NOVAL, NOVAL, NOVAL, NOVAL, 60, 90, 180, 0};
+int PosLookDown[SERVO_COUNT] = {NOVAL, NOVAL, NOVAL, NOVAL, NOVAL, NOVAL, 120, 90, 180, 0};
 
 // Array of poses except PosRest and PosSleep (which are used for initialization and reset of position)
 int *Poses[] = {PosStand, PosLookLeft, PosLookRight, PosLookUp, PosLookDown, PosLookRandom};
