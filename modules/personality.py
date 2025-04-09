@@ -48,7 +48,7 @@ class Personality(BaseModule):
             self.object_reaction_end_time = None
 
         # Update the middle eye LED based on conditions
-        self.update_middle_eye_led()
+        self.update_eye()
         
         self.random_neopixel_status()
 
@@ -146,14 +146,14 @@ class Personality(BaseModule):
         self.last_motion_time = datetime.now()
 
     # Updates the middle eye LED based on the current state
-    def update_middle_eye_led(self):
+    def update_eye(self):
         now = datetime.now()
         if self.last_vision_time and now - self.last_vision_time <= timedelta(seconds=30):
-            self.publish('led', identifiers='middle', color='green')
+            self.publish('eye', color='green')
         elif now - self.last_motion_time > timedelta(seconds=30):
-            self.publish('led', identifiers='middle', color='red')
+            self.publish('eye', color='red')
         else:
-            self.publish('led', identifiers='middle', color='blue')
+            self.publish('eye', color='blue')
 
     def track_serial_idle(self, type, identifier, message):
         self.last_serial_time = datetime.now()

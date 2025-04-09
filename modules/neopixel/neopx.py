@@ -148,6 +148,7 @@ class NeoPx(BaseModule):
         self.subscribe('led', self.set)
         self.subscribe('led/full', self.full)
         self.subscribe('led/eye', self.eye)
+        self.subscribe('eye', self.eye)
         self.subscribe('led/ring', self.ring)
         self.subscribe('led/off', self.off)
         self.subscribe('led/flashlight', self.flashlight)
