@@ -8,3 +8,5 @@ vision:
       - imx500-all
     python:
       - opencv-python
+    # additional:
+      # - "add dtoverlay=imx500-pi5,cam0 to /boot/firmware/config.txt"

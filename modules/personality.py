@@ -114,17 +114,6 @@ class Personality(BaseModule):
             self.led_colors[0] = color
             self.log(message=f"Neopixel status triggered set to {color}", level='debug')
 
-    # Neopixels: Toggles random eye LEDs
-    def random_neopixel_eye(self):
-        positions = [
-            'right', 'top_right', 'top_left', 'left', 
-            'bottom_left', 'bottom_right'
-        ]
-        position = choice(positions)
-        color = choice(["white_dim"])
-        self.publish('led', identifiers=positions, color=color)
-        self.log(f"Neopixel eye ring set to {color}")
-
     # Antenna: Moves to a random angle between -40 and 40 degrees
     def move_antenna(self):
         angle = randint(-40, 40)
@@ -136,10 +125,10 @@ class Personality(BaseModule):
         # if there are matches and the object reaction end time is in the past
         if matches and len(matches) > 0 and (self.object_reaction_end_time is None or datetime.now() >= self.object_reaction_end_time):
             self.log(f"Vision detected objects: {matches}")
-            self.last_vision_time = datetime.now()
-            # Trigger temporary reaction for detected objects
-            self.random_neopixel_eye()
-            self.object_reaction_end_time = datetime.now() + timedelta(seconds=3)
+            if any(match['category'] == 'person' for match in matches):
+                self.last_vision_time = datetime.now()
+                # Set the object reaction end time to 3 seconds from now
+                self.object_reaction_end_time = datetime.now() + timedelta(seconds=3)
 
     # Motion: Updates the last motion time
     def update_motion_time(self):
@@ -148,10 +137,10 @@ class Personality(BaseModule):
     # Updates the middle eye LED based on the current state
     def update_eye(self):
         now = datetime.now()
-        if self.last_vision_time and now - self.last_vision_time <= timedelta(seconds=30):
+        if self.last_vision_time and now - self.last_vision_time <= timedelta(seconds=3):
             self.publish('eye', color='green')
         elif now - self.last_motion_time > timedelta(seconds=30):
-            self.publish('eye', color='red')
+            self.publish('eye', color='dark_gray')
         else:
             self.publish('eye', color='blue')
 

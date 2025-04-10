@@ -23,6 +23,7 @@ class NeoPx(BaseModule):
 
     COLOR_MAP = {
         'red': COLOR_RED,
+        'dark_gray': COLOR_WHITE_DIM,
         'green': COLOR_GREEN,
         'blue': COLOR_BLUE,
         'purple': COLOR_PURPLE,
