@@ -46,13 +46,13 @@
 
 #define NOVAL 1000
 
-#define MPU6050_ENABLED // Enable MPU6050
+// #define MPU6050_ENABLED // Enable MPU6050
 //#define MPU6050_DEBUG // Debug in serial plotter
 #define ANIMATE_ENABLED // Enable random animations
 
-#define SERVO_MODE_PIN_ENABLED // Enable behavior related to servoModePin
+// #define SERVO_MODE_PIN_ENABLED // Enable behavior related to servoModePin
 // #define SERVO_MODE_OVERRIDE 3 // Override input from pin and set specific mode for debugging
-#define RESTRAIN_PIN_ENABLED // Enable behavior related to restrainPin
+// #define RESTRAIN_PIN_ENABLED // Enable behavior related to restrainPin
 
 // Arrays to store servo min / max positions to avoid mechanical issues due
 // NOTE: attach() disregards this, set PosRest to be within range of the servo's physical boundaries
