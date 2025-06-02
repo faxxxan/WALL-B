@@ -121,8 +121,8 @@ void doRest()
 }
 
 void stationarySteps() {
-  int right[SERVO_COUNT] = {PosStart[0], PosStart[1], PosStart[2], PosStand[3], PosStand[4], PosStand[5], NOVAL, NOVAL, PosMax[8], PosMax[9]};
-  int left[SERVO_COUNT] = {PosStand[0], PosStand[1], PosStand[2], PosStart[3], PosStart[4], PosStart[5], NOVAL, NOVAL, PosMin[8], PosMin[9]};
+  int right[SERVO_COUNT] = {PosStart[0], PosStart[1], PosStart[2], PosStand[3], PosStand[4], PosStand[5], NOVAL, NOVAL, PosMax[8]};
+  int left[SERVO_COUNT] = {PosStand[0], PosStand[1], PosStand[2], PosStart[3], PosStart[4], PosStart[5], NOVAL, NOVAL, PosMin[8]};
   uint16_t speed = SERVO_SPEED_MAX; // 20 - 60 recommended
   unsigned long delayTime = 2000;
   servoManager.setSpeed(speed);

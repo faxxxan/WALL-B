@@ -40,8 +40,7 @@ public:
         ServoRLA.attach(PIN_SRLA, StartingPos[5]);
         ServoNT.attach(PIN_SNT, StartingPos[6]);
         ServoNP.attach(PIN_SNP, StartingPos[7]);
-        ServoLLHP.attach(PIN_SLLHP, StartingPos[8]);
-        ServoRLHP.attach(PIN_SRLHP, StartingPos[9]);
+        ServoLLHP.attach(PIN_SNX, StartingPos[8]);
 
         // Initialise IK with min and max angles and leg section lengths
         ik.doInit(PosMin[3], PosMax[3], PosMin[4], PosMax[4], PosMin[5], PosMax[5], LEG_LENGTH_THIGH, LEG_LENGTH_SHIN, LEG_LENGTH_FOOT);
