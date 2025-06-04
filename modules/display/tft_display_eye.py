@@ -10,11 +10,15 @@ class TFTDisplayEye(TFTDisplay):
             key: tuple(map(int, value.strip('()').split(',')))
             for key, value in kwargs.get('colors', {}).items()
         }
+        self.center = (self.disp.width // 2, self.disp.height // 2) # Default center of the display
+        self.radius = 50
         if kwargs.get('test_on_boot'):
             self.init_eye()
 
     def setup_messaging(self):
         self.subscribe('eye', self.eye)
+        self.subscribe('eye/look', self.look)
+        
 
     def init_eye(self):
         self.draw_image('makerforge_bl.png')
@@ -22,7 +26,7 @@ class TFTDisplayEye(TFTDisplay):
         img = None
         
         # Increase radius from 0 to 70 in steps of 5
-        for x in range(0, 70, 5):
+        for x in range(0, self.radius, 5):
             img = self.draw_halo(
                 ring_radius=x,
                 color=self.colors['blue'],
@@ -46,15 +50,42 @@ class TFTDisplayEye(TFTDisplay):
             raise ValueError(f"Color '{color}' not found in available colors.")
         # Access the color as a tuple
         return self.draw_halo(
-            ring_radius=70,
+            ring_radius=self.radius,
             ring_thickness=10,
             color=self.colors[color]
         )
+        
+    def look(self, coordinates=None):
+        if coordinates is None:
+            coordinates = (self.disp.width // 2, self.disp.height // 2)
+        current_center = self.center
+        target_center = coordinates
 
-    def draw_halo(self, color, ring_radius=70, ring_thickness=10, glow_layers=12, glow_spread=30):
+        # steps = distance between current and target divided by 10
+        steps = max(
+            abs(target_center[0] - current_center[0]),
+            abs(target_center[1] - current_center[1])
+        ) // 10 or 1
+        
+        delay = 0.01  # seconds per step
+
+        for i in range(1, steps + 1):
+            interp_center = (
+                int(current_center[0] + (target_center[0] - current_center[0]) * i / steps),
+                int(current_center[1] + (target_center[1] - current_center[1]) * i / steps)
+            )
+            self.center = interp_center
+            self.draw_halo(
+                ring_radius=self.radius,
+                ring_thickness=10,
+                color=self.colors['blue']
+            )
+            time.sleep(delay)
+        self.center = target_center
+
+    def draw_halo(self, color, ring_radius=50, ring_thickness=10, glow_layers=12, glow_spread=30):
         disp = self.disp
-        center = (disp.width // 2, disp.width // 2)
-
+        center = self.center
         glow_image = Image.new("RGBA", (disp.width, disp.height), (0, 0, 0, 0))
         draw = ImageDraw.Draw(glow_image)
 

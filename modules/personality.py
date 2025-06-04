@@ -2,6 +2,7 @@ from random import choice, randint
 from datetime import datetime, timedelta
 from modules.base_module import BaseModule
 from modules.config import Config
+from time import sleep
 
 class Personality(BaseModule):
 
@@ -48,7 +49,7 @@ class Personality(BaseModule):
             self.object_reaction_end_time = None
 
         # Update the middle eye LED based on conditions
-        self.update_eye()
+        # self.update_eye()
         
         self.random_neopixel_status()
 
@@ -124,11 +125,47 @@ class Personality(BaseModule):
     def handle_vision_detections(self, matches):
         # if there are matches and the object reaction end time is in the past
         if matches and len(matches) > 0 and (self.object_reaction_end_time is None or datetime.now() >= self.object_reaction_end_time):
-            self.log(f"Vision detected objects: {matches}")
             if any(match['category'] == 'person' for match in matches):
+                for match in matches:
+                    if match['category'] == 'person':
+                        self.eye_track_person(match['bbox'])
+
                 self.last_vision_time = datetime.now()
                 # Set the object reaction end time to 3 seconds from now
-                self.object_reaction_end_time = datetime.now() + timedelta(seconds=3)
+                self.log(f"Vision detected objects: {matches}")
+                self.object_reaction_end_time = datetime.now() + timedelta(seconds=.5)
+    
+    def eye_track_person(self, match):
+        # log/info: [Personality.handle_vision_detections:135] Vision detected objects: 
+        # [{'category': 'person', 'confidence': '0.5625', 'bbox': (7, 199, 172, 278), 'distance_x': -227, 'distance_y': -26}, {'category': 'airplane', 'confidence': '0.5625', 'bbox': (190, 61, 149, 106), 'distance_x': -56, 'distance_y': -170}]
+        # Example output:  
+        # Person detected at coordinates: (84.5, 239.0)
+        # Converted coordinates: (31, 119)
+        
+        # Get center position from match.bbox. 
+        # Assuming bbox is in the format [x_min, y_min, x_width, y_width]
+        center_x = match[0] + (match[2] / 2)
+        center_y = match[1] + (match[3] / 2)
+        
+        # print(f"Person detected at coordinates: ({center_x}, {center_y})")
+        
+        # Convert to tft display coordinates where (0,0) is the top left corner and (240,240) is the bottom right corner
+        # Assuming original coordinates are in a 640x480 space
+        center_x = int((center_x/640) * 240) 
+        center_y = int((center_y/480) * 240)
+        
+        # print(f"Converted coordinates: ({center_x}, {center_y})")
+        
+        # Rotate 90 degrees clockwise
+        # center_x, center_y = 240 - center_y, center_x
+        # Rotate 90 degrees anticlockwise
+        center_x, center_y = center_y, 240 - center_x
+        
+        # flip the y-axis to match the TFT display coordinates
+        center_x = 240 - center_x
+        
+        # print(f"Rotated coordinates: ({center_x}, {center_y})")
+        self.publish('eye/look', coordinates=(center_x, center_y))
 
     # Motion: Updates the last motion time
     def update_motion_time(self):
