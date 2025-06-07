@@ -19,6 +19,7 @@ class TFTDisplay(BaseModule):
                 spi=spi, spi_freq=10000000, rst=kwargs.get('rst_pin'),
                 dc=kwargs.get('dc_pin'), bl=kwargs.get('bl_pin')
             )
+            self.img = None
             self.clear_display()
             blank_image = Image.new("RGBA", (self.disp.width, self.disp.height), "BLACK")
             self.disp.ShowImage(blank_image)
@@ -44,8 +45,11 @@ class TFTDisplay(BaseModule):
         new_image = image.resize((disp.width, disp.height)).rotate(self.rotation)
         disp.ShowImage(new_image)
 
-    def blink(self, image, off_time=0.2):
+    def blink(self, off_time=0.2):
         disp = self.disp
+        image = self.img
+        if (image is None) or (not isinstance(image, Image.Image)):
+            raise ValueError("Image must be a valid PIL Image object.")
         blank_image = Image.new("RGBA", (disp.width, disp.height), "BLACK")
         disp.ShowImage(blank_image)
         time.sleep(off_time)

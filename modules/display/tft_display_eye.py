@@ -18,7 +18,7 @@ class TFTDisplayEye(TFTDisplay):
     def setup_messaging(self):
         self.subscribe('eye', self.eye)
         self.subscribe('eye/look', self.look)
-        
+        self.subscribe('eye/blink', self.blink)
 
     def init_eye(self):
         self.draw_image('makerforge_bl.png')
@@ -38,9 +38,9 @@ class TFTDisplayEye(TFTDisplay):
                 color=self.colors['blue'],
                 glow_spread=x
             )
-        img = self.eye('blue')
+        self.img = self.eye('blue')
         time.sleep(3)
-        self.blink(img)
+        self.blink()
         print("TFT display test completed")
 
     def eye(self, color):
@@ -75,7 +75,7 @@ class TFTDisplayEye(TFTDisplay):
                 int(current_center[1] + (target_center[1] - current_center[1]) * i / steps)
             )
             self.center = interp_center
-            self.draw_halo(
+            self.img = self.draw_halo(
                 ring_radius=self.radius,
                 ring_thickness=10,
                 color=self.colors['blue']
