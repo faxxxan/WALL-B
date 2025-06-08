@@ -66,7 +66,7 @@ int PosSleep[SERVO_COUNT] = {40, 60, 95, 140, 120, 85, PosMax[7], 90, 180, 0};
 //0, 3 = HIP
 int PosStart[SERVO_COUNT] = {60, 0, 165, 120, 180, 30, 90, 90, 180, 0};
 
-int PosBackpack[SERVO_COUNT] = {30, 5, 90, 130, 120, 160, 90, 90, 180, 0}; // Position legs to support when mounted to backpack
+int PosBackpack[SERVO_COUNT] = {30, 5, 130, 130, 120, 160, 90, 90, 180, 0}; // Position legs to support when mounted to backpack
 int PosStraight[SERVO_COUNT] = {45, 90, 165, 135, 90, 20, 90, 90, 180, 0}; // straighten legs and point feet to fit in backpack upright
 
 //int PosRest[SERVO_COUNT] = {S1_REST, S2_REST, S3_REST, S4_REST, S5_REST, S6_REST, S7_REST, S8_REST, S9_REST};
@@ -79,6 +79,8 @@ int PosStand[SERVO_COUNT] = {45, 70, 80, 135, 110, 100, NOVAL, NOVAL, 180, 0};
 int PosLookLeft[SERVO_COUNT] = {NOVAL, NOVAL, NOVAL, NOVAL, NOVAL, NOVAL, NOVAL, 180, 180, 0};
 int PosLookRight[SERVO_COUNT] = {NOVAL, NOVAL, NOVAL, NOVAL, NOVAL,  NOVAL, NOVAL, 0, 180, 0};
 int PosLookRandom[SERVO_COUNT] = {NOVAL, NOVAL, NOVAL, NOVAL, NOVAL, NOVAL, -1, -1, 180, 0}; // Made random by calling the function moveRandom() if the value is -1
+int PosLookRandomRight[SERVO_COUNT] = {NOVAL, NOVAL, NOVAL, NOVAL, NOVAL, NOVAL, -1, 30, 180, 0};
+int PosLookRandomLeft[SERVO_COUNT] = {NOVAL, NOVAL, NOVAL, NOVAL, NOVAL, NOVAL, -1, 150, 180, 0};
 int PosLookUp[SERVO_COUNT] = {NOVAL, NOVAL, NOVAL, NOVAL, NOVAL, NOVAL, 60, 90, 180, 0};
 int PosLookDown[SERVO_COUNT] = {NOVAL, NOVAL, NOVAL, NOVAL, NOVAL, NOVAL, 120, 90, 180, 0};
 

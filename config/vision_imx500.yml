@@ -1,5 +1,5 @@
-vision:
-  enabled: true
+vision_imx500:
+  enabled: false
   path: 'modules.vision.imx500.vision.Vision'
   config:
     preview: false

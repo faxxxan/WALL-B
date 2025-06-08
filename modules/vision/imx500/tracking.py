@@ -64,8 +64,6 @@ class Tracking(BaseModule):
         """Handle new detections by processing in an asynchronous thread."""
         if not self.active or self.moving:
             return
-        # print("Handling matches")
-        # print(matches)
         asyncio.run(self.process_matches(matches))
 
     @staticmethod

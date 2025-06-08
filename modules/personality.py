@@ -63,8 +63,10 @@ class Personality(BaseModule):
             self.random_animation()
             
     def random_animation(self):
+        self.publish('animate', action='level_neck')
         animations = [
             'head_shake',
+            'head_nod',
             'head_left',
             'head_right',
             # 'look_down',

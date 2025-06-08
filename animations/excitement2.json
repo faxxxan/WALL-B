@@ -1,0 +1,14 @@
+[
+  {"servo:pan:mv": 30},
+  {"servo:tilt:mv": 20},
+  {"led/color": "blue"},
+  {"sleep": 0.3},
+  {"servo:pan:mv": -30},
+  {"servo:tilt:mv": -20},
+  {"led/color": "red"},
+  {"sleep": 0.3},
+  {"servo:pan:mv": 0},
+  {"servo:tilt:mv": 0},
+  {"led/color": "green"},
+  {"sleep": 1}
+]
