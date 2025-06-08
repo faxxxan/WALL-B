@@ -2,24 +2,31 @@ from datetime import datetime, timedelta
 import cv2
 from imutils.video import FPS # for FSP only
 
-try:
-    from modules.opencv.faces import Faces
-except ModuleNotFoundError as e:
-    # Local execution
-    from faces import Faces
-    import os
-    from video_stream import VideoStream
+from modules.vision.opencv.faces import Faces
+from modules.vision.opencv.video_stream import VideoStream
     
+from modules.base_module import BaseModule
 
-from pubsub import pub
 
-class Vision:
+def list_available_cameras(max_index=10):
+    available = []
+    for idx in range(max_index):
+        cap = cv2.VideoCapture(idx)
+        if cap.isOpened():
+            available.append(idx)
+            cap.release()
+    return available
+
+
+class Vision(BaseModule):
     MODE_MOTION = 0
     MODE_FACES = 1
 
-    def __init__(self, video, **kwargs):
+    def __init__(self, **kwargs):
         self.mode = kwargs.get('mode', Vision.MODE_MOTION)
-        self.path = kwargs.get('path', '/')
+        self.path = kwargs.get('path', '.')
+        # Make sure to use the correct camera index for your Pi camera
+        # Usually, index 0 is correct for the standard Pi camera
         self.index = kwargs.get('index', 0)
         self.static_back = None
         self.dimensions = kwargs.get('resolution', (640, 480))
@@ -28,29 +35,41 @@ class Vision:
 
         self.flip = kwargs.get('flip', False)
         self.rotate = kwargs.get('rotate', False)
-        self.video = video
+        self.video = VideoStream(
+            resolution=self.dimensions,
+            index=self.index
+        )
         self.lines = []
         self.current_match = False
         self.last_match = datetime.now()  # @todo improve
-        pub.subscribe(self.exit, "exit")
 
         # start the FPS counter
         self.fps = FPS().start()
 
         if self.mode == Vision.MODE_FACES:
-            self.cascade_path = self.path + "/modules/opencv/haarcascade_frontalface_default.xml"
+            self.cascade_path = self.path + "/modules/vision/opencv/haarcascade_frontalface_default.xml"
+            print(f"[Vision] Loading cascade from {self.cascade_path}")
             self.cascade = cv2.CascadeClassifier(self.cascade_path)
             self.faces = Faces(detector=self.cascade, path=self.path)
 
+        print("[Vision] Scanning for available cameras...")
+        available_cams = list_available_cameras(10)
+        print(f"[Vision] Available camera indexes: {available_cams}")
+
+        self.video.start()
         self.running = True
 
+    def setup_messaging(self):
+        """Subscribe to necessary topics."""
+        self.subscribe('system/loop', self.detect)
+    
     def exit(self):
         self.running = False
         self.video.stop()
         # Destroying all the windows
         cv2.destroyAllWindows()
         self.fps.stop()
-        pub.sendMessage("log", msg="[Vision] Approx. FPS: {:.2f}".format(self.fps.fps()))
+        self.log("[Vision] Approx. FPS: {:.2f}".format(self.fps.fps()), 'debug')
         
     def reset(self):
         self.static_back = None
@@ -58,16 +77,16 @@ class Vision:
     def detect(self):
         if not self.running:
             return
-        # if not self.video.stream.isOpened():
-        #     raise Exception('Unable to load camera')
+        if not self.video.stream.isOpened():
+            raise Exception('Unable to load camera')
         # update the FPS counter
         self.fps.update()
 
         matches = []
 
         frame = self.video.read()
-        if frame is None:
-            return
+        if frame is None or frame is False:
+            raise Exception("[Vision] No frame captured, stopping detection")
 
         if self.flip is True:
             frame = cv2.flip(frame, 0)
@@ -88,8 +107,8 @@ class Vision:
             if len(matches) < 1:
                 if self.current_match:
                     self.current_match = False
-                    pub.sendMessage('vision:nomatch')
                 if self.preview is False:
+                    print("[Vision] No faces detected")
                     return matches
 
             names = []
@@ -142,6 +161,8 @@ class Vision:
         if len(matches) > 0:
             self.current_match = True
             self.last_match = datetime.now()
+            
+        print(f"[Vision] Detected {len(matches)} matches")
 
         return matches
 

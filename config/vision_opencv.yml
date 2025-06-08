@@ -1,0 +1,5 @@
+vision_opencv:
+  enabled: true
+  path: 'modules.vision.opencv.vision.Vision'
+  config:
+    preview: false

@@ -1,0 +1,12 @@
+[
+  {"servo:tilt:mv": 10},
+  {"sleep": 0.5},
+  {"servo:pan:mv": 15},
+  {"sleep": 0.5},
+  {"servo:pan:mv": -15},
+  {"sleep": 0.5},
+  {"servo:tilt:mv": -10},
+  {"sleep": 0.5},
+  {"servo:pan:mv": 0},
+  {"servo:tilt:mv": 0}
+]
