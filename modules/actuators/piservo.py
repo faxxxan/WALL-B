@@ -26,13 +26,14 @@ class PiServo(BaseModule):
         self.range = kwargs.get('range')
         self.start = kwargs.get('start', 0)
         self.servo = None
-        # print(self.range)
-        # self.move(0)
-        # sleep(2)
-        # self.move(self.range[0])
-        # sleep(2)
-        # self.move(self.range[1])
-        # sleep(2)
+        if kwargs.get('test_on_boot'):
+            print('Testing servo with range ' + str(self.range))
+            self.move(0)
+            sleep(2)
+            self.move(self.range[0])
+            sleep(2)
+            self.move(self.range[1])
+            sleep(2)
         self.move(self.start)
         
     def setup_messaging(self):

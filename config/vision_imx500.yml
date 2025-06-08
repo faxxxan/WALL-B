@@ -1,5 +1,5 @@
 vision_imx500:
-  enabled: false
+  enabled: true
   path: 'modules.vision.imx500.vision.Vision'
   config:
     preview: false
@@ -8,3 +8,5 @@ vision_imx500:
       - imx500-all
     python:
       - opencv-python
+    # additional:
+      # - "add dtoverlay=imx500-pi5,cam0 to /boot/firmware/config.txt"

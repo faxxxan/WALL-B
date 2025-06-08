@@ -2,7 +2,7 @@ motion:
   enabled: true
   path: 'modules.sensor.Sensor'
   config:
-    pin: 26
+    pin: 17
     test_on_boot: false
   dependencies:
     python:

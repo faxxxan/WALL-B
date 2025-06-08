@@ -1,55 +1,56 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
-#import chardet
 import os
-import sys 
+import sys
 import time
 import logging
 import spidev as SPI
-sys.path.append("..")
+from PIL import Image
+from modules.base_module import BaseModule
 from modules.display.lib import LCD_1inch28
-from PIL import Image,ImageDraw,ImageFont
 
-# @todo: Do we need the library and images?
-class TFTDisplay:
+class TFTDisplay(BaseModule):
     def __init__(self, **kwargs):
+        self.rotation = kwargs.get('rotation', 0)
         try:
-            # Open SPI bus
             spi = SPI.SpiDev(kwargs.get('bus'), kwargs.get('device'))
             spi.max_speed_hz = 10000000
-
-            # Display with hardware SPI:
-            ''' Warning!!! Don't create multiple display objects!!! '''
-            self.disp = LCD_1inch28.LCD_1inch28(spi=spi, spi_freq=10000000, rst=kwargs.get('rst_pin'), dc=kwargs.get('dc_pin') , bl=kwargs.get('bl_pin'))
+            self.disp = LCD_1inch28.LCD_1inch28(
+                spi=spi, spi_freq=10000000, rst=kwargs.get('rst_pin'),
+                dc=kwargs.get('dc_pin'), bl=kwargs.get('bl_pin')
+            )
+            self.img = None
+            self.clear_display()
+            blank_image = Image.new("RGBA", (self.disp.width, self.disp.height), "BLACK")
+            self.disp.ShowImage(blank_image)
+            
             if kwargs.get('test_on_boot'):
-                self.test_display()
-           
+                self.draw_image('makerforge_bl.png')
         except Exception as e:
             logging.error(f"Failed to initialize TFT display: {e}")
-            
-    def test_display(self):
+
+    def setup_messaging(self):
+        pass  # Placeholder for messaging setup
+
+    def clear_display(self):
         disp = self.disp
-        # Initialize library.
         disp.Init()
-        # Clear display.
         disp.clear()
-        # Set the backlight to 100
         disp.bl_DutyCycle(50)
-        print("TFT display initialized")
-        # Create blank image for drawing.
-        image1 = Image.new("RGB", (disp.width, disp.height), "BLACK")
-        draw = ImageDraw.Draw(image1)
-        
-        draw.arc((1, 1, 239, 239), 0, 360, fill=(0, 0, 255))
-        draw.arc((2, 2, 238, 238), 0, 360, fill=(0, 0, 255))
-        draw.arc((3, 3, 237, 237), 0, 360, fill=(0, 0, 255))
-        
-        draw.line([(120, 1), (120, 12)], fill=(128, 255, 128), width=4)
-        draw.line([(120, 227), (120, 239)], fill=(128, 255, 128), width=4)
-        draw.line([(1, 120), (12, 120)], fill=(128, 255, 128), width=4)
-        draw.line([(227, 120), (239, 120)], fill=(128, 255, 128), width=4)
-        
-        # Display the image
-        disp.ShowImage(image1)
-        print("TFT display test completed")
-         
+        return disp
+
+    def draw_image(self, img):
+        disp = self.disp
+        image = Image.open(os.getcwd() + '/modules/display/images/' + img)
+        new_image = image.resize((disp.width, disp.height)).rotate(self.rotation)
+        disp.ShowImage(new_image)
+
+    def blink(self, off_time=0.2):
+        disp = self.disp
+        image = self.img
+        if (image is None) or (not isinstance(image, Image.Image)):
+            raise ValueError("Image must be a valid PIL Image object.")
+        blank_image = Image.new("RGBA", (disp.width, disp.height), "BLACK")
+        disp.ShowImage(blank_image)
+        time.sleep(off_time)
+        disp.ShowImage(image)

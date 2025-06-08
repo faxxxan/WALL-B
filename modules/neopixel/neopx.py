@@ -23,6 +23,7 @@ class NeoPx(BaseModule):
 
     COLOR_MAP = {
         'red': COLOR_RED,
+        'dark_gray': COLOR_WHITE_DIM,
         'green': COLOR_GREEN,
         'blue': COLOR_BLUE,
         'purple': COLOR_PURPLE,
@@ -148,6 +149,7 @@ class NeoPx(BaseModule):
         self.subscribe('led', self.set)
         self.subscribe('led/full', self.full)
         self.subscribe('led/eye', self.eye)
+        self.subscribe('eye', self.eye)
         self.subscribe('led/ring', self.ring)
         self.subscribe('led/off', self.off)
         self.subscribe('led/flashlight', self.flashlight)
