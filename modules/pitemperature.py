@@ -27,7 +27,7 @@ class PiTemperature(BaseModule):
         elif float_val > PiTemperature.WARNING_TEMP:
             self.log(f'Temperature is high: {outputval}', 'warning')
         else:
-            self.log(f'Temperature: {outputval}', 'warning')
+            self.log(f'Temperature: {outputval}', 'debug')
     def map_range(self, value):
         # Cap range for LED
         if value > PiTemperature.WARNING_TEMP:
