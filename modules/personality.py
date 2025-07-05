@@ -30,14 +30,15 @@ class Personality(BaseModule):
             self.eye_blink,
             # self.move_antenna,
         ]
-
+        
     def setup_messaging(self):
         """Subscribe to necessary topics."""
         self.subscribe('system/loop/1', self.loop)
         self.subscribe('vision/detections', self.handle_vision_detections)
-        self.subscribe('motion', self.update_motion_time)
+        self.subscribe('gpio/motion', self.update_motion_time)
         self.subscribe('serial', self.track_serial_idle)
-
+        self.publish('gpio/laser', state=True) # Turn on laser if no one has been detected
+        
     def loop(self):
         # Handle ongoing object reaction
         if self.object_reaction_end_time and datetime.now() >= self.object_reaction_end_time:
@@ -135,6 +136,7 @@ class Personality(BaseModule):
                 for match in matches:
                     if match['category'] == 'person':
                         self.eye_track_person(match['bbox'])
+                        self.publish('gpio/laser', state=False)  # Turn off laser when person detected
 
                 self.last_vision_time = datetime.now()
                 # Set the object reaction end time to 3 seconds from now

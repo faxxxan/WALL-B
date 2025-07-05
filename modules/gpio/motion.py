@@ -2,10 +2,10 @@ from gpiozero import MotionSensor
 from time import sleep
 from modules.base_module import BaseModule
 
-class Sensor(BaseModule):
+class Motion(BaseModule):
     def __init__(self, **kwargs):
         """
-        Sensor class
+        Motion Sensor class
         :param kwargs: pin
         
         Install: pip install gpiozero
@@ -30,7 +30,7 @@ class Sensor(BaseModule):
 
     def loop(self):
         if self.read():
-            self.publish('motion')
+            self.publish('gpio/motion')
 
     def read(self):
         self.value = self.sensor.motion_detected

@@ -1,0 +1,9 @@
+gpio_motion:
+  enabled: true
+  path: 'modules.gpio.motion.Motion'
+  config:
+    pin: 9
+    test_on_boot: false
+  dependencies:
+    python:
+      - gpiozero

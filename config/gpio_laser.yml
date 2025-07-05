@@ -1,8 +1,8 @@
 motion:
   enabled: true
-  path: 'modules.sensor.Sensor'
+  path: 'modules.gpio.laser.Laser'
   config:
-    pin: 17
+    pin: 6
     test_on_boot: false
   dependencies:
     python:

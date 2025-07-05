@@ -37,7 +37,7 @@ from modules.config import Config
 from modules.actuators.servo import Servo
 from modules.actuators.piservo import PiServo
 from modules.animate import Animate
-from modules.sensor import Sensor
+from modules.gpio.motion import Motion
 import sys
 
 # from modules.speechinput import SpeechInput
