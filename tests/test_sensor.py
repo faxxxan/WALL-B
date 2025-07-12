@@ -41,7 +41,7 @@ class TestSensor(unittest.TestCase):
         with mock.patch.object(sensor, 'read', return_value=True):
             with mock.patch.object(sensor, 'publish') as mock_publish:
                 sensor.loop()
-                mock_publish.assert_called_with('motion')
+                mock_publish.assert_called_with('gpio/motion')
 
         with mock.patch.object(sensor, 'read', return_value=False):
             with mock.patch.object(sensor, 'publish') as mock_publish:

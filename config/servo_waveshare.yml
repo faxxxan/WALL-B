@@ -1,0 +1,12 @@
+servos:
+  enabled: true
+  path: "modules.actuators.bus_servo.servo.Servo" # Include class name here
+  instances:
+    - name: "leg_l_hip"
+      id: 1
+      range: [0, 4095]
+      start: 2048
+    - name: "leg_l_knee"
+      id: 2
+      range: [0, 4095]
+      start: 2048
