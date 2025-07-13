@@ -7,8 +7,10 @@
 # This example is tested with a STServo and an URT
 #
 
-import sys
 import os
+import sys
+
+
 
 if os.name == 'nt':
     import msvcrt
@@ -28,7 +30,7 @@ else:
         return ch
 
 sys.path.append("..")
-from STservo_sdk import *                      # Uses STServo SDK library
+from STservo_sdk import *
 
 # Default setting
 STS_ID                      = 1                 # STServo ID : 1

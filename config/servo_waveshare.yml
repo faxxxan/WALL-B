@@ -2,11 +2,28 @@ servos:
   enabled: true
   path: "modules.actuators.bus_servo.servo.Servo" # Include class name here
   instances:
-    - name: "leg_l_hip"
+    - name: "leg_r_hip"
+      model: 'ST3215'
       id: 1
       range: [0, 4095]
       start: 2048
-    - name: "leg_l_knee"
+    - name: "leg_r_knee"
+      model: 'ST3215'
       id: 2
       range: [0, 4095]
       start: 2048
+    - name: "leg_r_ankle"
+      model: 'ST3215'
+      id: 3
+      range: [0, 4095]
+      start: 2048
+    - name: "neck_pan"
+      model: 'SC09'
+      id: 4
+      range: [0, 1023]
+      start: 511
+    - name: "neck_tilt"
+      model: 'SC09'
+      id: 5
+      range: [0, 1023]
+      start: 511
