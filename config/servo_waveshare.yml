@@ -6,12 +6,20 @@ servos:
       model: 'ST3215'
       id: 3
       range: [744, 3136]
-      start: 1269 #2048
+      start: 1269
+      poses:
+        - stand: 824
+        - sit: 1269
+        - centre: 2048
     - name: "leg_r_knee"
       model: 'ST3215'
       id: 2
       range: [702, 3260]
-      start: 723 #2048
+      start: 723
+      poses:
+        - stand: 2111
+        - sit: 723
+        - centre: 2048
       # configure_on_boot: true
     - name: "leg_r_ankle"
       model: 'ST3215'

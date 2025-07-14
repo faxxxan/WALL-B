@@ -45,12 +45,13 @@ class Servo(BaseModule):
         self.model = kwargs.get('model', 'ST')
         self.index = kwargs.get('id')
         self.range = kwargs.get('range')
-        self.start = kwargs.get('start', 50)
+        self.start = kwargs.get('start') # Default start position
+        self.poses = kwargs.get('poses')  # Dictionary of poses
         self.baudrate = kwargs.get('baudrate', 1000000)
         self.port = kwargs.get('port', '/dev/ttyACM0')
         self.configure_on_boot = kwargs.get('configure_on_boot', False) # Loop to show position for manual configuration
         self.pos = self.start
-        self.speed = 2400
+        self.speed = 2400 # 3073
         self.acceleration = 50
         
         # Initialize PortHandler instance
@@ -100,7 +101,10 @@ class Servo(BaseModule):
                 self.get_position() # Log will show current position repeatedly to help with manual configuration
         
         self.pos = self.get_position()  # Get initial position to avoid jumping from unknown position
+        
         # Move to start position
+        # if self.get_pose_value('stand') is not None:
+            # self.start = self.get_pose_value('stand')
         self.move(self.start)
         
     def move(self, position):
@@ -206,14 +210,25 @@ class Servo(BaseModule):
             self.log("%s" % self.packetHandler.getRxPacketError(error), level='error')
             return True
         return False
-            
-            
-            
-
-
-
-
-
-
     
+    def get_pose_value(self, pose_name):
+        """
+        Returns the position value for the given pose name from self.poses.
+        """
+        if not self.poses:
+            return None
+        for pose in self.poses:
+            if pose_name in pose:
+                return pose[pose_name]
+        return None  # or raise an exception if preferred
+
+
+
+
+
+
+
+
+
+
 
