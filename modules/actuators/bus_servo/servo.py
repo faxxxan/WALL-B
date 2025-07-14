@@ -48,6 +48,7 @@ class Servo(BaseModule):
         self.start = kwargs.get('start', 50)
         self.baudrate = kwargs.get('baudrate', 1000000)
         self.port = kwargs.get('port', '/dev/ttyACM0')
+        self.configure_on_boot = kwargs.get('configure_on_boot', False) # Loop to show position for manual configuration
         self.pos = self.start
         self.speed = 2400
         self.acceleration = 50
@@ -72,9 +73,10 @@ class Servo(BaseModule):
         # Set port baudrate
         if not self.portHandler.setBaudRate(self.baudrate):
             raise Exception("Failed to change the baudrate")
+        
     
     def exit(self):
-        # TODO: Detach servos
+        # Detach servo
         if self.model.startswith('ST'):
             # Disable torque for STServo
             sts_comm_result, sts_error = self.packetHandler.write1ByteTxRx(self.index, ADDR_TORQUE_ENABLE, 0)
@@ -92,6 +94,10 @@ class Servo(BaseModule):
         self.subscribe('servo:' + self.identifier + ':mvabs', self.move)
         self.subscribe('servo:' + self.identifier + ':mv', self.move_relative)
         self.subscribe('system/exit', self.exit)
+        
+        if self.configure_on_boot:
+            while True:
+                self.get_position() # Log will show current position repeatedly to help with manual configuration
         
         self.pos = self.get_position()  # Get initial position to avoid jumping from unknown position
         # Move to start position

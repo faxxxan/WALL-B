@@ -4,17 +4,18 @@ servos:
   instances:
     - name: "leg_r_hip"
       model: 'ST3215'
-      id: 1
-      range: [0, 4095]
-      start: 2048
+      id: 3
+      range: [744, 3136]
+      start: 1269 #2048
     - name: "leg_r_knee"
       model: 'ST3215'
       id: 2
-      range: [0, 4095]
-      start: 2048
+      range: [702, 3260]
+      start: 723 #2048
+      # configure_on_boot: true
     - name: "leg_r_ankle"
       model: 'ST3215'
-      id: 3
+      id: 1
       range: [0, 4095]
       start: 2048
     - name: "neck_pan"
