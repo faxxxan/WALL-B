@@ -48,7 +48,7 @@ class Servo(BaseModule):
         self.start = kwargs.get('start') # Default start position
         self.poses = kwargs.get('poses')  # Dictionary of poses
         self.baudrate = kwargs.get('baudrate', 1000000)
-        self.port = kwargs.get('port', '/dev/ttyACM0')
+        self.port = kwargs.get('port', '/dev/ttyACM0') # Change as needed, find with `ls /dev/ttyACM*`
         self.calibrate_on_boot = kwargs.get('calibrate_on_boot', True) # Loop to show position for manual configuration
         self.pos = self.start
         self.speed = 2400 # 3073

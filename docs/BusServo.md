@@ -12,13 +12,19 @@ The `config/servo_waveshare.yml` file contains the configuration for each bus se
 
 To calibrate the servos, each must have their ID set individually. To achieve this, connect one servo to the driver board and run `modules/actuators/bus_servo/change_id.py`. This script will prompt you to enter the ID for the connected servo, which will then be saved permanently on the servo.
 
+If you have challenges understanding the current ID of the servo, run `modules/actuators/bus_servo/STServo_examples/read_all.py` or `modules/actuators/bus_servo/SCServo_examples/read_all.py` depending on the servo type. This script will read and display the current ID of the connected servo.
+
+Note: if there is an issue with dependencies, you may need to run the script from within the `modules/actuators/bus_servo` directory.
+
 Once this has been done for all servos, you can use the `Servo` class to control them by enabling it in the above yaml file.
 
-To calibrate the servo positions, set the flag `configure_on_boot` to `true` in the configuration file for each instance (servo). This will cause the servo to output it's current position in the debug log, which can then be copied into the start position, or range. Servos can be manually moved to any position to identify their range or certain poses.
+To calibrate the servo positions, set the flag `calibrate_on_boot` to `true` in the configuration file for each instance (servo). This will cause the servo to output it's current position in the debug log, which can then be copied into the start position, or range. Servos can be manually moved to any position to identify their range or certain poses.
 
-Once the start position and range are set, move the flag to the next servo and repeat the process until all servos are configured.
+Note: calibrate_on_boot is enabled by default to help with initial configuration.
 
-Finally, remove the `configure_on_boot` flag from the configuration file and re-run the program to start using the servos with their configured positions.
+Once the start position and range are set, move the flag to the next servo and repeat the process until all servos are calibrated.
+
+Finally, set `calibrate_on_boot` to false and re-run the program to start using the servos with their configured positions.
 
 ## Subscriptions
 

@@ -33,7 +33,7 @@ from STservo_sdk import *
 SERVO_TYPE = input("Enter servo type (STS for ST3215, SCSCL for SC09): ").strip().upper()
 SERVO_ID = int(input("Enter current servo ID (1-253): "))
 BAUDRATE = 1000000
-DEVICENAME = '/dev/ttyACM0'  # Change as needed
+DEVICENAME = '/dev/ttyACM0'  # Change as needed, find with `ls /dev/ttyACM*`
 
 # Initialize PortHandler
 portHandler = PortHandler(DEVICENAME)
