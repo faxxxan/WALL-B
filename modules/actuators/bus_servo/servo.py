@@ -49,7 +49,7 @@ class Servo(BaseModule):
         self.poses = kwargs.get('poses')  # Dictionary of poses
         self.baudrate = kwargs.get('baudrate', 1000000)
         self.port = kwargs.get('port', '/dev/ttyACM0')
-        self.configure_on_boot = kwargs.get('configure_on_boot', False) # Loop to show position for manual configuration
+        self.calibrate_on_boot = kwargs.get('calibrate_on_boot', True) # Loop to show position for manual configuration
         self.pos = self.start
         self.speed = 2400 # 3073
         self.acceleration = 50
@@ -96,9 +96,8 @@ class Servo(BaseModule):
         self.subscribe('servo:' + self.identifier + ':mv', self.move_relative)
         self.subscribe('system/exit', self.exit)
         
-        if self.configure_on_boot:
-            while True:
-                self.get_position() # Log will show current position repeatedly to help with manual configuration
+        if self.calibrate_on_boot:
+            self.calibrate() # Log will show current position repeatedly to help with manual configuration
         
         self.pos = self.get_position()  # Get initial position to avoid jumping from unknown position
         
@@ -149,7 +148,7 @@ class Servo(BaseModule):
             # Read STServo present position
             sts_present_position, sts_present_speed, sts_comm_result, sts_error = self.packetHandler.ReadPosSpeed(self.index)
             if not self.handle_errors(sts_comm_result, sts_error):
-                self.log("[ID:%03d] PresPos:%d PresSpd:%d" % (STS_ID, sts_present_position, sts_present_speed))
+                self.log("[ID:%03d] PresPos:%d PresSpd:%d" % (self.index, sts_present_position, sts_present_speed))
                 return sts_present_position
         else:
             return self.sc_get_position_speed('position')
@@ -222,8 +221,23 @@ class Servo(BaseModule):
                 return pose[pose_name]
         return None  # or raise an exception if preferred
 
-
-
+    def calibrate(self):
+        """
+        Move each servo to capture min and max positions for calibration.
+        """
+        self.log(f"Move servo {self.identifier} to minimum position and press any key...")
+        getch()  # Waits for a single key press
+        min = self.get_position()
+        self.log(f"Captured minimum position: {min}")
+        self.log(f"Move servo {self.identifier} to maximum position and press any key...")
+        getch()  # Waits for a single key press
+        max = self.get_position()
+        self.log(f"Captured maximum position: {max}")
+        self.range = (min, max)
+        if self.start < min or self.start > max:
+            self.start = (min + max) // 2
+            self.log(f"Start position {self.start} out of new range, setting to midpoint {self.start}")
+        self.log(f"Updated range for {self.identifier}: {self.range}. Start position: {self.start}")
 
 
 

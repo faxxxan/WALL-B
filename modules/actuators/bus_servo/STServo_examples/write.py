@@ -27,7 +27,8 @@ else:
             termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
         return ch
 
-sys.path.append("..")
+# Add parent directory to sys.path to import STservo_sdk from sibling folder
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from STservo_sdk import *                 # Uses STServo SDK library
 
 # Default setting

@@ -10,7 +10,8 @@
 import os
 import sys
 
-
+# Add parent directory to sys.path to import STservo_sdk from sibling folder
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 if os.name == 'nt':
     import msvcrt
@@ -29,7 +30,6 @@ else:
             termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
         return ch
 
-sys.path.append("..")
 from STservo_sdk import *
 
 # Default setting

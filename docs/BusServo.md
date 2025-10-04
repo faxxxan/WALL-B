@@ -20,7 +20,7 @@ Once the start position and range are set, move the flag to the next servo and r
 
 Finally, remove the `configure_on_boot` flag from the configuration file and re-run the program to start using the servos with their configured positions.
 
-## Subsriptions
+## Subscriptions
 
 The `Servo` class subscribes to the following topics:
 `servo:<identifier>:mv` - to move the servo to a specific position relative to it's current position.
