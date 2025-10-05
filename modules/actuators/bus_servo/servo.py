@@ -2,6 +2,8 @@
 
 import sys
 import os
+import select
+import time
 
 if os.name == 'nt':
     import msvcrt
@@ -50,6 +52,7 @@ class Servo(BaseModule):
         self.baudrate = kwargs.get('baudrate', 1000000)
         self.port = kwargs.get('port', '/dev/ttyACM0') # Change as needed, find with `ls /dev/ttyACM*`
         self.calibrate_on_boot = kwargs.get('calibrate_on_boot', True) # Loop to show position for manual configuration
+        self.demonstrate_on_boot = kwargs.get('demonstrate_on_boot', False) # Move to min and max to demonstrate range
         self.pos = self.start
         self.speed = 2400 # 3073
         self.acceleration = 50
@@ -97,9 +100,19 @@ class Servo(BaseModule):
         self.subscribe('system/exit', self.exit)
         
         if self.calibrate_on_boot:
-            self.calibrate() # Log will show current position repeatedly to help with manual configuration
+            self.calibrate_dynamic() # Log will show current position repeatedly to help with manual configuration
         
         self.pos = self.get_position()  # Get initial position to avoid jumping from unknown position
+        
+        if self.demonstrate_on_boot:
+            self.log(f"Demonstrating servo {self.identifier} movement")
+            if self.range is not None:
+                self.move(self.range[0])
+                time.sleep(1)
+                self.move(self.range[1])
+                time.sleep(1)
+            else:
+                self.log(f"Range not set for servo {self.identifier}, cannot demonstrate movement", level='warning')
         
         # Move to start position
         # if self.get_pose_value('stand') is not None:
@@ -148,7 +161,7 @@ class Servo(BaseModule):
             # Read STServo present position
             sts_present_position, sts_present_speed, sts_comm_result, sts_error = self.packetHandler.ReadPosSpeed(self.index)
             if not self.handle_errors(sts_comm_result, sts_error):
-                self.log("[ID:%03d] PresPos:%d PresSpd:%d" % (self.index, sts_present_position, sts_present_speed))
+                # self.log("[ID:%03d] PresPos:%d PresSpd:%d" % (self.index, sts_present_position, sts_present_speed))
                 return sts_present_position
         else:
             return self.sc_get_position_speed('position')
@@ -234,12 +247,45 @@ class Servo(BaseModule):
         max = self.get_position()
         self.log(f"Captured maximum position: {max}")
         self.range = (min, max)
-        if self.start < min or self.start > max:
+        if self.start is not None and (self.start < min or self.start > max):
             self.start = (min + max) // 2
             self.log(f"Start position {self.start} out of new range, setting to midpoint {self.start}")
         self.log(f"Updated range for {self.identifier}: {self.range}. Start position: {self.start}")
 
-
+    def calibrate_dynamic(self):
+        """
+        Continuously log the current position to help with manual calibration.
+        Store min an max as they are found.
+        Complete on key press. and store in self.range
+        """
+        self.log(f"Calibrating servo {self.identifier}. Move the servo to find min and max positions. Press any key to finish...")
+        min_pos = None
+        max_pos = None
+        try:
+            while True:
+                pos = self.get_position()
+                if min_pos is None or pos < min_pos:
+                    min_pos = pos
+                if max_pos is None or pos > max_pos:
+                    max_pos = pos
+                # Print on the same line, pad with spaces to clear previous content
+                print(f"\rCurrent position: {pos}, Min: {min_pos}, Max: {max_pos}      ", end='', flush=True)
+                time.sleep(0.05)
+                if sys.stdin in select.select([sys.stdin], [], [], 0)[0]:
+                    sys.stdin.read(1)  # Consume the key so buffer is cleared
+                    break
+        except KeyboardInterrupt:
+            pass
+        print()  # Move to next line after loop
+        if min_pos is not None and max_pos is not None:
+            self.range = (min_pos, max_pos)
+            self.log(f"Calibration complete for {self.identifier}. Range: {self.range}")
+        else:
+            self.log(f"No positions recorded during calibration for {self.identifier}.", level='warning')
+            
+        if self.start is not None and (self.start < min_pos or self.start > max_pos):
+            self.start = (min_pos + max_pos) // 2
+            self.log(f"Start position {self.start} out of new range, setting to midpoint {self.start}")
 
 
 

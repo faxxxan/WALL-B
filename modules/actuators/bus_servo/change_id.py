@@ -127,5 +127,21 @@ while True:
 
     print(f"{SERVO_TYPE} servo ID changed successfully to {new_id}")
     SERVO_ID = new_id
+    
+    print(f"Press any key to center servo ID {SERVO_ID} (required for further calibration)...")
+    getch()
+    # Center servo
+    if SERVO_TYPE == "STS":
+        center_result, center_error = packetHandler.WritePosEx(SERVO_ID, 2048, 1000, 50)
+    else:
+        center_result, center_error = packetHandler.WritePosEx(SERVO_ID, 512, 1000, 50)
+    if center_result != COMM_SUCCESS or center_error != 0:
+        print("Failed to center servo: %s %s" % (
+            packetHandler.getTxRxResult(center_result),
+            packetHandler.getRxPacketError(center_error)
+        ))
+    else:
+        print(f"Centered servo ID {SERVO_ID}")
 
+# Close port
 portHandler.closePort()

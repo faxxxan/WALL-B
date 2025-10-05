@@ -16,15 +16,26 @@ If you have challenges understanding the current ID of the servo, run `modules/a
 
 Note: if there is an issue with dependencies, you may need to run the script from within the `modules/actuators/bus_servo` directory.
 
-Once this has been done for all servos, you can use the `Servo` class to control them by enabling it in the above yaml file.
+Once the ID has been set for all servos, you can use the `Servo` class to control them by enabling it in the above yaml file.
 
+### Centering
+The servos range is between 0-4095 for ST servos and 0-1024 for SC servos. The position readout can wrap around (from 0 to 4095), so the servos should be set to the midpoint before mounting them in the robot otherwise it can result in the servo passing the wrong way through the range of values, which could damage the robot. 
+
+The `change_id.py` script will set the servo to the midpoint when changing the ID. The servo should then be mounted in the robot at roughly the midpoint position.
+
+
+### Calibration
 To calibrate the servo positions, set the flag `calibrate_on_boot` to `true` in the configuration file for each instance (servo). This will cause the servo to output it's current position in the debug log, which can then be copied into the start position, or range. Servos can be manually moved to any position to identify their range or certain poses.
 
-Note: calibrate_on_boot is enabled by default to help with initial configuration.
+Note: `calibrate_on_boot` is enabled by default to help with initial configuration.
 
 Once the start position and range are set, move the flag to the next servo and repeat the process until all servos are calibrated.
 
 Finally, set `calibrate_on_boot` to false and re-run the program to start using the servos with their configured positions.
+
+### Demonstration
+
+To demonstrate the servo movement on boot, set the flag `demonstrate_on_boot` to `true` in the configuration file for each instance (servo). This will cause the servo to move to its minimum and maximum positions once on initialization, allowing you to see the range of motion.
 
 ## Subscriptions
 
