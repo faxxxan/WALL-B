@@ -6,11 +6,59 @@ The `Controller` module provides an interface for using a game controller (such 
 
 ## Enable controller on ubuntu:
 
-<!-- sudo apt install dkms linux-headers-$(uname -r)
+I'm not sure what helped with this situation, but I had immense difficulty getting bluetooth working for the Xbox Series S/X controller. I had to upgrade the firmware using this tool on windows 10: https://apps.microsoft.com/detail/9nblggh30xj3?hl=en-GB&gl=GB
+
+In addition, I installed xpadneo:
+
+```
+sudo apt install dkms linux-headers-$(uname -r)
 git clone https://github.com/atar-axis/xpadneo.git
 cd xpadneo
-sudo ./install.sh -->
-<!-- Did not work -->
+sudo ./install.sh
+```
+
+Disabling ERTM may also have been required:
+```
+sudo nano /etc/modprobe.d/bluetooth.conf
+
+# Add this line and save
+options bluetooth disable_ertm=Y
+
+sudo reboot
+```
+
+Then use bluetoothctl to test:
+```
+sudo bluetoothctl
+# Turn on agent and set as default
+agent on
+default-agent
+
+# Start scanning for devices
+scan on
+
+# Replace XX:XX:XX:XX:XX:XX with your controller's MAC address
+pair XX:XX:XX:XX:XX:XX
+trust XX:XX:XX:XX:XX:XX
+connect XX:XX:XX:XX:XX:X
+
+exit
+```
+
+Further adjustments that may have helped:
+
+``` 
+# edit /etc/bluetooth/main.conf
+[General]
+ControllerMode = dual
+JustWorksRepairing = confirm
+```
+
+The package xboxdrv was also suggested, but I couldn't get that to detect the controller, even once the script was working...
+
+Testing with `jstest /dev/input/js0` (requires `sudo apt-get install joystick`) showed the controller worked, but I could not get the python modules `inputs` or `pygame` to recognise any input from the controller.
+
+In the end I polled the /dev/input/js0 stream into python.
 
 ## Configuration
 

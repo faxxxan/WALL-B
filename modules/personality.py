@@ -37,7 +37,7 @@ class Personality(BaseModule):
         self.subscribe('vision/detections', self.handle_vision_detections)
         self.subscribe('gpio/motion', self.update_motion_time)
         self.subscribe('serial', self.track_serial_idle)
-        self.publish('gpio/laser', state=True) # Turn on laser if no one has been detected
+        # self.publish('gpio/laser', state=True) # Turn on laser if no one has been detected
         
     def loop(self):
         # Handle ongoing object reaction
