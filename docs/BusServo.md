@@ -6,9 +6,9 @@ Serial bus servos allow for efficient communication and control of multiple serv
 
 ## Configuration
 
-The `config/servo_waveshare.yml` file contains the configuration for each bus servo. The `instances` section defines the servos, their IDs, and their initial positions. The `poses` section within each instance defines various poses that can be used to set servo positions.
+The `config/servo_bus.yml` file contains the configuration for each bus servo. The `instances` section defines the servos, their IDs, and their initial positions. The `poses` section within each instance defines various poses that can be used to set servo positions.
 
-## Getting Started
+## Getting Started / Calibration
 
 To calibrate the servos, each must have their ID set individually. To achieve this, connect one servo to the driver board and run `modules/actuators/bus_servo/change_id.py`. This script will prompt you to enter the ID for the connected servo, which will then be saved permanently on the servo.
 
@@ -23,6 +23,8 @@ The servos range is between 0-4095 for ST servos and 0-1024 for SC servos. The p
 
 The `change_id.py` script will set the servo to the midpoint when changing the ID. The servo should then be mounted in the robot at roughly the midpoint position.
 
+You can also enable `center_on_boot` for each servo in the configuration file, which will move the servo to the center of its range on initialization.
+
 
 ### Calibration
 To calibrate the servo positions, set the flag `calibrate_on_boot` to `true` in the configuration file for each instance (servo). This will cause the servo to output it's current position in the debug log, which can then be copied into the start position, or range. Servos can be manually moved to any position to identify their range or certain poses.
@@ -30,6 +32,8 @@ To calibrate the servo positions, set the flag `calibrate_on_boot` to `true` in 
 Note: `calibrate_on_boot` is enabled by default to help with initial configuration.
 
 Once the start position and range are set, move the flag to the next servo and repeat the process until all servos are calibrated.
+
+You can then copy the output values directly from the log into the configuration file.
 
 Finally, set `calibrate_on_boot` to false and re-run the program to start using the servos with their configured positions.
 
@@ -49,7 +53,7 @@ Because the `Servo` class gets the current position of the servo on initializati
 
 ## SC vs ST servos
 
-The `Servo` class supports both ST and SC series servos from Waveshare. The type of servo is determined by the `model` variable in the configuration file. The class will automatically use the appropriate SDK for the specified servo type.
+The `Servo` class supports both ST and SC series servos from Waveshare and compatible servos. The type of servo is determined by the `model` variable in the configuration file. The class will automatically use the appropriate SDK for the specified servo type.
 
 There are some limitations to the SC servos as they do not support continuous rotation and have a lower rotational range compared to the ST servos. 
 

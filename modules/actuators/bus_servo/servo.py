@@ -36,6 +36,8 @@ ADDR_SCS_GOAL_POSITION     = 42 # Used in SCServo move
 ADDR_SCS_GOAL_SPEED        = 46
 ADDR_SCS_PRESENT_POSITION  = 56
 
+ST_MAX = 4095
+SC_MAX = 1024
 
 class Servo(BaseModule):
     def __init__(self, **kwargs):
@@ -50,9 +52,10 @@ class Servo(BaseModule):
         self.start = kwargs.get('start') # Default start position
         self.poses = kwargs.get('poses')  # Dictionary of poses
         self.baudrate = kwargs.get('baudrate', 1000000)
-        self.port = kwargs.get('port', '/dev/ttyACM0') # Change as needed, find with `ls /dev/ttyACM*`
-        self.calibrate_on_boot = kwargs.get('calibrate_on_boot', True) # Loop to show position for manual configuration
+        self.port = kwargs.get('port', '/dev/ttyAMA0') # Change as needed, find with `ls /dev/ttyACM*`
+        self.calibrate_on_boot = kwargs.get('calibrate_on_boot', False) # Loop to show position for manual configuration
         self.demonstrate_on_boot = kwargs.get('demonstrate_on_boot', False) # Move to min and max to demonstrate range
+        self.center_on_boot = kwargs.get('center_on_boot', False) # Move to center of range on boot
         self.pos = self.start
         self.speed = 2400 # 3073
         self.acceleration = 50
@@ -104,6 +107,9 @@ class Servo(BaseModule):
         
         self.pos = self.get_position()  # Get initial position to avoid jumping from unknown position
         
+        if self.center_on_boot:
+            self.calibrate_to_center()
+        
         if self.demonstrate_on_boot:
             self.log(f"Demonstrating servo {self.identifier} movement")
             if self.range is not None:
@@ -132,13 +138,13 @@ class Servo(BaseModule):
         if self.model.startswith('ST'):
             sts_comm_result, sts_error = self.packetHandler.WritePosEx(self.index, position, self.speed, self.acceleration)
             if not self.handle_errors(sts_comm_result, sts_error):
-                self.log(f"Moved servo {self.identifier} from {self.pos} to position {position}")
+                self.log(f"Moved ST servo {self.identifier} from {self.pos} to position {position}")
                 self.pos = position  # Update current position
         elif self.model.startswith('SC'):
             self.packetHandler.write1ByteTxRx(self.portHandler, self.index, ADDR_SCS_GOAL_ACC, self.acceleration)
             self.packetHandler.write2ByteTxRx(self.portHandler, self.index, ADDR_SCS_GOAL_SPEED, self.speed)
             self.packetHandler.write2ByteTxRx(self.portHandler, self.index, ADDR_SCS_GOAL_POSITION, position)
-            self.log(f"Moved servo {self.identifier} from {self.pos} to position {position}")
+            self.log(f"Moved SC servo {self.identifier} from {self.pos} to position {position}")
     
     def move_relative(self, delta):
         """
@@ -287,7 +293,24 @@ class Servo(BaseModule):
             self.start = (min_pos + max_pos) // 2
             self.log(f"Start position {self.start} out of new range, setting to midpoint {self.start}")
 
-
+    def calibrate_to_center(self):
+        """
+        Move the servo to the center of its range.
+        """
+        # Write STServo goal position
+        
+        if self.model.startswith('ST'):
+            self.pos = ST_MAX//2  # Update current position
+            sts_comm_result, sts_error = self.packetHandler.WritePosEx(self.index, self.pos, self.speed, self.acceleration)
+            if not self.handle_errors(sts_comm_result, sts_error):
+                self.log(f"Moved servo {self.identifier} to position {self.pos}")
+                
+        elif self.model.startswith('SC'):
+            self.pos = SC_MAX//2  # Update current position
+            self.packetHandler.write1ByteTxRx(self.portHandler, self.index, ADDR_SCS_GOAL_ACC, self.acceleration)
+            self.packetHandler.write2ByteTxRx(self.portHandler, self.index, ADDR_SCS_GOAL_SPEED, self.speed)
+            self.packetHandler.write2ByteTxRx(self.portHandler, self.index, ADDR_SCS_GOAL_POSITION, self.pos)
+            self.log(f"Moved servo {self.identifier} to position {self.pos}")
 
 
 

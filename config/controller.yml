@@ -1,0 +1,100 @@
+controller:
+  enabled: true
+  path: 'modules.controller.Controller'
+  dependencies:
+    python:
+      - inputs
+      # sudo systemctl enable xboxdrv.service
+      # 
+    unix:
+      - xboxdrv 
+  config:
+    deadzone: 500
+    button_action_map:
+      default:
+        BTN_TL:
+          - topic: ''
+            args: {}
+        BTN_TR:
+          - topic: ''
+            args: {}
+        BTN_SELECT:
+          - topic: 'record/stop'
+            args: {}
+        BTN_START:
+          - topic: 'record/start'
+            args: {}
+        KEY_RECORD: # Only on Xbox S/X remotes
+          - topic: ''
+            args: {}
+        BTN_MODE: # Xbox Logo
+          - topic: ''
+            args: {}
+        ABS_HAT0X: # DPAD X (-1, 0 or 1)
+          - topic: ''
+            args: {}
+        ABS_HAT0Y: # DPAD Y (-1, 0 or 1)
+          - topic: ''
+            args: {}
+        BTN_SOUTH: # A
+          - topic: 'tts'
+            msg: 'Test Default'
+        BTN_NORTH: # X
+          - topic: 'eye/blink'
+            args: {}
+        BTN_WEST: # Y
+          - topic: ''
+            args: {}
+        BTN_EAST: # B
+          - topic: ''
+            args: {}
+        ABS_RX:
+          - topic: 'servo:pan:mv'
+            args: {}
+            deadzone: 200
+            modifier:
+              scale: 1.0
+        ABS_RY:
+          - topic: 'servo:tilt:mv'
+            args: {}
+            modifier:
+              scale: 1.0
+        ABS_X:
+          - topic: 'eye/look'
+            args: {axis: 'x'}
+            modifier:
+              scale: 0.03
+        ABS_Y:
+          - topic: 'eye/look'
+            args: {axis: 'y'}
+            modifier:
+              scale: 0.03
+        ABS_Z: # Left trigger
+          - topic: ''
+            args: {}
+        ABS_RZ: # Right trigger
+          - topic: ''
+            args: {}
+      BTN_BL:
+        BTN_SOUTH:
+          - topic: 'tts'
+            msg: 'Left Shoulder Held'
+        ABS_X:
+          - topic: 'servo:leg_l_ankle:mv'
+            modifier:
+              scale: 1.0
+          - topic: 'servo:leg_r_ankle:mv'
+            modifier:
+              scale: -1.0
+          - topic: 'servo:leg_l_knee:mv'
+            modifier:
+              scale: 1.0
+          - topic: 'servo:leg_r_knee:mv'
+            modifier:
+              scale: -1.0
+          - topic: 'servo:leg_l_hip:mv'
+            modifier:
+              scale: 1.0
+          - topic: 'servo:leg_r_hip:mv'
+            modifier:
+              scale: -1.0

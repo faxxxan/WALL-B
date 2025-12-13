@@ -12,6 +12,7 @@ class TFTDisplayEye(TFTDisplay):
         }
         self.center = (self.disp.width // 2, self.disp.height // 2) # Default center of the display
         self.radius = 50
+        self.pos = self.center
         if kwargs.get('test_on_boot'):
             self.init_eye()
 
@@ -19,6 +20,7 @@ class TFTDisplayEye(TFTDisplay):
         self.subscribe('eye', self.eye)
         self.subscribe('eye/look', self.look)
         self.subscribe('eye/blink', self.blink)
+        self.subscribe('eye/move', self.move_eye)
 
     def init_eye(self):
         self.draw_image('makerforge_bl.png')
@@ -53,6 +55,18 @@ class TFTDisplayEye(TFTDisplay):
             ring_radius=self.radius,
             ring_thickness=10,
             color=self.colors[color]
+        )
+    
+    def move_eye(self, axis, delta):
+        delta_x = delta if axis == 'x' else 0
+        delta_y = delta if axis == 'y' else 0
+        new_x = max(0, min(self.disp.width, self.pos[0] + delta_x))
+        new_y = max(0, min(self.disp.height, self.pos[1] + delta_y))
+        self.pos = (new_x, new_y)
+        self.img = self.draw_halo(
+            ring_radius=self.radius,
+            ring_thickness=10,
+            color=self.colors['blue']
         )
         
     def look(self, coordinates=None):

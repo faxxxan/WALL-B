@@ -1,5 +1,5 @@
 motion:
-  enabled: true
+  enabled: false
   path: 'modules.gpio.laser.Laser'
   config:
     pin: 6
