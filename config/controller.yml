@@ -34,7 +34,9 @@ controller:
             args: {}
         BTN_A:
           - topic: 'tts'
-            msg: 'Test Default'
+            args: {
+              msg: 'Test Default'
+            }
         BTN_X:
           - topic: 'eye/blink'
             args: {}
@@ -44,17 +46,17 @@ controller:
         BTN_B:
           - topic: ''
             args: {}
-        ABS_RX:
+        ABS_RZ:
           - topic: 'servo:pan:mv'
             args: {}
             deadzone: 200
             modifier:
-              scale: 1.0
-        ABS_RY:
+              scale: 0.01
+        ABS_RX:
           - topic: 'servo:tilt:mv'
             args: {}
             modifier:
-              scale: 1.0
+              scale: -0.01
         ABS_X:
           - topic: 'eye/move'
             args: {axis: 'y'}
@@ -68,13 +70,15 @@ controller:
         ABS_Z: # Left trigger
           - topic: ''
             args: {}
-        ABS_RZ: # Right trigger
+        ABS_RY: # Right trigger
           - topic: ''
             args: {}
       BTN_TR:
         BTN_A:
           - topic: 'tts'
-            msg: 'Left Shoulder Held'
+            args: {
+              msg: 'Left Shoulder Held'
+            }
         ABS_X:
           - topic: 'servo:leg_l_ankle:mv'
             modifier:

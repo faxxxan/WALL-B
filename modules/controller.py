@@ -48,6 +48,9 @@ class Controller(BaseModule):
         JS_EVENT_BUTTON = 1
         JS_EVENT_AXIS = 0x02
         JS_EVENT_INIT = 0x80
+        
+        topic = None
+        args = {}
 
         is_init = (type_ & JS_EVENT_INIT) != 0
         event_type = type_ & ~JS_EVENT_INIT
@@ -68,7 +71,6 @@ class Controller(BaseModule):
         if event_type == JS_EVENT_BUTTON:
             # self.log(f"JS Button Event: number={number} value={value} (init={is_init})")
             button = button_names.get(number, f'BTN_{number}')
-            self.log(f"Button event: {button} value={value} (jsdev)")
             # value: 1=pressed, 0=released
             if value == 1:
                 self.pressed_buttons.add(button)
@@ -77,10 +79,7 @@ class Controller(BaseModule):
 
             active_mods = sorted([b for b in self.pressed_buttons if b in self.modifier_buttons])
             mapping_key = '+'.join(active_mods) if active_mods else 'default'
-            self.log(f"Active modifiers: {active_mods} (jsdev)")
             button_map = self.button_action_map.get(mapping_key, self.button_action_map.get('default', {}))
-
-            self.log(button)
             if button in button_map and value == 1:
                 actions = button_map[button]
                 for mapping in actions:
@@ -99,7 +98,6 @@ class Controller(BaseModule):
             active_mods = sorted([b for b in self.pressed_buttons if b in self.modifier_buttons])
             mapping_key = '+'.join(active_mods) if active_mods else 'default'
             button_map = self.button_action_map.get(mapping_key, self.button_action_map.get('default', {}))
-            self.log(f"Active modifiers: {active_mods} (jsdev)")
 
             if axis in button_map:
                 actions = button_map[axis]
@@ -122,6 +120,7 @@ class Controller(BaseModule):
 
                     topic = mapping.get('topic')
                     if not topic:
+                        self.log(f"Empty topic for axis {axis} mapping, skipping.", level='warning')
                         continue  # Skip empty topic
                     args = dict(mapping.get('args', {}))  # Copy to avoid mutation
                     modifier = mapping.get('modifier', None)
@@ -131,77 +130,7 @@ class Controller(BaseModule):
                     # self.log(f"Axis {axis} moved to {args.get('delta', value)} (jsdev)")
                     self.publish(topic, **args)
                     self.log(f"Published to topic {topic} with args {args} (jsdev)")
-    
-    def handle_event(self, event):
-        # if event.code == 'ABS_Y':
-        # self.log(f"Event: {event.ev_type} {event.code} {event.state}")
-        event.modifier_buttons = list(self.pressed_buttons)
-        
-        # Track pressed/released buttons for modifiers
-        if event.ev_type == 'Key':
-            if event.state == 1:
-                self.pressed_buttons.add(event.code)
-            elif event.state == 0 and event.code in self.pressed_buttons:
-                self.pressed_buttons.remove(event.code)
-
-        # Determine current mapping set
-        mapping_key = None
-        # Only consider modifier buttons for mapping key
-        active_mods = sorted([b for b in self.pressed_buttons if b in self.modifier_buttons])
-        if active_mods:
-            mapping_key = '+'.join(active_mods)
-        else:
-            mapping_key = 'default'
-        button_map = self.button_action_map.get(mapping_key, self.button_action_map.get('default', {}))
-
-        # Handle digital button press (use dynamic mapping)
-        if (event.ev_type == 'Key' or event.code.startswith('ABS_HAT')) and (event.state == 1 or event.state == -1):
-            self.log(f"Button {event.code} pressed")
-            button = event.code
-            if button in button_map:
-                actions = button_map[button]
-                for mapping in actions:
-                    topic = mapping.get('topic')
-                    args = mapping.get('args', {})
-                    
-                    self.publish(topic, **args)
-                    event.topic = topic
-                    event.args = args
-        # Handle analog stick/trigger movement (use dynamic mapping)
-        elif event.ev_type == 'Absolute':
-            axis = event.code
-            value = event.state
-            if axis in button_map:
-                actions = button_map[axis]
-                for mapping in actions:
-                    deadzone = mapping.get('deadzone', self.global_deadzone)
-                    if deadzone > abs(value):
-                        continue  # Skip if within deadzone
-
-                    debounce = mapping.get('debounce', self.global_debounce)  # debounce in ms
-                    now = int(time.time() * 1000)  # current time in ms
-                    last_time = self.axis_last_time.get(axis, None)
-
-                    # Only allow if enough time has passed
-                    if last_time is not None and (now - last_time) < debounce:
-                        continue  # Skip if within debounce interval
-                    self.axis_last_time[axis] = now
-                    last_value = self.axis_last_value.get(axis, 0)
-                    delta = value - last_value
-                    self.axis_last_value[axis] = value
-
-                    
-                    topic = mapping.get('topic')
-                    args = dict(mapping.get('args', {}))  # Copy to avoid mutation
-                    modifier = mapping.get('modifier', None)
-                    if modifier is not None:
-                        scale = modifier.get('scale', 1.0)
-                        args['delta'] = delta * scale
-                    self.log(f"Axis {axis} moved to {args['delta']}")
-                    self.publish(topic, **args)
-                    event.topic = topic
-                    event.args = args
-        self.publish('controller/event', event=event)
+        self.publish('controller/event', event=(time_ms, value, type_, number, topic, args))
 
     def stop(self):
         self.running = False
