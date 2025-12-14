@@ -58,30 +58,31 @@ class Controller(BaseModule):
             except FileNotFoundError:
                 self.log(f"No gamepad found at {self.device}. Waiting for connection...", level='warning')
                 time.sleep(1)
-            except Exception as e:
-                self.log(f"Error: {e}", level='error')
-                time.sleep(1)
 
     def _handle_js_event(self, time_ms, value, type_, number):
         """Route joystick events to appropriate handlers."""
         is_init = (type_ & self.JS_EVENT_INIT) != 0
         event_type = type_ & ~self.JS_EVENT_INIT
 
-        topic = None
-        args = {}
-
+        topics_args = []
         if event_type == self.JS_EVENT_BUTTON:
-            topic, args = self._handle_button_event(value, number)
+            topics_args = self._handle_button_event(value, number, collect_topics_args=True)
         elif event_type == self.JS_EVENT_AXIS:
-            topic, args = self._handle_axis_event(value, number)
+            topics_args = self._handle_axis_event(value, number, collect_topics_args=True)
+        self.publish('controller/event', event={
+            'time_ms': time_ms,
+            'value': value,
+            'type': type_,
+            'number': number,
+            'topics_args': topics_args
+        })
 
-        self.publish('controller/event', event=(time_ms, value, type_, number, topic, args))
-
-    def _handle_button_event(self, value, number):
+    def _handle_button_event(self, value, number, collect_topics_args=False):
         """Handle button press/release events."""
         button = self.button_names.get(number, f'BTN_{number}')
         topic = None
         args = {}
+        topics_args = []
 
         if value == 1:
             self.pressed_buttons.add(button)
@@ -98,17 +99,29 @@ class Controller(BaseModule):
                 args = mapping.get('args', {})
                 self.publish(topic, **args)
                 self.log(f"Published to topic {topic} with args {args} (jsdev)")
+                topics_args.append({'topic': topic, 'args': args})
 
+        # If collect_topics_args is set, return the list, else preserve old behavior
+        import inspect
+        frame = inspect.currentframe().f_back
+        if frame and 'collect_topics_args' in frame.f_locals and frame.f_locals['collect_topics_args']:
+            return topics_args
         return topic, args
 
-    def _handle_axis_event(self, value, number):
+    def _handle_axis_event(self, value, number, collect_topics_args=False):
         """Handle axis movement events."""
         axis = self.axis_names.get(number, f'AXIS_{number}')
         topic = None
         args = {}
+        topics_args = []
 
         button_map = self._get_active_mapping()
         if axis not in button_map:
+            # If collecting, return empty list
+            import inspect
+            frame = inspect.currentframe().f_back
+            if frame and 'collect_topics_args' in frame.f_locals and frame.f_locals['collect_topics_args']:
+                return topics_args
             return topic, args
 
         for mapping in button_map[axis]:
@@ -141,7 +154,13 @@ class Controller(BaseModule):
 
             self.publish(topic, **args)
             self.log(f"Published to topic {topic} with args {args} (jsdev)")
+            topics_args.append({'topic': topic, 'args': args})
 
+        # If collect_topics_args is set, return the list, else preserve old behavior
+        import inspect
+        frame = inspect.currentframe().f_back
+        if frame and 'collect_topics_args' in frame.f_locals and frame.f_locals['collect_topics_args']:
+            return topics_args
         return topic, args
 
     # Keep public method for backwards compatibility with tests

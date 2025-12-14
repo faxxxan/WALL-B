@@ -13,10 +13,16 @@ class InputRecorder(BaseModule):
         self.filename = None
 
     def setup_messaging(self):
-        self.subscribe('record/start', self.toggle_recording(enable=True))
-        self.subscribe('record/stop', lambda: self.toggle_recording(enable=False))
+        self.subscribe('record/start', self.start_recording )
+        self.subscribe('record/stop', self.stop_recording )
         self.subscribe('controller/event', self.handle_event)
 
+    def start_recording(self):
+        self.toggle_recording(enable=True)
+        
+    def stop_recording(self):
+        self.toggle_recording(enable=False)
+        
     def toggle_recording(self, enable=True, filename=None):
         if enable and not self.recording:
             self.recording = True
@@ -28,7 +34,7 @@ class InputRecorder(BaseModule):
             self.save_events()
             self.log(f"Recording stopped and saved: {self.filename}")
 
-    def handle_event(self, **event):
+    def handle_event(self, event):
         if self.recording:
             event['timestamp'] = time.time()
             self.events.append(event)
