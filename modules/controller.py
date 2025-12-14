@@ -124,23 +124,22 @@ class Controller(BaseModule):
                 return topics_args
             return topic, args
 
+        # Calculate delta and debounce only once per event
+        now = int(time.monotonic() * 1000)
+        last_value = self.axis_last_value.get(axis, 0)
+        delta = value - last_value
+        last_time = self.axis_last_time.get(axis)
+
         for mapping in button_map[axis]:
             deadzone = mapping.get('deadzone', self.global_deadzone)
             if deadzone > abs(value):
                 continue
 
             debounce = mapping.get('debounce', self.global_debounce)
-            now = int(time.monotonic() * 1000)
-            last_time = self.axis_last_time.get(axis)
-
             if last_time is not None and (now - last_time) < debounce:
                 continue
 
-            self.axis_last_time[axis] = now
-            last_value = self.axis_last_value.get(axis, 0)
-            delta = value - last_value
-            self.axis_last_value[axis] = value
-
+            # Only update last_time and last_value if at least one mapping is published
             topic = mapping.get('topic')
             if not topic:
                 self.log(f"Empty topic for axis {axis} mapping, skipping.", level='warning')
@@ -150,11 +149,16 @@ class Controller(BaseModule):
             modifier = mapping.get('modifier')
             if modifier is not None:
                 scale = modifier.get('scale', 1.0)
-                args['delta'] = delta * scale
+                args['delta'] = round(delta * scale)
 
+            self.log(f"Publishing to topic {topic} with args {args} (jsdev)")
             self.publish(topic, **args)
-            self.log(f"Published to topic {topic} with args {args} (jsdev)")
             topics_args.append({'topic': topic, 'args': args})
+
+        # Only update axis_last_time and axis_last_value if any mapping was published
+        if topics_args:
+            self.axis_last_time[axis] = now
+            self.axis_last_value[axis] = value
 
         # If collect_topics_args is set, return the list, else preserve old behavior
         import inspect

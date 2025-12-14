@@ -70,16 +70,16 @@ controller:
           - topic: ''
             args: {}
         ABS_RZ:
-          - topic: 'servo:pan:mv'
+          - topic: 'servo:neck_pan:mv'
             args: {}
             deadzone: 200
             modifier:
-              scale: 0.01
+              scale: 0.001
         ABS_RX:
-          - topic: 'servo:tilt:mv'
+          - topic: 'servo:neck_tilt:mv'
             args: {}
             modifier:
-              scale: -0.01
+              scale: -0.001
         ABS_X:
           - topic: 'eye/move'
             args: {axis: 'y'}
@@ -105,19 +105,19 @@ controller:
         ABS_X:
           - topic: 'servo:leg_l_ankle:mv'
             modifier:
-              scale: 1.0
+              scale: 0.01
           - topic: 'servo:leg_r_ankle:mv'
             modifier:
-              scale: -1.0
+              scale: -0.01
           - topic: 'servo:leg_l_knee:mv'
             modifier:
-              scale: 1.0
+              scale: 0.01
           - topic: 'servo:leg_r_knee:mv'
             modifier:
-              scale: -1.0
+              scale: -0.01
           - topic: 'servo:leg_l_hip:mv'
             modifier:
-              scale: 1.0
+              scale: 0.01
           - topic: 'servo:leg_r_hip:mv'
             modifier:
-              scale: -1.0
+              scale: -0.01

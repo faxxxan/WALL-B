@@ -130,6 +130,7 @@ class Servo(BaseModule):
         Move the servo to an absolute position.
         :param position: Position to move to (0-100)
         """
+        # self.log(f"(MOVE) Moving servo {self.identifier} from {self.pos} to position {position} for range {self.range}")
         if position < self.range[0] or position > self.range[1]:
             self.log(f"Position {position} out of range ({self.range[0]}-{self.range[1]})", level='error')
             return
@@ -151,7 +152,8 @@ class Servo(BaseModule):
         Move the servo relative to its current position.
         :param delta: Change in position (can be negative)
         """
-        new_position = self.pos + delta
+        # self.log(f"Moving servo {self.identifier} from {self.pos} by delta {delta}")
+        new_position = round(self.pos + delta)
         if new_position < self.range[0] or new_position > self.range[1]:
             self.log(f"Position {new_position} out of range ({self.range[0]}-{self.range[1]})", level='error')
             return
