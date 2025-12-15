@@ -1,5 +1,6 @@
 servos:
   enabled: true
+  environment: robot
   path: "modules.actuators.bus_servo.servo.Servo" # Include class name here
   instances:
     - name: "leg_r_tilt"
@@ -38,15 +39,19 @@ servos:
         - stand: 3721
         - sit: 3721
         - centre: 2048
-    - name: "neck_pan"
-      model: 'SC09'
-      id: 4
-      range: [96, 716]
-      start: 511
     - name: "neck_tilt"
       model: 'SC09'
+      baudrate: 115200
+      id: 4
+      range: [160, 638]
+      start: 511
+    - name: "neck_pan"
+      # calibrate_on_boot: true
+      # demonstrate_on_boot: true
+      model: 'SC09'
+      baudrate: 115200
       id: 5
-      range: [171, 955]
+      range: [0, 1022]
       start: 511
     - name: "leg_l_tilt"
       model: 'ST3215'

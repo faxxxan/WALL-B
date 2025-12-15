@@ -9,10 +9,13 @@ def main():
     # Throw exception to safely exit script when terminated
     signal.signal(signal.SIGTERM, Config.exit)
 
-    # Dynamically load and initialize modules
-    loader = ModuleLoader(config_folder="config")
+    # Get environment argument (default to 'robot')
+    env = sys.argv[1] if len(sys.argv) > 1 else 'robot'
+
+    # Dynamically load and initialize modules, passing env
+    loader = ModuleLoader(config_folder="config", environment=env)
     module_instances = loader.load_modules()
-    
+
     # Set messaging service for all modules
     messaging_service = module_instances['MessagingService'].messaging_service
     loader.set_messaging_service(module_instances, messaging_service)

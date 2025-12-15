@@ -13,8 +13,12 @@ sudo pkill -f "$BASE_DIR/main.py"
 # sudo modprobe bcm2835-v4l2 # Enable camera (if needed)
 sudo pigpiod # Start the GPIO daemon.
 
-# Run main.py using the virtual environment's Python interpreter
-"$BASE_DIR/myenv/bin/python3" "$BASE_DIR/main.py"
+
+# Accept an optional environment argument (default to 'robot')
+ENV_ARG="${1:-robot}"
+
+# Run main.py using the virtual environment's Python interpreter, passing the environment argument
+"$BASE_DIR/myenv/bin/python3" "$BASE_DIR/main.py" "$ENV_ARG"
 
 # start mosquitto for mqtt broker
 # sudo systemctl start mosquitto

@@ -2,8 +2,9 @@ controller:
   enabled: true
   path: 'modules.controller.Controller'
   config:
+    debug: false
     device: '/dev/input/js0'  # Add this
-    deadzone: 500
+    deadzone: 4000 # thumbsticks deadzone (seems to be needed for xbox controllers)
     button_names:  # Add this
       0: 'BTN_A'
       1: 'BTN_B'
@@ -26,6 +27,8 @@ controller:
       5: 'ABS_RY'
       6: 'ABS_HAT0X'
       7: 'ABS_HAT0Y'
+    axis_max: 32767.0
+    axis_min: -32767.0
     modifier_buttons:
       - BTN_TL
       - BTN_TR
@@ -49,10 +52,10 @@ controller:
         BTN_MODE: # Xbox Logo
           - topic: ''
             args: {}
-        ABS_HAT0X: # DPAD X (-1, 0 or 1)
+        ABS_HAT0X: # DPAD X
           - topic: ''
             args: {}
-        ABS_HAT0Y: # DPAD Y (-1, 0 or 1)
+        ABS_HAT0Y: # DPAD Y
           - topic: ''
             args: {}
         BTN_A:
@@ -69,33 +72,51 @@ controller:
         BTN_B:
           - topic: ''
             args: {}
-        ABS_RZ:
+        ABS_RX:
           - topic: 'servo:neck_pan:mv'
             args: {}
-            deadzone: 200
             modifier:
-              scale: 0.001
-        ABS_RX:
+              scale: 0.1  # max speed per event
+            max_delta: 200 # max position change per event
+        ABS_RZ:
           - topic: 'servo:neck_tilt:mv'
             args: {}
             modifier:
-              scale: -0.001
+              scale: -0.2
+            max_delta: 200
+        ABS_RY: # Right trigger
+          - topic: 'eye/blink'
+            args: {}
+            start: -32767
+        ABS_Z:  # Left trigger
+          - topic: ''
+            args: {}
+            start: -32767
         ABS_X:
           - topic: 'eye/move'
             args: {axis: 'y'}
             modifier:
-              scale: -0.03
+              scale: -1.0
+            max_delta: 50
         ABS_Y:
           - topic: 'eye/move'
             args: {axis: 'x'}
             modifier:
-              scale: -0.03
-        ABS_Z: # Left trigger
-          - topic: ''
-            args: {}
-        ABS_RY: # Right trigger
-          - topic: ''
-            args: {}
+              scale: -1.0
+            max_delta: 50
+      BTN_TL:
+        BTN_X:
+          - topic: 'servo:neck_pan:mv'
+            args: {delta: 50}
+        BTN_Y:
+          - topic: 'servo:neck_tilt:mv'
+            args: {delta: 50}
+        BTN_B:
+          - topic: 'servo:neck_pan:mv'
+            args: {delta: -50}
+        BTN_A:
+          - topic: 'servo:neck_tilt:mv'
+            args: {delta: -50}
       BTN_TR:
         BTN_A:
           - topic: 'tts'
@@ -105,19 +126,19 @@ controller:
         ABS_X:
           - topic: 'servo:leg_l_ankle:mv'
             modifier:
-              scale: 0.01
+              scale: 0.1
           - topic: 'servo:leg_r_ankle:mv'
             modifier:
-              scale: -0.01
+              scale: -0.1
           - topic: 'servo:leg_l_knee:mv'
             modifier:
-              scale: 0.01
+              scale: 0.1
           - topic: 'servo:leg_r_knee:mv'
             modifier:
-              scale: -0.01
+              scale: -0.1
           - topic: 'servo:leg_l_hip:mv'
             modifier:
-              scale: 0.01
+              scale: 0.1
           - topic: 'servo:leg_r_hip:mv'
             modifier:
-              scale: -0.01
+              scale: -0.1

@@ -1,5 +1,6 @@
 gpio_motion:
-  enabled: false
+  enabled: true
+  environment: robot
   path: 'modules.gpio.motion.Motion'
   config:
     pin: 9

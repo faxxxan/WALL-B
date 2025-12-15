@@ -113,6 +113,7 @@ class Servo(BaseModule):
         if self.demonstrate_on_boot:
             self.log(f"Demonstrating servo {self.identifier} movement")
             if self.range is not None:
+                time.sleep(1)
                 self.move(self.range[0])
                 time.sleep(1)
                 self.move(self.range[1])
@@ -125,6 +126,26 @@ class Servo(BaseModule):
             # self.start = self.get_pose_value('stand')
         self.move(self.start)
         
+    def _sc_write(self, type, value, verbose=False):
+        comm_result, error = self.packetHandler.write2ByteTxRx(self.portHandler, self.index, type, value)
+        self.log(f"[SCServo][{self.identifier}] Set speed: comm_result={comm_result}, error={error}")
+        if hasattr(self.packetHandler, 'getTxRxResult') and verbose:
+            self.log(f"[SCServo Result] {self.packetHandler.getTxRxResult(comm_result)}")
+        if hasattr(self.packetHandler, 'getRxPacketError') and error != 0:
+            self.log(f"[SCServo Error] {self.packetHandler.getRxPacketError(error)}")
+            # Typical address for Present Load is 54 (1 byte), but check your servo's manual
+            ADDR_SCS_PRESENT_LOAD = 54
+            ADDR_SCS_PRESENT_POSITION = 56
+            ADDR_SCS_PRESENT_SPEED = 58
+            # Read present load
+            load, load_comm_result, load_error = self.packetHandler.read1ByteTxRx(self.portHandler, self.index, ADDR_SCS_PRESENT_LOAD)
+            # Read present position (2 bytes)
+            pos, pos_comm_result, pos_error = self.packetHandler.read2ByteTxRx(self.portHandler, self.index, ADDR_SCS_PRESENT_POSITION)
+            # Read present speed (2 bytes)
+            speed, speed_comm_result, speed_error = self.packetHandler.read2ByteTxRx(self.portHandler, self.index, ADDR_SCS_PRESENT_SPEED)
+            self.log(f"[SCServo][{self.identifier}] Error context: load={load} (comm_result={load_comm_result}, error={load_error}), position={pos} (comm_result={pos_comm_result}, error={pos_error}), speed={speed} (comm_result={speed_comm_result}, error={speed_error})")
+        return comm_result == COMM_SUCCESS and error == 0
+            
     def move(self, position):
         """
         Move the servo to an absolute position.
@@ -142,10 +163,15 @@ class Servo(BaseModule):
                 self.log(f"Moved ST servo {self.identifier} from {self.pos} to position {position}")
                 self.pos = position  # Update current position
         elif self.model.startswith('SC'):
-            self.packetHandler.write1ByteTxRx(self.portHandler, self.index, ADDR_SCS_GOAL_ACC, self.acceleration)
-            self.packetHandler.write2ByteTxRx(self.portHandler, self.index, ADDR_SCS_GOAL_SPEED, self.speed)
-            self.packetHandler.write2ByteTxRx(self.portHandler, self.index, ADDR_SCS_GOAL_POSITION, position)
-            self.log(f"Moved SC servo {self.identifier} from {self.pos} to position {position}")
+            if (
+                #self._sc_write(ADDR_TORQUE_ENABLE, 1) and
+            #self._sc_write(ADDR_SCS_GOAL_ACC, self.acceleration) and
+            #self._sc_write(ADDR_SCS_GOAL_SPEED, self.speed) and
+            self._sc_write(ADDR_SCS_GOAL_POSITION, position)):
+                self.log(f"Moved SC servo {self.identifier} from {self.pos} to position {position} in range {self.range}")
+                self.pos = position  # Update current position
+            else:
+                self.log(f"Failed to move SC servo {self.identifier} to position {position}", level='error')
     
     def move_relative(self, delta):
         """
@@ -155,8 +181,8 @@ class Servo(BaseModule):
         # self.log(f"Moving servo {self.identifier} from {self.pos} by delta {delta}")
         new_position = round(self.pos + delta)
         if new_position < self.range[0] or new_position > self.range[1]:
-            self.log(f"Position {new_position} out of range ({self.range[0]}-{self.range[1]})", level='error')
-            return
+            self.log(f"Position {new_position} out of range ({self.range[0]}-{self.range[1]}). Adjusting", level='warning')
+            new_position = self.range[0] if new_position < self.range[0] else self.range[1]
         
         # Move to new position
         self.move(new_position)
@@ -272,6 +298,9 @@ class Servo(BaseModule):
         try:
             while True:
                 pos = self.get_position()
+                if pos is None:
+                    self.log(f"Failed to get position for servo {self.identifier}", level='warning')
+                    continue
                 if min_pos is None or pos < min_pos:
                     min_pos = pos
                 if max_pos is None or pos > max_pos:

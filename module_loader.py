@@ -4,7 +4,7 @@ import importlib.util
 from pubsub import pub
 
 class ModuleLoader:
-    def __init__(self, config_folder='config'):
+    def __init__(self, config_folder='config', environment=None):
         """
         ModuleLoader class
         :param config_folder: folder containing the module configuration files
@@ -27,6 +27,7 @@ class ModuleLoader:
         translator_inst = modules['Translator']        
         """
         self.config_folder = config_folder
+        self.environment = environment or 'robot'
         self.modules = self.load_yaml_files()
 
     def load_yaml_files(self):
@@ -38,8 +39,18 @@ class ModuleLoader:
                 try:
                     config = yaml.safe_load(stream)
                     for module_name, module_config in config.items():
-                        if module_config.get('enabled', False):
-                            loaded_modules.append(module_config)
+                        if not module_config.get('enabled', False):
+                            continue
+                        # If 'environment' is specified, filter by self.environment
+                        env_field = module_config.get('environment')
+                        if env_field is not None:
+                            if isinstance(env_field, str):
+                                if env_field != self.environment:
+                                    continue
+                            elif isinstance(env_field, list):
+                                if self.environment not in env_field:
+                                    continue
+                        loaded_modules.append(module_config)
                 except yaml.YAMLError as e:
                     print(f"Error loading {file_path}: {e}")
         return loaded_modules
