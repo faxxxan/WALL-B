@@ -15,6 +15,7 @@ class Controller(BaseModule):
     JS_EVENT_INIT = 0x80
     JS_EVENT_FORMAT = "IhBB"
     JS_EVENT_SIZE = struct.calcsize(JS_EVENT_FORMAT)
+    CONNECT_TIMEOUT = 30  # Seconds to wait for device connection before stopping
 
     def __init__(self, **kwargs):
         self.running = False
@@ -50,9 +51,13 @@ class Controller(BaseModule):
     def listen(self):
         """Poll the joystick device for input events."""
         self.log("Controller listening for input...")
+        error = None
         while self.running:
             try:
                 with open(self.device, "rb") as jsdev:
+                    if error is not None:
+                        self.log(f"Gamepad connected at {self.device}", level='info')
+                        error = None
                     while self.running:
                         evbuf = jsdev.read(self.JS_EVENT_SIZE)
                         if not evbuf:
@@ -60,7 +65,12 @@ class Controller(BaseModule):
                         time_ms, value, type_, number = struct.unpack(self.JS_EVENT_FORMAT, evbuf)
                         self._handle_js_event(time_ms, value, type_, number)
             except FileNotFoundError:
-                self.log(f"No gamepad found at {self.device}. Waiting for connection...", level='warning')
+                if error is None:
+                    self.log(f"No gamepad found at {self.device}. Waiting {Controller.CONNECT_TIMEOUT} seconds for connection...", level='warning')
+                    error = time.time()
+                elif (time.time() - error) > Controller.CONNECT_TIMEOUT:
+                    self.log(f"No gamepad found at {self.device}. Stopping controller module", level='warning')
+                    self.running = False
                 time.sleep(1)
 
     def _handle_js_event(self, time_ms, value, type_, number):
