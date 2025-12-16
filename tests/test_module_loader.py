@@ -1,7 +1,12 @@
+
 import unittest
 from unittest.mock import Mock, patch, MagicMock
 import sys
 import os
+# Mock pubsub before importing module_loader
+import types
+sys.modules['pubsub'] = types.ModuleType('pubsub')
+sys.modules['pubsub'].pub = MagicMock()
 from module_loader import ModuleLoader
 
 # Add parent directory to path to import module_loader
