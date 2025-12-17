@@ -15,8 +15,8 @@ servos:
     - name: "leg_r_hip"
       model: 'ST3215'
       id: 3
-      range: [763, 2843]
-      start: 1336
+      range: [770, 3389]
+      start: 2911
       poses:
         - stand: 824
         - sit: 1269
@@ -61,8 +61,8 @@ servos:
     - name: "leg_l_hip"
       model: 'ST3215'
       id: 8
-      range: [1700, 3371]
-      start: 2688
+      range: [747, 3370]
+      start: 1180
     - name: "leg_l_knee"
       model: 'ST3215'
       id: 9

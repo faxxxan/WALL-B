@@ -85,12 +85,14 @@ controller:
               scale: -0.2
             max_delta: 200
         ABS_RY: # Right trigger
-          - topic: 'eye/blink'
+          - topic: 'servo:leg_r_ankle:mv'
             args: {}
             start: -32767
         ABS_Z:  # Left trigger
-          - topic: ''
+          - topic: 'servo:leg_l_ankle:mv'
             args: {}
+            modifier:
+              scale: -1.0
             start: -32767
         ABS_X:
           - topic: 'eye/move'
