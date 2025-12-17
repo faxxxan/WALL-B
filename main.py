@@ -9,8 +9,12 @@ def main():
     # Throw exception to safely exit script when terminated
     signal.signal(signal.SIGTERM, Config.exit)
 
-    # Get environment argument (default to 'robot')
-    env = sys.argv[1] if len(sys.argv) > 1 else 'robot'
+    # Get environment argument (default to 'robot') using argparse
+    import argparse
+    parser = argparse.ArgumentParser(description="Modular Biped Main Script")
+    parser.add_argument('--env', default='robot', help="Set the environment (default: robot)")
+    args = parser.parse_args()
+    env = args.env
 
     # Dynamically load and initialize modules, passing env
     loader = ModuleLoader(config_folder="config", environment=env)

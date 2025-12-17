@@ -14,11 +14,14 @@ sudo pkill -f "$BASE_DIR/main.py"
 sudo pigpiod # Start the GPIO daemon.
 
 
-# Accept an optional environment argument (default to 'robot')
-ENV_ARG="${1:-robot}"
 
-# Run main.py using the virtual environment's Python interpreter, passing the environment argument
-"$BASE_DIR/myenv/bin/python3" "$BASE_DIR/main.py" "$ENV_ARG"
+# Accept an optional environment argument and pass as --env (default to no argument, main.py defaults to 'robot')
+if [ -n "$1" ]; then
+	ENV_ARG="--env $1"
+else
+	ENV_ARG=""
+fi
+"$BASE_DIR/myenv/bin/python3" "$BASE_DIR/main.py" $ENV_ARG
 
 # start mosquitto for mqtt broker
 # sudo systemctl start mosquitto
