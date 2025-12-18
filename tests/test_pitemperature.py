@@ -13,7 +13,7 @@ class TestPiTemperature(unittest.TestCase):
         with mock.patch.object(temp_module, 'publish') as mock_publish, \
              mock.patch.object(temp_module, 'log') as mock_log:
             temp_module.monitor()
-            mock_publish.assert_called_with('system/temperature', '86')
+            mock_publish.assert_called_with('system/temperature', value='86')
             mock_log.assert_called_with('Temperature is critical: 86°C', 'critical')
 
     @mock.patch('modules.pitemperature.os.popen')
@@ -25,7 +25,7 @@ class TestPiTemperature(unittest.TestCase):
         with mock.patch.object(temp_module, 'publish') as mock_publish, \
              mock.patch.object(temp_module, 'log') as mock_log:
             temp_module.monitor()
-            mock_publish.assert_called_with('system/temperature', '81')
+            mock_publish.assert_called_with('system/temperature', value='81')
             mock_log.assert_called_with('Temperature is high: 81°C', 'warning')
 
     @mock.patch('modules.pitemperature.os.popen')
@@ -37,7 +37,7 @@ class TestPiTemperature(unittest.TestCase):
         with mock.patch.object(temp_module, 'publish') as mock_publish, \
              mock.patch.object(temp_module, 'log') as mock_log:
             temp_module.monitor()
-            mock_publish.assert_called_with('system/temperature', '50')
+            mock_publish.assert_called_with('system/temperature', value='50')
             mock_log.assert_called_with('Temperature: 50°C', 'debug')
 
 if __name__ == '__main__':
