@@ -22,6 +22,8 @@ class Personality(BaseModule):
         
         # Initialize status LED colors (default to 'off')
         self.led_colors = ['off'] * 5
+        
+        self.display_background = 'black'
 
         # Define possible actions
         self.actions = [
@@ -37,6 +39,7 @@ class Personality(BaseModule):
         self.subscribe('vision/detections', self.handle_vision_detections)
         self.subscribe('gpio/motion', self.update_motion_time)
         self.subscribe('serial', self.track_serial_idle)
+        self.subscribe('system/temperature', self.handle_temperature)
         # self.publish('gpio/laser', state=True) # Turn on laser if no one has been detected
         
     def loop(self):
@@ -62,7 +65,18 @@ class Personality(BaseModule):
         # If serial has been idle for more than 10 seconds, call random_animation()
         if self.last_serial_time and datetime.now() - self.last_serial_time > timedelta(seconds=10):
             self.random_animation()
+    
+    def handle_temperature(self, value):
+        """Handle temperature updates."""
+        temp = float(value)
+        temprgba = self.temperature_to_rgba(temp)
+        self.log(f"Handling temperature: {temp} color: {temprgba}")
+        if temp > 70 and self.display_background != temprgba:
+            self.publish('display/background', color=temprgba)
+        elif self.display_background != 'black':
+            self.publish('display/background', color='black')
             
+    
     def random_animation(self):
         self.publish('animate', action='level_neck')
         animations = [
@@ -197,3 +211,18 @@ class Personality(BaseModule):
 
     def track_serial_idle(self, type, identifier, message):
         self.last_serial_time = datetime.now()
+
+    def temperature_to_rgba(self, temp, min_temp=70, max_temp=90):
+        """
+        Map a temperature value in the range [min_temp, max_temp] to an RGBA color from black to red.
+        Returns a tuple (R, G, B, A).
+        """
+        # Clamp temperature to the range
+        temp = max(min_temp, min(max_temp, temp))
+        # Normalize to 0.0 - 1.0
+        norm = (temp - min_temp) / (max_temp - min_temp)
+        r = int(255 * norm)
+        g = 0
+        b = 0
+        a = 255
+        return (r, g, b, a)

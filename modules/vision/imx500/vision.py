@@ -145,12 +145,20 @@ class Vision(BaseModule):
         self.previous_frame = None
         self.stable_frame_count = 0
         self.moving = False
+        self.running = kwargs.get('run_on_boot', True)
 
     def setup_messaging(self):
         """Subscribe to necessary topics."""
         self.subscribe('system/loop', self.scan)
+        self.subscribe('vision/toggle', self.toggle_running)
+
+    def toggle_running(self):
+        self.running = not self.running
+        self.log(f"Vision {'running' if self.running else 'stopped'}", level='info')
 
     def scan(self):
+        if not self.running:
+            return []
         self.last_results = self.parse_detections(self.picam2.capture_metadata())
         # self.log(f"Vision detections: {self.last_results}")
         this_capture = []

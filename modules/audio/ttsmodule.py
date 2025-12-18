@@ -40,7 +40,7 @@ class TTSModule(BaseModule):
         self.subscribe('tts', self.speak)
 
     def speak(self, msg):
-        # print('Attempting to speak with service: ' + self.service)
+        print(f'Attempting to speak with service: {self.service} message: {msg}')
         if self.service == 'elevenlabs':
             self.speak_elevenlabs(msg)
         else:

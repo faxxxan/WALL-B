@@ -63,6 +63,13 @@ def main():
     # Test speech input
     # messaging_service.publish('speech:listen')
     
+    # Inject controller into controller handler if both are enabled
+    if 'ControllerHandler' in module_instances and 'XboxController' in module_instances:
+        controller_handler = module_instances['ControllerHandler']
+        xbox_controller = module_instances['XboxController']
+        controller_handler.controller = xbox_controller
+        controller_handler.start()
+    
     # Start loops or other tasks
     messaging_service.publish('log', message=f"[Main] Loop started using {messaging_service.protocol} protocol")
 

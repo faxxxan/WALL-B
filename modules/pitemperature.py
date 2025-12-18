@@ -1,9 +1,10 @@
-import os
+import os, sys
 from modules.base_module import BaseModule
 
 class PiTemperature(BaseModule):
     WARNING_TEMP = 80
     THROTTLED_TEMP = 85
+    SHUTDOWN_TEMP = 90
     AVG_TEMP = 50
     MIN_TEMP = 15
     
@@ -20,9 +21,13 @@ class PiTemperature(BaseModule):
         val = self.read()
         #get degrees celsius symbol
         outputval = val + u"\u00b0" + "C"
-        self.publish('system/temperature', val)
+        self.publish('system/temperature', value=val)
         float_val = float(val)
-        if float_val > PiTemperature.THROTTLED_TEMP:
+        #exit python script if temperature is above shutdown temp
+        if float_val > PiTemperature.SHUTDOWN_TEMP:
+            self.log(f'Temperature is too high exiting script: {outputval}', 'critical')
+            sys.exit(1)
+        elif float_val > PiTemperature.THROTTLED_TEMP:
             self.log(f'Temperature is critical: {outputval}', 'critical')
         elif float_val > PiTemperature.WARNING_TEMP:
             self.log(f'Temperature is high: {outputval}', 'warning')

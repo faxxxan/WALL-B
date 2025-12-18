@@ -47,10 +47,13 @@ class TFTDisplayEye(TFTDisplay):
             time.sleep(delay)
 
     def setup_messaging(self):
+        # call parent setup_messaging
+        super().setup_messaging()
         self.subscribe('eye', self.eye)
         self.subscribe('eye/look', self.set_look_target)
         self.subscribe('eye/blink', self.blink_threaded)
         self.subscribe('eye/move', self.move_eye_threaded)
+        
 
     def set_look_target(self, coordinates=None):
         if coordinates is None:
@@ -59,19 +62,20 @@ class TFTDisplayEye(TFTDisplay):
 
     def move_eye(self, axis, delta):
         self.log(f"Moving eye axis={axis} delta={delta}")
-        delta_x = delta if axis == 'x' else 0
-        delta_y = delta if axis == 'y' else 0
-        new_x = round(max(0, min(self.disp.width, self._target_center[0] + delta_x)))
-        new_y = round(max(0, min(self.disp.height, self._target_center[1] + delta_y)))
+        delta_x = delta if axis == 'x' else self._target_center[0]
+        delta_y = delta if axis == 'y' else self._target_center[1]
+        new_x = round(max(0, min(self.disp.width, delta_x)))
+        new_y = round(max(0, min(self.disp.height, delta_y)))
         self._target_center = (new_x, new_y)
-        # Cancel previous timer if running
-        if self._move_eye_timer and self._move_eye_timer.is_alive():
-            self._move_eye_timer.cancel()
-        # Start/reset timer to return to center after 1 second
-        def return_to_center():
-            self._target_center = (self.disp.width // 2, self.disp.height // 2)
-        self._move_eye_timer = threading.Timer(1.0, return_to_center)
-        self._move_eye_timer.start()
+        self.log(f"New target center: {self._target_center}")
+        # # Cancel previous timer if running
+        # if self._move_eye_timer and self._move_eye_timer.is_alive():
+        #     self._move_eye_timer.cancel()
+        # # Start/reset timer to return to center after 1 second
+        # def return_to_center():
+        #     self._target_center = (self.disp.width // 2, self.disp.height // 2)
+        # self._move_eye_timer = threading.Timer(1.0, return_to_center)
+        # self._move_eye_timer.start()
 
     def move_eye_threaded(self, axis, delta):
         self.move_eye(axis, delta)
@@ -154,7 +158,7 @@ class TFTDisplayEye(TFTDisplay):
         ]
         draw.ellipse(ring_bbox, outline=(color[0], color[1], color[2], 255), width=ring_thickness)
 
-        final_image = Image.new("RGB", (disp.width, disp.height), "BLACK")
+        final_image = self.background.copy()
         final_image.paste(glow_image, (0, 0), glow_image)
-        disp.ShowImage(final_image)
+        self.show_image(final_image)
         return final_image
