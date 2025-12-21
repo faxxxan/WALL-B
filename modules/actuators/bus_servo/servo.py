@@ -5,22 +5,22 @@ import os
 import select
 import time
 
-if os.name == 'nt':
-    import msvcrt
-    def getch():
-        return msvcrt.getch().decode()
+# if os.name == 'nt':
+#     import msvcrt
+#     def getch():
+#         return msvcrt.getch().decode()
         
-else:
-    import sys, tty, termios
-    fd = sys.stdin.fileno()
-    old_settings = termios.tcgetattr(fd)
-    def getch():
-        try:
-            tty.setraw(sys.stdin.fileno())
-            ch = sys.stdin.read(1)
-        finally:
-            termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
-        return ch
+# else:
+#     import sys, tty, termios
+#     fd = sys.stdin.fileno()
+#     old_settings = termios.tcgetattr(fd)
+#     def getch():
+#         try:
+#             tty.setraw(sys.stdin.fileno())
+#             ch = sys.stdin.read(1)
+#         finally:
+#             termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+#         return ch
 
 # sys.path.append("..")
 # Uses STServo and SCServo SDK library
@@ -52,7 +52,7 @@ class Servo(BaseModule):
         self.start = kwargs.get('start') # Default start position
         self.poses = kwargs.get('poses')  # Dictionary of poses
         self.baudrate = kwargs.get('baudrate', 1000000)
-        self.port = kwargs.get('port', '/dev/ttyAMA0') # Change as needed, find with `ls /dev/ttyACM*`
+        self.port = kwargs.get('port', '/dev/ttyAMA0') # Change as needed, find with `ls /dev/ttyAMA*`
         self.calibrate_on_boot = kwargs.get('calibrate_on_boot', False) # Loop to show position for manual configuration
         self.demonstrate_on_boot = kwargs.get('demonstrate_on_boot', False) # Move to min and max to demonstrate range
         self.center_on_boot = kwargs.get('center_on_boot', False) # Move to center of range on boot

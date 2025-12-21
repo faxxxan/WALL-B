@@ -1,5 +1,5 @@
 from random import choice, randint
-from datetime import datetime, timedelta
+import time
 from modules.base_module import BaseModule
 from modules.config import Config
 from time import sleep
@@ -14,15 +14,15 @@ class Personality(BaseModule):
         self.min_interval = kwargs.get('min_interval', 20)  # Default minimum 20 seconds
         self.max_interval = kwargs.get('max_interval', 60)  # Default maximum 60 seconds
 
-        self.last_motion_time = datetime.now()
+        self.motion_last_detected = None # time since last motion detected
         self.last_vision_time = None
         self.next_action_time = self.calculate_next_action_time()
         self.last_status_time = None
         self.last_serial_time = None
-        
+
         # Initialize status LED colors (default to 'off')
         self.led_colors = ['off'] * 5
-        
+
         self.display_background = 'black'
 
         # Define possible actions
@@ -43,34 +43,33 @@ class Personality(BaseModule):
         # self.publish('gpio/laser', state=True) # Turn on laser if no one has been detected
         
     def loop(self):
+        now = time.time()
         # Handle ongoing object reaction
-        if self.object_reaction_end_time and datetime.now() >= self.object_reaction_end_time:
+        if self.object_reaction_end_time and now >= self.object_reaction_end_time:
             self.publish('led', identifiers=[
                 'right', 'top_right', 'top_left', 'left', 
                 'bottom_left', 'bottom_right'
             ], color="off")
             self.object_reaction_end_time = None
 
-        # Update the middle eye LED based on conditions
         # self.update_eye()
-        
         self.random_neopixel_status()
 
         # Check if it's time for the next action
-        if datetime.now() >= self.next_action_time:
+        if now >= self.next_action_time:
             action = choice(self.actions)
             action()
             self.next_action_time = self.calculate_next_action_time()
-        
+
         # If serial has been idle for more than 10 seconds, call random_animation()
-        if self.last_serial_time and datetime.now() - self.last_serial_time > timedelta(seconds=10):
+        if self.last_serial_time and (now - self.last_serial_time > 10):
             self.random_animation()
     
     def handle_temperature(self, value):
         """Handle temperature updates."""
         temp = float(value)
         temprgba = self.temperature_to_rgba(temp)
-        self.log(f"Handling temperature: {temp} color: {temprgba}")
+        # self.log(f"Handling temperature: {temp} color: {temprgba}")
         if temp > 70 and self.display_background != temprgba:
             self.publish('display/background', color=temprgba)
         elif self.display_background != 'black':
@@ -93,8 +92,8 @@ class Personality(BaseModule):
 
     # Calculate the next action time
     def calculate_next_action_time(self):
-        interval = randint(self.min_interval, self.max_interval)  # Use configurable interval range
-        return datetime.now() + timedelta(seconds=interval)
+        interval = randint(self.min_interval, self.max_interval)
+        return time.time() + interval
 
     # Braillespeak: Outputs short messages as tones
     def braillespeak(self):
@@ -119,8 +118,9 @@ class Personality(BaseModule):
 
     # Neopixels: Toggles random status LEDs
     def random_neopixel_status(self):
-        if not self.last_status_time or datetime.now() - self.last_status_time > timedelta(seconds=3):
-            self.last_status_time = datetime.now()
+        now = time.time()
+        if not self.last_status_time or (now - self.last_status_time > 3):
+            self.last_status_time = now
             color = choice(["red", "green", "blue", "white_dim", "purple", "yellow", "orange", "pink"])
             self.publish('led', identifiers=[0], color=color)
             for i in range(4, 0, -1):
@@ -144,18 +144,19 @@ class Personality(BaseModule):
 
     # Vision: Handles detected objects
     def handle_vision_detections(self, matches):
+        now = time.time()
         # if there are matches and the object reaction end time is in the past
-        if matches and len(matches) > 0 and (self.object_reaction_end_time is None or datetime.now() >= self.object_reaction_end_time):
+        if matches and len(matches) > 0 and (self.object_reaction_end_time is None or now >= self.object_reaction_end_time):
             if any(match['category'] == 'person' for match in matches):
                 for match in matches:
                     if match['category'] == 'person':
                         self.eye_track_person(match['bbox'])
                         self.publish('gpio/laser', state=False)  # Turn off laser when person detected
 
-                self.last_vision_time = datetime.now()
-                # Set the object reaction end time to 3 seconds from now
+                self.last_vision_time = now
+                # Set the object reaction end time to 0.5 seconds from now
                 self.log(f"Vision detected objects: {matches}", 'debug')
-                self.object_reaction_end_time = datetime.now() + timedelta(seconds=.5)
+                self.object_reaction_end_time = now + 0.5
     
     def eye_track_person(self, match):
         screen = (240, 240)  # TFT display size
@@ -196,21 +197,21 @@ class Personality(BaseModule):
         self.publish('eye/look', coordinates=(center_x, center_y))
 
     # Motion: Updates the last motion time
-    def update_motion_time(self):
-        self.last_motion_time = datetime.now()
+    def update_motion_time(self, value):
+        self.motion_last_detected = value
 
     # Updates the middle eye LED based on the current state
     def update_eye(self):
-        now = datetime.now()
-        if self.last_vision_time and now - self.last_vision_time <= timedelta(seconds=3):
+        now = time.time()
+        if self.last_vision_time and (now - self.last_vision_time <= 3):
             self.publish('eye', color='green')
-        elif now - self.last_motion_time > timedelta(seconds=30):
+        elif self.motion_last_detected and (self.motion_last_detected > 30):
             self.publish('eye', color='dark_gray')
         else:
             self.publish('eye', color='blue')
 
     def track_serial_idle(self, type, identifier, message):
-        self.last_serial_time = datetime.now()
+        self.last_serial_time = time.time()
 
     def temperature_to_rgba(self, temp, min_temp=70, max_temp=90):
         """

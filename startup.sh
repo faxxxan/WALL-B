@@ -13,8 +13,6 @@ sudo pkill -f "$BASE_DIR/main.py"
 # sudo modprobe bcm2835-v4l2 # Enable camera (if needed)
 sudo pigpiod # Start the GPIO daemon.
 
-
-
 # Accept an optional environment argument and pass as --env (default to no argument, main.py defaults to 'robot')
 if [ -n "$1" ]; then
 	ENV_ARG="--env $1"

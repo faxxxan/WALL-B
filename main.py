@@ -69,43 +69,11 @@ def main():
         xbox_controller = module_instances['XboxController']
         controller_handler.controller = xbox_controller
         controller_handler.start()
-    
-    # Start loops or other tasks
-    messaging_service.publish('log', message=f"[Main] Loop started using {messaging_service.protocol} protocol")
-
-    second_loop = time()
-    ten_second_loop = time()
-    minute_loop = time()
-    loop = True
-    
-    try:
-        while loop:
-            messaging_service.publish('system/loop')
-            if time() - second_loop > 1:
-                second_loop = time()
-                messaging_service.publish('system/loop/1')
-            if time() - ten_second_loop > 10:
-                ten_second_loop = time()
-                messaging_service.publish('system/loop/10')
-            if time() - minute_loop > 60:
-                minute_loop = time()
-                messaging_service.publish('system/loop/60')
-            
-            if messaging_service.protocol == 'mqtt':
-                sleep(0.01) # Needed to prevent MQTT broker from jamming when system/loop is included
-
-    except Exception as ex:
-        # output exception details
-        print(ex)
-        messaging_service.publish('log', message="[Main] Exception occurred: " + str(ex))
-        #output full details
-        import traceback
-        traceback.print_exc()
-        loop = False
-
-    finally:
-        messaging_service.publish('system/exit')
-        messaging_service.publish('log', message="[Main] Loop ended")
+        
+    # Use the new SystemLoop class to run the main loop
+    from system_loop import SystemLoop
+    system_loop = SystemLoop(messaging_service)
+    system_loop.start()
 
 if __name__ == '__main__':
     main()

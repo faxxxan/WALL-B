@@ -1,5 +1,7 @@
 #!/bin/bash
 
+
+
 # Get the current user
 USER=$(whoami)
 
@@ -43,6 +45,10 @@ EOF
     sudo systemctl start $SERVICE_NAME
 
     echo "$SERVICE_NAME has been installed and started."
+
+    echo "To debug issues, run:"
+    echo "sudo journalctl -u modular-biped-launcher.service -f"
+
 }
 
 # Function to remove the service
@@ -82,3 +88,4 @@ case "$1" in
         exit 1
         ;;
 esac
+

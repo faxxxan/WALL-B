@@ -62,7 +62,7 @@ class TFTDisplay(BaseModule):
         image = self.img
         if (image is None) or (not isinstance(image, Image.Image)):
             raise ValueError("Image must be a valid PIL Image object.")
-        self.set_background()
+        self.show_image(self.background)
         time.sleep(off_time)
         self.show_image(image)
     
