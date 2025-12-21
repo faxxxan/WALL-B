@@ -13,7 +13,9 @@ class Laser(BaseModule):
         """
         self.pin = kwargs.get('pin')
         self.laser = LED(self.pin)
+        self.laser.off()
         self.state = kwargs.get('state', False)
+        self.activate(self.state)
         
         if kwargs.get('test_on_boot'):
             self.test()
@@ -21,6 +23,7 @@ class Laser(BaseModule):
     def setup_messaging(self):
         """Subscribe to necessary topics."""
         self.subscribe('gpio/laser', self.activate)  # Subscribe to toggle laser
+        self.subscribe('gpio/laser/toggle', self.toggle)
 
     def activate(self, state):
         """

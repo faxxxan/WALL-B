@@ -21,16 +21,28 @@ class TFTDisplay(BaseModule):
             )
             self.img = None
             self.clear_display()
-            blank_image = Image.new("RGBA", (self.disp.width, self.disp.height), "BLACK")
-            self.disp.ShowImage(blank_image)
+            self.background = None
+            self.set_background('BLACK')
+            self.disp.ShowImage(self.background)
             
             if kwargs.get('test_on_boot'):
                 self.draw_image('makerforge_bl.png')
         except Exception as e:
             logging.error(f"Failed to initialize TFT display: {e}")
+            
+    def exit(self):
+        self.set_background('BLACK')
+        self.show_image(self.background)
+        self.disp.bl_DutyCycle(0)
+        self.disp = None # Prevents further use
 
     def setup_messaging(self):
-        pass  # Placeholder for messaging setup
+        self.subscribe('display/background', self.set_background)
+        self.subscribe('system/exit', self.exit)
+
+    def set_background(self, color=None):
+        if color is not None:
+            self.background = Image.new("RGBA", (self.disp.width, self.disp.height), color)
 
     def clear_display(self):
         disp = self.disp
@@ -43,14 +55,18 @@ class TFTDisplay(BaseModule):
         disp = self.disp
         image = Image.open(os.getcwd() + '/modules/display/images/' + img)
         new_image = image.resize((disp.width, disp.height)).rotate(self.rotation)
-        disp.ShowImage(new_image)
+        self.show_image(new_image)
 
     def blink(self, off_time=0.2):
         disp = self.disp
         image = self.img
         if (image is None) or (not isinstance(image, Image.Image)):
             raise ValueError("Image must be a valid PIL Image object.")
-        blank_image = Image.new("RGBA", (disp.width, disp.height), "BLACK")
-        disp.ShowImage(blank_image)
+        self.show_image(self.background)
         time.sleep(off_time)
-        disp.ShowImage(image)
+        self.show_image(image)
+    
+    def show_image(self, image):
+        if self.disp is None:
+            return
+        self.disp.ShowImage(image)

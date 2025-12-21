@@ -1,5 +1,6 @@
 motion:
   enabled: true
+  environment: robot
   path: 'modules.gpio.laser.Laser'
   config:
     pin: 6

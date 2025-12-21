@@ -1,8 +1,10 @@
 from PIL import Image, ImageDraw
 from modules.display.tft_display import TFTDisplay
 import time
+import threading
 
 class TFTDisplayEye(TFTDisplay):
+    
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         # Ensure colors are stored as tuples
@@ -12,19 +14,79 @@ class TFTDisplayEye(TFTDisplay):
         }
         self.center = (self.disp.width // 2, self.disp.height // 2) # Default center of the display
         self.radius = 50
+        self.pos = self.center
+        self._target_center = self.center
+        self._eye_thread = threading.Thread(target=self._eye_loop, daemon=True)
+        self._eye_thread.start()
+        self._move_eye_timer = None
         if kwargs.get('test_on_boot'):
-            self.init_eye()
+            threading.Thread(target=self.init_eye, daemon=True).start()
+
+    def _eye_loop(self):
+        # Proportional movement: move a fraction of the remaining distance each frame
+        delay = 0.0005  # Faster update for smoother, more responsive movement
+        min_dist = 1  # Minimum distance to snap to target
+        while True:
+            cx, cy = self.center
+            tx, ty = self._target_center
+            dx = tx - cx
+            dy = ty - cy
+            dist = (dx ** 2 + dy ** 2) ** 0.5
+            if dist > min_dist:
+                # Move 50% of the way toward the target each frame
+                new_cx = int(round(cx + dx * 0.5))
+                new_cy = int(round(cy + dy * 0.5))
+                self.center = (new_cx, new_cy)
+                self.img = self.draw_halo(
+                    ring_radius=self.radius,
+                    ring_thickness=10,
+                    color=self.colors['blue']
+                )
+            else:
+                self.center = self._target_center
+            time.sleep(delay)
 
     def setup_messaging(self):
+        # call parent setup_messaging
+        super().setup_messaging()
         self.subscribe('eye', self.eye)
-        self.subscribe('eye/look', self.look)
-        self.subscribe('eye/blink', self.blink)
+        self.subscribe('eye/look', self.set_look_target)
+        self.subscribe('eye/blink', self.blink_threaded)
+        self.subscribe('eye/move', self.move_eye_threaded)
+        
+
+    def set_look_target(self, coordinates=None):
+        if coordinates is None:
+            coordinates = (self.disp.width // 2, self.disp.height // 2)
+        self._target_center = coordinates
+
+    def move_eye(self, axis, delta):
+        self.log(f"Moving eye axis={axis} delta={delta}")
+        delta_x = delta if axis == 'x' else self._target_center[0]
+        delta_y = delta if axis == 'y' else self._target_center[1]
+        new_x = round(max(0, min(self.disp.width, delta_x)))
+        new_y = round(max(0, min(self.disp.height, delta_y)))
+        self._target_center = (new_x, new_y)
+        self.log(f"New target center: {self._target_center}")
+        # # Cancel previous timer if running
+        # if self._move_eye_timer and self._move_eye_timer.is_alive():
+        #     self._move_eye_timer.cancel()
+        # # Start/reset timer to return to center after 1 second
+        # def return_to_center():
+        #     self._target_center = (self.disp.width // 2, self.disp.height // 2)
+        # self._move_eye_timer = threading.Timer(1.0, return_to_center)
+        # self._move_eye_timer.start()
+
+    def move_eye_threaded(self, axis, delta):
+        self.move_eye(axis, delta)
+
+    def blink_threaded(self):
+        threading.Thread(target=self.blink, daemon=True).start()
 
     def init_eye(self):
         self.draw_image('makerforge_bl.png')
         time.sleep(2)
         img = None
-        
         # Increase radius from 0 to 70 in steps of 5
         for x in range(0, self.radius, 5):
             img = self.draw_halo(
@@ -39,8 +101,8 @@ class TFTDisplayEye(TFTDisplay):
                 glow_spread=x
             )
         self.img = self.eye('blue')
-        time.sleep(3)
-        self.blink()
+        # time.sleep(3)
+        # self.blink()
         print("TFT display test completed")
 
     def eye(self, color):
@@ -54,34 +116,8 @@ class TFTDisplayEye(TFTDisplay):
             ring_thickness=10,
             color=self.colors[color]
         )
-        
-    def look(self, coordinates=None):
-        if coordinates is None:
-            coordinates = (self.disp.width // 2, self.disp.height // 2)
-        current_center = self.center
-        target_center = coordinates
-
-        # steps = distance between current and target divided by 10
-        steps = max(
-            abs(target_center[0] - current_center[0]),
-            abs(target_center[1] - current_center[1])
-        ) // 10 or 1
-        
-        delay = 0.01  # seconds per step
-
-        for i in range(1, steps + 1):
-            interp_center = (
-                int(current_center[0] + (target_center[0] - current_center[0]) * i / steps),
-                int(current_center[1] + (target_center[1] - current_center[1]) * i / steps)
-            )
-            self.center = interp_center
-            self.img = self.draw_halo(
-                ring_radius=self.radius,
-                ring_thickness=10,
-                color=self.colors['blue']
-            )
-            time.sleep(delay)
-        self.center = target_center
+    
+    # look() is now handled by the background thread using _target_center
 
     def draw_halo(self, color, ring_radius=50, ring_thickness=10, glow_layers=12, glow_spread=30):
         disp = self.disp
@@ -122,7 +158,7 @@ class TFTDisplayEye(TFTDisplay):
         ]
         draw.ellipse(ring_bbox, outline=(color[0], color[1], color[2], 255), width=ring_thickness)
 
-        final_image = Image.new("RGB", (disp.width, disp.height), "BLACK")
+        final_image = self.background.copy()
         final_image.paste(glow_image, (0, 0), glow_image)
-        disp.ShowImage(final_image)
+        self.show_image(final_image)
         return final_image

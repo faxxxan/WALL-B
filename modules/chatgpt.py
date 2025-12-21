@@ -56,9 +56,14 @@ class ChatGPT(BaseModule):
         output = completion.choices[0].message.content
         self.log(output)
         # if output includes 'animate:', split on colon and sendMessage 'animate' with action
-        if 'animate:' in output:
-            action = output.split(':')[1]
+        if 'animate/' in output:
+            action = output.split('/')[1]
             self.publish('animate', action=action)
+        if 'gpio/' in output:
+            # If output includes 'gpio/', split on colon and sendMessage 'gpio' with action
+            t = output.split('/')[1]
+            state = output.split('/')[2] == 'on'
+            self.publish('gpio/' + t , state=state)
         else:
             self.publish('tts', msg=output)
         return output

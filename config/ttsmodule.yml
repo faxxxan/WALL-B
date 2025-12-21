@@ -1,5 +1,6 @@
 ttsmodule:
-  enabled: false
+  enabled: true
+  environment: robot
   path: "modules.audio.ttsmodule.TTSModule"
   config:
     service: "elevenlabs" # or pyttsx3

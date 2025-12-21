@@ -1,5 +1,6 @@
 tft_display:
   enabled: true
+  environment: robot
   path: modules.display.tft_display_eye.TFTDisplayEye
   config:
     bus: 0 # Use `ls /dev/spi*` to identify. (/dev/spidev0.0) is bus 0, device 0

@@ -1,5 +1,5 @@
 import json
-import paho.mqtt.client as mqtt
+# import paho.mqtt.client as mqtt
 from pubsub import pub
 
 class MessagingService:

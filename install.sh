@@ -112,8 +112,8 @@ fi
 
 # Tell the user about autolaunch
 echo -e "\nTo enable autolaunch on boot, run the following command:"
-echo "installer/autolaunch.sh enable"
+echo "installers/autolaunch.sh enable"
 echo "To disable autolaunch, run:"
-echo "installer/autolaunch.sh disable"
+echo "installers/autolaunch.sh disable"
 
 echo "============================="

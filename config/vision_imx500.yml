@@ -1,5 +1,6 @@
 vision_imx500:
   enabled: true
+  environment: robot
   path: 'modules.vision.imx500.vision.Vision'
   config:
     preview: false
