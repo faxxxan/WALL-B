@@ -12,17 +12,17 @@ class PiTemperature(BaseModule):
     MIN_TEMP = 15
     MONITOR_INTERVAL = 60  # seconds
     
+    def __init__(self):
+        self.debug = False
     
     def setup_messaging(self):
         """No longer subscribes to system/loop/60; starts background thread instead."""
         self._stop_event = threading.Event()
         self._thread = threading.Thread(target=self._monitor_thread, daemon=True)
         self._thread.start()
-        self.debug = True
         self._start_time = time.time() # For debug
         self._min_temp = None # For debug
         self._max_temp = None # For debug
-        
 
     def _monitor_thread(self):
         while not getattr(self, '_stop_event', threading.Event()).is_set():

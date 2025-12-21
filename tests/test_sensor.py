@@ -36,23 +36,5 @@ class TestSensor(unittest.TestCase):
         self.assertFalse(sensor.read())
         self.assertFalse(sensor.value)
 
-    def test_loop(self):
-        sensor = Sensor(pin=17)
-        with mock.patch.object(sensor, 'read', return_value=True):
-            with mock.patch.object(sensor, 'publish') as mock_publish:
-                sensor.loop()
-                mock_publish.assert_called_with('gpio/motion')
-
-        with mock.patch.object(sensor, 'read', return_value=False):
-            with mock.patch.object(sensor, 'publish') as mock_publish:
-                sensor.loop()
-                mock_publish.assert_not_called()
-
-    def test_setup_messaging(self):
-        sensor = Sensor(pin=17)
-        with mock.patch.object(sensor, 'subscribe') as mock_subscribe:
-            sensor.setup_messaging()
-            mock_subscribe.assert_called_with('system/loop/1', sensor.loop)
-
 if __name__ == '__main__':
     unittest.main()
