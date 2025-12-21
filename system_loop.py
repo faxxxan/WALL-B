@@ -1,14 +1,12 @@
 
 import time
-import yaml
-import os
 
 class SystemLoop:
     STATE_STOPPED = 0
     STATE_SLEEPING = 1
     STATE_THROTTLED = 2
     STATE_RUNNING = 3
-    DEFAULT_SLEEP_INTERVAL = 0.1  # 10ms
+    DEFAULT_SLEEP_INTERVAL = 0.01  # 10ms
     
     def __init__(self, messaging_service):
         self.messaging_service = messaging_service
@@ -89,7 +87,7 @@ class SystemLoop:
                 time.sleep(self.sleep_interval)
             if self._state == SystemLoop.STATE_SLEEPING:
                 continue
-            self.messaging_service.publish('system/loop') # @todo consider the best approach to handling sleep mode.
+            self.messaging_service.publish('system/loop')
             now = time.time()
             if now - self._second_loop > 1:
                 self._second_loop = now

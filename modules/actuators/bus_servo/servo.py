@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import sys
-import os
 import select
 import time
 
@@ -24,8 +23,8 @@ import time
 
 # sys.path.append("..")
 # Uses STServo and SCServo SDK library
-from modules.actuators.bus_servo.STservo_sdk import *
-from modules.actuators.bus_servo.SCservo_sdk import *
+from modules.actuators.bus_servo.STservo_sdk import PortHandler, sts, COMM_SUCCESS
+from modules.actuators.bus_servo.SCservo_sdk import PacketHandler, SCS_LOWORD, SCS_HIWORD, SCS_TOHOST
 
 from modules.base_module import BaseModule
 
@@ -312,6 +311,7 @@ class Servo(BaseModule):
                     sys.stdin.read(1)  # Consume the key so buffer is cleared
                     break
         except KeyboardInterrupt:
+            # No need to handle as this is to allow changing selected servo
             pass
         print()  # Move to next line after loop
         if min_pos is not None and max_pos is not None:
