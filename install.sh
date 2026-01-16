@@ -15,37 +15,58 @@ myenv/bin/python3 -m pip install pyyaml
 
 
 
-# Helper function to parse dependencies from YAML files using Python
+
+# Helper function to parse dependencies from YAML files using Python, respecting environment
 parse_dependencies() {
   myenv/bin/python3 - <<EOF
 import yaml, sys, os
 
 config_file = "$1"
+env = "$2" or 'robot'
 module_name = os.path.basename(config_file).replace('.yml', '')  # Get the module name from the filename
 try:
-    with open(config_file) as f:
-        config = yaml.safe_load(f)
-        if isinstance(config, dict):
-            for section in config.values():
-                # Ensure each section has 'enabled' set to true and 'dependencies' exists
-                if isinstance(section, dict) and section.get('enabled', False) and 'dependencies' in section:
-                    print(f"MODULE:{module_name}")
-                    for dep_type, deps in section['dependencies'].items():
-                        if dep_type == 'python':
-                            for dep in deps:
-                                print(f"PYTHON:{dep}")
-                        elif dep_type == 'unix':
-                            for dep in deps:
-                                print(f"UNIX:{dep}")
-                        elif dep_type == 'additional':
-                            for url in deps:
-                                print(f"ADDITIONAL:{module_name}:{url}")
+  with open(config_file) as f:
+    config = yaml.safe_load(f)
+    if isinstance(config, dict):
+      for section in config.values():
+        # Check if enabled
+        if not (isinstance(section, dict) and section.get('enabled', False)):
+          continue
+        # Environment filtering logic (match module_loader.py)
+        env_field = section.get('environment')
+        if env_field is not None:
+          if isinstance(env_field, str):
+            if env_field != env:
+              continue
+          elif isinstance(env_field, list):
+            if env not in env_field:
+              continue
+        # If passed, print dependencies
+        if 'dependencies' in section:
+          print(f"MODULE:{module_name}")
+          for dep_type, deps in section['dependencies'].items():
+            if dep_type == 'python':
+              for dep in deps:
+                print(f"PYTHON:{dep}")
+            elif dep_type == 'unix':
+              for dep in deps:
+                print(f"UNIX:{dep}")
+            elif dep_type == 'additional':
+              for url in deps:
+                print(f"ADDITIONAL:{module_name}:{url}")
 except yaml.YAMLError as e:
-    print(f"Error reading {config_file}: {e}", file=sys.stderr)
+  print(f"Error reading {config_file}: {e}", file=sys.stderr)
 EOF
 }
 
-# Iterate over each YAML config file in the config directory
+# Determine environment argument (default to 'robot')
+if [ -z "$1" ]; then
+  ENVIRONMENT="robot"
+else
+  ENVIRONMENT="$1"
+fi
+
+# Iterate over each YAML config file in the config directory, passing environment
 for config_file in config/*.yml; do
   while IFS= read -r dependency; do
     # Separate Python and Unix dependencies and capture active module names
@@ -58,7 +79,7 @@ for config_file in config/*.yml; do
     elif [[ $dependency == ADDITIONAL:* ]]; then
       ADDITIONAL_URLS+=("${dependency#ADDITIONAL:}")
     fi
-  done < <(parse_dependencies "$config_file")
+  done < <(parse_dependencies "$config_file" "$ENVIRONMENT")
 done
 
 # Remove duplicate dependencies
