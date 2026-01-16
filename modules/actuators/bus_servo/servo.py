@@ -56,8 +56,8 @@ class Servo(BaseModule):
         self.demonstrate_on_boot = kwargs.get('demonstrate_on_boot', False) # Move to min and max to demonstrate range
         self.center_on_boot = kwargs.get('center_on_boot', False) # Move to center of range on boot
         self.pos = self.start
-        self.speed = 2400 # 3073
-        self.acceleration = 50
+        self.speed = kwargs.get('speed', 500) # max 3073 for ST, 1023 for SC (TBC)
+        self.acceleration = kwargs.get('acceleration', 50) # max 32767 for ST, 65535 for SC (TBC)
         
         # Initialize PortHandler instance
         # Set the port path
@@ -110,13 +110,17 @@ class Servo(BaseModule):
             self.calibrate_to_center()
         
         if self.demonstrate_on_boot:
-            self.log(f"Demonstrating servo {self.identifier} movement")
+            self.log(f"Demonstrating servo {self.identifier} movement, speed={self.speed}, acceleration={self.acceleration}")
             if self.range is not None:
-                time.sleep(1)
+                time.sleep(2)
                 self.move(self.range[0])
-                time.sleep(1)
+                time.sleep(5)
+                # move to halfway
+                mid = (self.range[0] + self.range[1]) // 2
+                self.move(mid)
+                time.sleep(2)
                 self.move(self.range[1])
-                time.sleep(1)
+                time.sleep(5)
             else:
                 self.log(f"Range not set for servo {self.identifier}, cannot demonstrate movement", level='warning')
         
@@ -164,8 +168,8 @@ class Servo(BaseModule):
         elif self.model.startswith('SC'):
             if (
                 #self._sc_write(ADDR_TORQUE_ENABLE, 1) and
-            #self._sc_write(ADDR_SCS_GOAL_ACC, self.acceleration) and
-            #self._sc_write(ADDR_SCS_GOAL_SPEED, self.speed) and
+            self._sc_write(ADDR_SCS_GOAL_ACC, self.acceleration) and
+            self._sc_write(ADDR_SCS_GOAL_SPEED, self.speed) and
             self._sc_write(ADDR_SCS_GOAL_POSITION, position)):
                 self.log(f"Moved SC servo {self.identifier} from {self.pos} to position {position} in range {self.range}")
                 self.pos = position  # Update current position
