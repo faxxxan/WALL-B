@@ -1,9 +1,10 @@
 speechinput:
   enabled: false
+  # environment: robot
   path: modules.audio.speechinput.SpeechInput
   config:
     device_name: "pulse"
-    start_on_boot: false
+    start_on_boot: true
   dependencies:
     unix:
       - flac
