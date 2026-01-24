@@ -40,7 +40,28 @@ class Personality(BaseModule):
         self.subscribe('gpio/motion', self.update_motion_time)
         self.subscribe('serial', self.track_serial_idle)
         self.subscribe('system/temperature', self.handle_temperature)
+        self.subscribe('system/loop/10', self.test_servos)
         # self.publish('gpio/laser', state=True) # Turn on laser if no one has been detected
+    
+    def test_servos(self):
+        
+        self.log("Testing neck tilt servos")
+        # To bottom
+        self.publish('servo:neck_tilt:mv', delta=-200)
+        self.publish('servo:neck_tilt2:mv', delta=200)
+        self.publish('servo:neck_pan:mv', delta=-300)
+        time.sleep(2)
+        self.publish('servo:neck_tilt:mv', delta=400)
+        self.publish('servo:neck_tilt2:mv', delta=-400)
+        time.sleep(2)
+        self.publish('servo:neck_tilt:mv', delta=-200)
+        self.publish('servo:neck_tilt2:mv', delta=200)
+        time.sleep(2)
+        self.publish('servo:neck_pan:mv', delta=600)
+        time.sleep(1)
+        self.publish('servo:neck_pan:mv', delta=-300)
+        self.log("Neck tilt servos test complete")
+        
         
     def loop(self):
         now = time.time()

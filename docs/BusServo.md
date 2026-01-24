@@ -57,6 +57,14 @@ The `Servo` class supports both ST and SC series servos from Waveshare and compa
 
 There are some limitations to the SC servos as they do not support continuous rotation and have a lower rotational range compared to the ST servos. 
 
+## Notes during testing
+
+- Speed: between 0 and 3000 for SC servos tested, 0 is max, then 1-3000 increases speed.
+- Acceleration: between 0 and 3000 for SC servos tested, 0 is max but no significant difference observed between values.
+- Overload error occurring fairly frequently on SC servos. However when testing with scheduled movements the issue is far less frequent. This may be due to sending commands too quickly in succession. Cycling torque off/on seems to resolve the error, otherwise you need to power cycle the servo.
+- To disable torque on SC servos use: `self.packetHandler.write1ByteTxRx(self.portHandler, self.index, ADDR_TORQUE_ENABLE, 0)`, change the 0 to 1 to enable torque.
+- One of the SC servos definitely seems more prone to overload errors than the others. It may be a faulty servo. This servo also doesn't always respect speed settings. It can be set to 3000 and move quickly on one movement then slow the next without a change in speed being commanded. This issue may be directional, as both the original SC servos show this behaviour in one direction only.
+
 ## References
 https://www.waveshare.com/wiki/ST3215_Servo
 https://www.waveshare.com/wiki/SC09_Servo
