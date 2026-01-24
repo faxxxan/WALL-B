@@ -40,26 +40,26 @@ class Personality(BaseModule):
         self.subscribe('gpio/motion', self.update_motion_time)
         self.subscribe('serial', self.track_serial_idle)
         self.subscribe('system/temperature', self.handle_temperature)
-        self.subscribe('system/loop/10', self.test_servos)
+        # self.subscribe('system/loop/10', self.test_servos)
         # self.publish('gpio/laser', state=True) # Turn on laser if no one has been detected
     
     def test_servos(self):
         
         self.log("Testing neck tilt servos")
-        # To bottom
-        self.publish('servo:neck_tilt:mv', delta=-200)
-        self.publish('servo:neck_tilt2:mv', delta=200)
-        self.publish('servo:neck_pan:mv', delta=-300)
+        # Reset
+        self.publish('servo:neck_pan:mvabs', position=200)
+        self.publish('servo:neck_tilt:mvabs', position=511)
+        self.publish('servo:neck_tilt2:mvabs', position=511)
         time.sleep(2)
-        self.publish('servo:neck_tilt:mv', delta=400)
-        self.publish('servo:neck_tilt2:mv', delta=-400)
+        self.publish('servo:neck_tilt:mv', delta=-150)
+        self.publish('servo:neck_tilt2:mv', delta=150)
         time.sleep(2)
-        self.publish('servo:neck_tilt:mv', delta=-200)
-        self.publish('servo:neck_tilt2:mv', delta=200)
+        self.publish('servo:neck_tilt:mv', delta=300)
+        self.publish('servo:neck_tilt2:mv', delta=-300)
         time.sleep(2)
-        self.publish('servo:neck_pan:mv', delta=600)
-        time.sleep(1)
-        self.publish('servo:neck_pan:mv', delta=-300)
+        self.publish('servo:neck_pan:mv', delta=200)
+        time.sleep(2)
+        self.publish('servo:neck_pan:mv', delta=-400)
         self.log("Neck tilt servos test complete")
         
         
