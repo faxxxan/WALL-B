@@ -126,7 +126,11 @@ WantedBy=multi-user.target""", append=False)
             print("Testing...")
             shell.run_command("speaker-test -l5 -c2 -t wav")
     print("\n" + colored.green("All done!"))
+<<<<<<< Updated upstream
     print("\nEnjoy your new {PRODUCT_NAME}!")
+=======
+    print(f"\nEnjoy your new {PRODUCT_NAME}!")
+>>>>>>> Stashed changes
     if reboot:
         shell.prompt_reboot()
 
