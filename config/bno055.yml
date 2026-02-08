@@ -1,0 +1,22 @@
+bno055:
+  enabled: false
+  path: modules.bno055.BNO055
+  instances:
+    - name: body_imu
+      bus: 1
+      address: 0x28
+      operation_mode: NDOF
+      power_mode: NORMAL
+      debug_on_boot: false
+      external_crystal: true
+      calibration_file: config/bno055_body_calibration.json
+      units:
+        acceleration: mps2
+        angular_rate: dps
+        euler: degrees
+        temperature: c
+  dependencies:
+    unix:
+      - python3-smbus
+    python:
+      - smbus
