@@ -1,0 +1,18 @@
+bno055:
+  enabled: true
+  path: modules.bno055.BNO055
+  instances:
+    - name: "imu_head"
+      test_on_boot: false
+      bus: 1
+      address: 0x28
+    # Add more instances below as needed
+    # - name: "imu_body"
+    #   test_on_boot: false
+    #   bus: 1
+    #   address: 0x29
+  dependencies:
+    unix:
+      - python3-smbus
+    python:
+      - smbus

@@ -24,6 +24,10 @@ class Personality(BaseModule):
         self.led_colors = ['off'] * 5
 
         self.display_background = 'black'
+        self.temperature = None
+        self.start_time = time.time()
+        self.display_change = time.time()
+        self.display_state = 0
 
         # Define possible actions
         self.actions = [
@@ -42,8 +46,31 @@ class Personality(BaseModule):
         self.subscribe('system/temperature', self.handle_temperature)
         # self.publish('gpio/laser', state=True) # Turn on laser if no one has been detected
         
+    def cycle_display(self):
+        """Cycle through different display states. Display time, temperature and uptime for 5 seconds each."""
+        if self.display_change and time.time() - self.display_change >= 5:
+            self.display_change = time.time()
+            self.display_state = (self.display_state + 1) % 3
+        
+        if self.display_state == 0:
+            # Display current time
+            now = time.localtime()
+            time_str = time.strftime("%H:%M:%S", now)
+            self.publish('display/body/text', text=f"{time_str}", font_size=26)
+        elif self.display_state == 1:
+            self.publish('display/body/text', text=f"{self.temperature if self.temperature is not None else '?'}°C", font_size=26)
+        elif self.display_state == 2:
+            uptime_seconds = int(time.time() - self.start_time)
+            hours, remainder = divmod(uptime_seconds, 3600)
+            minutes, seconds = divmod(remainder, 60)
+            uptime_str = f"{hours:02}:{minutes:02}:{seconds:02}"
+            self.publish('display/body/text', text=f"Uptime\n{uptime_str}", font_size=14)
+        
     def loop(self):
         now = time.time()
+        
+        self.cycle_display()
+        
         # Handle ongoing object reaction
         if self.object_reaction_end_time and now >= self.object_reaction_end_time:
             self.publish('led', identifiers=[
@@ -67,10 +94,10 @@ class Personality(BaseModule):
     
     def handle_temperature(self, value):
         """Handle temperature updates."""
-        temp = float(value)
-        temprgba = self.temperature_to_rgba(temp)
+        self.temperature = float(value)
+        temprgba = self.temperature_to_rgba(self.temperature)
         # self.log(f"Handling temperature: {temp} color: {temprgba}")
-        if temp > 70 and self.display_background != temprgba:
+        if self.temperature > 70 and self.display_background != temprgba:
             self.publish('display/background', color=temprgba)
         elif self.display_background != 'black':
             self.publish('display/background', color='black')
