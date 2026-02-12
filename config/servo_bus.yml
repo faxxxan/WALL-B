@@ -8,51 +8,50 @@ servos:
       id: 1
       range: [978, 3343]
       start: 3187
-      poses:
-        - stand: 1269
-        - sit: 2048
-        - centre: 2048
     - name: "leg_r_hip"
       model: 'ST3215'
       id: 3
       range: [770, 3389]
-      start: 2911
-      poses:
-        - stand: 824
-        - sit: 1269
-        - centre: 2048
+      # start: 1736 # tand?
+      start: 2911 # straight forward
     - name: "leg_r_knee"
       model: 'ST3215'
       id: 2
       range: [750, 3297]
       start: 1345
-      poses:
-        - stand: 2111
-        - sit: 723
-        - centre: 2048
     - name: "leg_r_ankle"
       model: 'ST3215'
       id: 6
       range: [2459, 3872]
       start: 2762
-      poses:
-        - stand: 3721
-        - sit: 3721
-        - centre: 2048
-    - name: "neck_tilt"
-      model: 'SC09'
-      baudrate: 115200
-      id: 4
-      range: [160, 638]
-      start: 511
     - name: "neck_pan"
-      # calibrate_on_boot: true
-      # demonstrate_on_boot: true
       model: 'SC09'
       baudrate: 115200
       id: 5
-      range: [0, 1022]
+      range: [0, 1023]
       start: 511
+      # calibrate_on_boot: true
+      demonstrate_on_boot: true
+      speed: 300 # tested up to 600
+      acceleration: 1
+    - name: "neck_tilt"
+      model: 'SC09'
+      baudrate: 115200
+      id: 11
+      range: [0, 240] # 70 degree
+      start: 120
+      speed: 300 # max=0, 1 - 3000 tested
+      # acceleration: 0 # max (no significant difference between this and 1 - 3000)
+      demonstrate_on_boot: true
+    - name: "neck_tilt2"
+      model: 'SC09'
+      baudrate: 115200
+      id: 4
+      range: [0, 610] # 180 degree (may need reducing)
+      start: 305
+      speed: 300
+      # acceleration: 1
+      # demonstrate_on_boot: true
     - name: "leg_l_tilt"
       model: 'ST3215'
       id: 7
@@ -62,7 +61,8 @@ servos:
       model: 'ST3215'
       id: 8
       range: [747, 3370]
-      start: 1180
+      # start: 2388 # stand?
+      start: 1180 # straight forward
     - name: "leg_l_knee"
       model: 'ST3215'
       id: 9

@@ -56,7 +56,7 @@ class Servo(BaseModule):
         self.demonstrate_on_boot = kwargs.get('demonstrate_on_boot', False) # Move to min and max to demonstrate range
         self.center_on_boot = kwargs.get('center_on_boot', False) # Move to center of range on boot
         self.pos = self.start
-        self.speed = 2400 # 3073
+        self.speed = kwargs.get('speed', 300) # 3073
         self.acceleration = 50
         
         # Initialize PortHandler instance
@@ -114,9 +114,9 @@ class Servo(BaseModule):
             if self.range is not None:
                 time.sleep(1)
                 self.move(self.range[0])
-                time.sleep(1)
+                time.sleep(5)
                 self.move(self.range[1])
-                time.sleep(1)
+                time.sleep(5)
             else:
                 self.log(f"Range not set for servo {self.identifier}, cannot demonstrate movement", level='warning')
         
@@ -127,7 +127,6 @@ class Servo(BaseModule):
         
     def _sc_write(self, type, value, verbose=False):
         comm_result, error = self.packetHandler.write2ByteTxRx(self.portHandler, self.index, type, value)
-        self.log(f"[SCServo][{self.identifier}] Set speed: comm_result={comm_result}, error={error}")
         if hasattr(self.packetHandler, 'getTxRxResult') and verbose:
             self.log(f"[SCServo Result] {self.packetHandler.getTxRxResult(comm_result)}")
         if hasattr(self.packetHandler, 'getRxPacketError') and error != 0:
@@ -165,7 +164,7 @@ class Servo(BaseModule):
             if (
                 #self._sc_write(ADDR_TORQUE_ENABLE, 1) and
             #self._sc_write(ADDR_SCS_GOAL_ACC, self.acceleration) and
-            #self._sc_write(ADDR_SCS_GOAL_SPEED, self.speed) and
+            self._sc_write(ADDR_SCS_GOAL_SPEED, self.speed) and
             self._sc_write(ADDR_SCS_GOAL_POSITION, position)):
                 self.log(f"Moved SC servo {self.identifier} from {self.pos} to position {position} in range {self.range}")
                 self.pos = position  # Update current position

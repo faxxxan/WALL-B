@@ -11,8 +11,10 @@ BNO055_ACCEL_DATA_X_LSB_ADDR = 0x08
 class BNO055(BaseModule):
     def __init__(self, **kwargs):
         self.bus = smbus.SMBus(kwargs.get('bus', 1))
+        self.name = kwargs.get('name', 'bno055')
         sleep(2)
         self.address = kwargs.get('address', 0x28)
+        self.line_offset = kwargs.get('line_offset', 0) # for console output formatting (move up X lines)
         self.test_on_boot = kwargs.get('test_on_boot', False)
         self._init_sensor()
         if self.test_on_boot:
@@ -76,5 +78,9 @@ class BNO055(BaseModule):
                 f"Y={accel['y']:7.2f} "
                 f"Z={accel['z']:7.2f}"
             )
-            print(f"\r{output}", end="", flush=True)
+            if self.line_offset > 0:
+                print('\033[F', end='')  # Move cursor up one line
+                print(f"r{self.name}:{output}") 
+            else:
+                print(f"\r{self.name}:{output}", end="", flush=True)
         sleep(0.5)
