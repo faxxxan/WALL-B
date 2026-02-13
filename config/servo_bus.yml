@@ -12,7 +12,7 @@ servos:
       model: 'ST3215'
       id: 3
       range: [770, 3389]
-      # start: 1736 # tand?
+      # start: 1736 # stand?
       start: 2911 # straight forward
     - name: "leg_r_knee"
       model: 'ST3215'
@@ -31,7 +31,7 @@ servos:
       range: [0, 1023]
       start: 511
       # calibrate_on_boot: true
-      demonstrate_on_boot: true
+      # demonstrate_on_boot: true
       speed: 300 # tested up to 600
       acceleration: 1
     - name: "neck_tilt"
@@ -42,7 +42,7 @@ servos:
       start: 120
       speed: 300 # max=0, 1 - 3000 tested
       # acceleration: 0 # max (no significant difference between this and 1 - 3000)
-      demonstrate_on_boot: true
+      # demonstrate_on_boot: true
     - name: "neck_tilt2"
       model: 'SC09'
       baudrate: 115200

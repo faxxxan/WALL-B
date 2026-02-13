@@ -1,5 +1,6 @@
 bno055:
   enabled: true
+  environment: robot
   path: modules.bno055.BNO055
   instances:
     - name: "imu_head"
