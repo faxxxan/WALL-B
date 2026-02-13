@@ -44,8 +44,19 @@ class Personality(BaseModule):
         self.subscribe('gpio/motion', self.update_motion_time)
         self.subscribe('serial', self.track_serial_idle)
         self.subscribe('system/temperature', self.handle_temperature)
+        self.subscribe('telegram/received', self.handle_user_message)
+        self.subscribe('ai/response', self.handle_ai_response)
         # self.publish('gpio/laser', state=True) # Turn on laser if no one has been detected
+    
+    def handle_user_message(self, user_id=None, message=None):
+        print(f"Received message from user {user_id}: {message}")
+        self.publish('ai/input', text=message)
+        self.publish('telegram/respond', user_id=user_id, message=f"Echo: {message}")
         
+    def handle_ai_response(self, response=None):
+        print(f"Received AI response: {response}")
+        self.publish('telegram/respond', message=response, user_id=None)
+    
     def cycle_display(self):
         """Cycle through different display states. Display time, temperature and uptime for 5 seconds each."""
         if self.display_change and time.time() - self.display_change >= 5:

@@ -29,6 +29,32 @@ class ChatGPT(BaseModule):
     def setup_messaging(self):
         """Subscribe to necessary topics."""
         self.subscribe('speech', self.completion)
+        self.subscribe('ai/input', self.text_completion)
+        
+    def text_completion(self, text):
+        """
+        Get a text completion from the model and publish it to 'log'.
+        :param text: message to chat
+        
+        Publishes 'log' with response
+        """
+        completion = self.client.chat.completions.create(
+            model=self.model,
+            messages=[
+                {
+                    "role": "system", 
+                    "content": self.persona
+                },
+                {
+                    "role": "user",
+                    "content": text
+                }
+            ]
+        )
+
+        output = completion.choices[0].message.content
+        self.publish('ai/response', response=output)
+        return output
         
     def completion(self, text):
         """
