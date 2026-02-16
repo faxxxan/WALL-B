@@ -49,11 +49,11 @@ class Personality(BaseModule):
         self.subscribe('system/temperature', self.handle_temperature)
         self.subscribe('telegram/received', self.handle_user_message)
         self.subscribe('ai/response', self.handle_ai_response)
-        if True: # Bypass pubsub
-            self.subscribe('system/loop', self.balance)
-        else:
-            # self.subscribe('imu/imu_head/data', self.handle_imu_data)
-            self.subscribe('imu/imu_body/data', self.handle_imu_data)
+        # if True: # Bypass pubsub
+        #     self.subscribe('system/loop/1', self.balance)
+        # else:
+        #     # self.subscribe('imu/imu_head/data', self.handle_imu_data)
+        #     self.subscribe('imu/imu_body/data', self.handle_imu_data)
         # self.publish('gpio/laser', state=True) # Turn on laser if no one has been detected
 
 
@@ -87,7 +87,7 @@ class Personality(BaseModule):
         """Cycle through different display states. Display time, temperature and uptime for 5 seconds each."""
         if self.display_change and time.time() - self.display_change >= 5:
             self.display_change = time.time()
-            self.display_state = (self.display_state + 1) % 3
+            self.display_state = (self.display_state + 1) % 4
         
         if self.display_state == 0:
             # Display current time
@@ -102,6 +102,9 @@ class Personality(BaseModule):
             minutes, seconds = divmod(remainder, 60)
             uptime_str = f"{hours:02}:{minutes:02}:{seconds:02}"
             self.publish('display/body/text', text=f"Uptime\n{uptime_str}", font_size=14)
+        elif self.display_state == 3:
+            tilt = self.imu['body'].get_euler()[1]
+            self.publish('display/body/text', text=f"T: {tilt}", font_size=26)
         
     def loop(self):
         now = time.time()
