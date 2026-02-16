@@ -28,6 +28,9 @@ class Personality(BaseModule):
         self.start_time = time.time()
         self.display_change = time.time()
         self.display_state = 0
+        
+        self.imu = {} # Set in main.py
+        self.servos = {} # Set in main.py
 
         # Define possible actions
         self.actions = [
@@ -46,7 +49,30 @@ class Personality(BaseModule):
         self.subscribe('system/temperature', self.handle_temperature)
         self.subscribe('telegram/received', self.handle_user_message)
         self.subscribe('ai/response', self.handle_ai_response)
+        if True: # Bypass pubsub
+            self.subscribe('system/loop', self.balance)
+        else:
+            # self.subscribe('imu/imu_head/data', self.handle_imu_data)
+            self.subscribe('imu/imu_body/data', self.handle_imu_data)
         # self.publish('gpio/laser', state=True) # Turn on laser if no one has been detected
+
+
+    def balance(self):
+        """Use head and body IMU data to maintain balance by adjusting leg servos."""
+        change = self.imu['body'].publish_changed_data()
+        if change and 'euler' in self.imu['body'].data:
+            euler = self.imu['body'].data['euler']
+            pitch = euler[1]
+            print(f"L:{pitch}")
+
+    def handle_imu_data(self, data):
+        # print(f"Received IMU data: {data}")
+        # Example Data: {'temperature': 19, 'acceleration': (0.17, -9.74, -0.99), 'magnetic': (12.1875, 63.75, 32.25), 'gyro': (0.001090830782496456, 0.002181661564992912, -0.002181661564992912), 'euler': (359.9375, 0.9375, 95.75), 'quaternion': (0.67059326171875, -0.74169921875, -0.01263427734375, 0.0), 'linear_acceleration': (0.01, 0.02, 0.03), 'gravity': (0.16, -9.75, -0.98)}
+        # if data contains euler and is a tilt change:
+        if 'euler' in data:
+            euler = data['euler']
+            pitch = euler[1]
+            print(f"R{pitch}")
     
     def handle_user_message(self, user_id=None, message=None):
         print(f"Received message from user {user_id}: {message}")
