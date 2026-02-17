@@ -149,7 +149,7 @@ class Vision(BaseModule):
 
     def setup_messaging(self):
         """Subscribe to necessary topics."""
-        self.subscribe('system/loop', self.scan)
+        self.subscribe('system/loop/1', self.scan)
         self.subscribe('vision/toggle', self.toggle_running)
 
     def toggle_running(self):
@@ -160,11 +160,10 @@ class Vision(BaseModule):
         if not self.running:
             return []
         self.last_results = self.parse_detections(self.picam2.capture_metadata())
-        # self.log(f"Vision detections: {self.last_results}")
         this_capture = []
         for i in self.last_results:
             this_capture = [obj.json_out() for obj in self.last_results]
-
+        # self.log(f"Vision detections: {this_capture}")
         self.publish('vision/detections', matches=this_capture)
         return this_capture
 

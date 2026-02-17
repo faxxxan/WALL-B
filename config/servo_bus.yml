@@ -11,8 +11,10 @@ servos:
     - name: "leg_r_hip"
       model: 'ST3215'
       id: 3
-      range: [1004, 3063]
-      start: 1688
+      range: [0, 1991]
+      range_degrees: 180
+      # calibrate_on_boot: true
+      # start: 1688
     - name: "leg_r_knee"
       model: 'ST3215'
       id: 2
@@ -58,9 +60,10 @@ servos:
       start: 1617
     - name: "leg_l_hip"
       model: 'ST3215'
+      range_degrees: 180
       id: 8
-      range: [959, 3017]
-      start: 2451 
+      range: [1014, 3098]
+      # start: 2451 
     - name: "leg_l_knee"
       model: 'ST3215'
       id: 9

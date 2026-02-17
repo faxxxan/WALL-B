@@ -8,8 +8,9 @@ class SystemLoop:
     STATE_RUNNING = 3
     DEFAULT_SLEEP_INTERVAL = 0.01  # 10ms
     
-    def __init__(self, messaging_service):
+    def __init__(self, messaging_service, personality):
         self.messaging_service = messaging_service
+        self.personality = personality
         self._state = SystemLoop.STATE_RUNNING
         self._state_requests = {}
         self._motion_state = self._state # To remember previous state before sleeping due to motion
@@ -17,6 +18,11 @@ class SystemLoop:
         self._ten_second_loop = time.time()
         self._minute_loop = time.time()
         self.sleep_interval = SystemLoop.DEFAULT_SLEEP_INTERVAL
+        
+        # For tracking loop Hz
+        self.loop_count = 0
+        self.last_hz_time = time.time()
+        self.current_hz = 0
         # Subscribe to system/sleep and system/wake
         self.messaging_service.subscribe('system/sleep', self.log_state_request, state=SystemLoop.STATE_SLEEPING)
         self.messaging_service.subscribe('system/wake', self.log_state_request, state=SystemLoop.STATE_RUNNING)
@@ -83,11 +89,20 @@ class SystemLoop:
 
     def run(self):
         while self._state != SystemLoop.STATE_STOPPED:
+            now = time.time()
+            
+            # Count loop calls for Hz calculation
+            self.loop_count += 1
+            if now - self.last_hz_time >= 1.0:
+                self.current_hz = self.loop_count
+                self.loop_count = 0
+                self.last_hz_time = now
             if self.sleep_interval > 0: 
                 time.sleep(self.sleep_interval)
             if self._state == SystemLoop.STATE_SLEEPING:
                 continue
             self.messaging_service.publish('system/loop')
+            self.personality.loop()  # Call personality loop every cycle for more responsive updates
             now = time.time()
             if now - self._second_loop > 1:
                 self._second_loop = now
@@ -95,6 +110,7 @@ class SystemLoop:
             if now - self._ten_second_loop > 10:
                 self._ten_second_loop = now
                 self.messaging_service.publish('system/loop/10')
+                self.messaging_service.publish('system/debug/log_hz', hz=self.current_hz)
             if now - self._minute_loop > 60:
                 self._minute_loop = now
                 self.messaging_service.publish('system/loop/60')

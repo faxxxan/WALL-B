@@ -29,7 +29,11 @@ class Personality(BaseModule):
         self.display_change = time.time()
         self.display_state = 0
         
+        self.current_hz = 0
+
         self.imu = {} # Set in main.py
+        self.euler = None
+        self.balance_enabled = kwargs.get('balance_enabled', True)
         self.servos = {} # Set in main.py
 
         # Define possible actions
@@ -42,13 +46,15 @@ class Personality(BaseModule):
         
     def setup_messaging(self):
         """Subscribe to necessary topics."""
-        self.subscribe('system/loop/1', self.loop)
+        self.subscribe('system/loop/1', self.loop_second)
+        self.subscribe('system/loop/10', self.loop_10)
         self.subscribe('vision/detections', self.handle_vision_detections)
         self.subscribe('gpio/motion', self.update_motion_time)
         self.subscribe('serial', self.track_serial_idle)
         self.subscribe('system/temperature', self.handle_temperature)
         self.subscribe('telegram/received', self.handle_user_message)
         self.subscribe('ai/response', self.handle_ai_response)
+        self.subscribe('system/debug/log_hz', self.update_current_hz)
         # if True: # Bypass pubsub
         #     self.subscribe('system/loop/1', self.balance)
         # else:
@@ -56,23 +62,23 @@ class Personality(BaseModule):
         #     self.subscribe('imu/imu_body/data', self.handle_imu_data)
         # self.publish('gpio/laser', state=True) # Turn on laser if no one has been detected
 
+    def update_current_hz(self, hz):
+        self.current_hz = hz
 
     def balance(self):
+        if not self.balance_enabled or 'body' not in self.imu:
+            return
         """Use head and body IMU data to maintain balance by adjusting leg servos."""
-        change = self.imu['body'].publish_changed_data()
-        if change and 'euler' in self.imu['body'].data:
-            euler = self.imu['body'].data['euler']
+        euler = self.imu['body'].get_euler()
+        # if euler has changed significantly since last update, adjust servos
+        if self.euler is None or any(abs(e - self.euler[i]) > 1 for i, e in enumerate(euler)):
+            self.euler = euler
             pitch = euler[1]
-            print(f"L:{pitch}")
-
-    def handle_imu_data(self, data):
-        # print(f"Received IMU data: {data}")
-        # Example Data: {'temperature': 19, 'acceleration': (0.17, -9.74, -0.99), 'magnetic': (12.1875, 63.75, 32.25), 'gyro': (0.001090830782496456, 0.002181661564992912, -0.002181661564992912), 'euler': (359.9375, 0.9375, 95.75), 'quaternion': (0.67059326171875, -0.74169921875, -0.01263427734375, 0.0), 'linear_acceleration': (0.01, 0.02, 0.03), 'gravity': (0.16, -9.75, -0.98)}
-        # if data contains euler and is a tilt change:
-        if 'euler' in data:
-            euler = data['euler']
-            pitch = euler[1]
-            print(f"R{pitch}")
+            if abs(pitch) < 2:
+                return  # No need to adjust for small angles
+            # print(f"Angle to move: {pitch}")
+            self.servos['leg_l_hip'].move_degrees(-pitch) 
+            self.servos['leg_r_hip'].move_degrees(pitch)
     
     def handle_user_message(self, user_id=None, message=None):
         print(f"Received message from user {user_id}: {message}")
@@ -84,11 +90,11 @@ class Personality(BaseModule):
         self.publish('telegram/respond', message=response, user_id=None)
     
     def cycle_display(self):
-        """Cycle through different display states. Display time, temperature and uptime for 5 seconds each."""
+        """Cycle through different display states. Display time, temperature, uptime, tilt, and Hz for 5 seconds each."""
         if self.display_change and time.time() - self.display_change >= 5:
             self.display_change = time.time()
-            self.display_state = (self.display_state + 1) % 4
-        
+            self.display_state = (self.display_state + 1) % 5
+
         if self.display_state == 0:
             # Display current time
             now = time.localtime()
@@ -103,13 +109,25 @@ class Personality(BaseModule):
             uptime_str = f"{hours:02}:{minutes:02}:{seconds:02}"
             self.publish('display/body/text', text=f"Uptime\n{uptime_str}", font_size=14)
         elif self.display_state == 3:
-            tilt = self.imu['body'].get_euler()[1]
-            self.publish('display/body/text', text=f"T: {tilt}", font_size=26)
-        
+            if self.imu and self.imu.get('body'):
+                tilt = self.imu['body'].get_euler()[1]
+                self.publish('display/body/text', text=f"T: {tilt}", font_size=26)
+            else:
+                self.publish('display/body/text', text=f"T: No Data", font_size=26)
+        elif self.display_state == 4:
+            self.publish('display/body/text', text=f"{self.current_hz}Hz", font_size=20)
+
+    def loop_10(self):
+        # self.scan_vision()
+        pass
+    
     def loop(self):
-        now = time.time()
+        pass
         
+    def loop_second(self):
+        now = time.time()
         self.cycle_display()
+        self.balance()
         
         # Handle ongoing object reaction
         if self.object_reaction_end_time and now >= self.object_reaction_end_time:
@@ -208,6 +226,13 @@ class Personality(BaseModule):
         """Simulates an eye blink by publishing a blink event."""
         self.publish('eye/blink')
         self.log("Eye blink triggered")
+
+    def scan_vision(self):
+        if self.vision is None:
+            return
+        matches = self.vision.scan()
+        # print(f"Vision matches: {matches}")
+        self.handle_vision_detections(matches)
 
     # Vision: Handles detected objects
     def handle_vision_detections(self, matches):
