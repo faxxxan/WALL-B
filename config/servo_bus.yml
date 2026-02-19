@@ -44,13 +44,13 @@ servos:
       speed: 300 # max=0, 1 - 3000 tested
       # acceleration: 0 # max (no significant difference between this and 1 - 3000)
       # demonstrate_on_boot: true
-    - name: "neck_tilt2"
-      model: 'SC09'
-      baudrate: 115200
-      id: 4
-      range: [0, 610] # 180 degree (may need reducing)
-      start: 305
-      speed: 300
+    # - name: "neck_tilt2"
+    #   model: 'SC09'
+    #   baudrate: 115200
+    #   id: 4
+    #   range: [0, 610] # 180 degree (may need reducing)
+    #   start: 305
+    #   speed: 300
       # acceleration: 1
       # demonstrate_on_boot: true
     - name: "leg_l_tilt"

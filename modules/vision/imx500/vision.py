@@ -171,14 +171,15 @@ class Vision(BaseModule):
         """Parse the output tensor into a number of detected objects, scaled to the ISP out."""
         
         self.last_detections = []
+        # Removed because it actually stopped vision working if the subject moved, not just the robot
          # Check if the image is stable before parsing detections
-        if not self.calculate_stabilization():
-            # print("Image is not stable. Skipping detections.")
-            self.moving = True
-            return self.last_detections
-        elif self.moving == True:
-            self.moving = False
-            self.publish('vision/stable')
+        # if not self.calculate_stabilization():
+        #     # print("Image is not stable. Skipping detections.")
+        #     self.moving = True
+        #     return self.last_detections
+        # elif self.moving == True:
+        #     self.moving = False
+        #     self.publish('vision/stable')
     
         bbox_normalization = self.intrinsics.bbox_normalization
         threshold = self.args.threshold
