@@ -67,9 +67,9 @@ class Personality(BaseModule):
         self.current_hz = hz
 
     def balance(self):
+        """Use head and body IMU data to maintain balance by adjusting leg servos."""
         if not self.balance_enabled or 'body' not in self.imu:
             return
-        """Use head and body IMU data to maintain balance by adjusting leg servos."""
         euler = self.imu['body'].get_euler()
         # if euler has changed significantly since last update, adjust servos
         if self.euler is None or any(abs(e - self.euler[i]) > 1 for i, e in enumerate(euler)):

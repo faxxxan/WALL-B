@@ -160,9 +160,7 @@ class Vision(BaseModule):
         if not self.running:
             return []
         self.last_results = self.parse_detections(self.picam2.capture_metadata())
-        this_capture = []
-        for i in self.last_results:
-            this_capture = [obj.json_out() for obj in self.last_results]
+        this_capture = [obj.json_out() for obj in self.last_results]
         # self.log(f"Vision detections: {this_capture}")
         self.publish('vision/detections', matches=this_capture)
         return this_capture

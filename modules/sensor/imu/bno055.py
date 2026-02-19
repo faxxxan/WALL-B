@@ -23,7 +23,8 @@ class BNO055(BaseModule):
             i2c = board.I2C()  # uses board.SCL and board.SDA
             self.sensor = adafruit_bno055.BNO055_I2C(i2c, address=self.address)
         except Exception as e:
-            print(f"BNO055: Error initializing sensor: {e}")
+            self.log(f"BNO055: Error initializing sensor: {e}", type='error')
+            raise RuntimeError(f"BNO055: Error initializing sensor: {e}")
         
         self.last_val = 0xFFFF
         if self.test_on_boot:

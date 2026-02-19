@@ -30,6 +30,8 @@ class TelegramBot(BaseModule):
         """
         # Get token from environment variable
         self.token = os.getenv('TELEGRAM_BOT_TOKEN', kwargs.get('token', None))
+        if not self.token:
+            raise RuntimeError("TelegramBot: No TELEGRAM_BOT_TOKEN provided. Set the token as an environment variable or pass it as a keyword argument.")
         # print(self.token)
         # Topics for pubsub communication
         raw_whitelist = kwargs.get('user_whitelist', [])
@@ -51,7 +53,7 @@ class TelegramBot(BaseModule):
 
         self.user_whitelist = normalized_whitelist
         if not self.user_whitelist:
-            print("User whitelist disabled; allowing responses to any chat")
+            print("User whitelist missing!")
         else:
             print(f"User whitelist: {sorted(self.user_whitelist)}")
 
@@ -168,42 +170,4 @@ class TelegramBot(BaseModule):
             print(f"No chat history for user {user_id}; cannot deliver message")
             return
         await self.application.bot.send_message(chat_id=chat_id, text=message)
-
-    # def async_handle_wrapper(self, user_id: int, response: str) -> None:
-    #     """Wrapper to handle asynchronous calling of the handle coroutine."""
-    #     print(f"Scheduling async handling for user {user_id}")
-    #     asyncio.create_task(self.handle(user_id, response))
-
-if __name__ == "__main__":
-    # Enable logging
-    logging.basicConfig(
-        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
-    )
-    # Set higher logging level for httpx to avoid all GET and POST requests being logged
-    logging.getLogger("httpx").setLevel(logging.WARNING)
-
-    logger = logging.getLogger(__name__)
-
-    async def main():
-        bot = TelegramBot()
-        bot.user_whitelist = []
-
-        # Define the simulate_echo function, which will be triggered on 'publish_received'
-        def simulate_echo(user_id, message):
-            print(f"Simulating echo for user {user_id} with message: {message}")
-            # This would echo back as a response to the handle method
-            bot.publish('telegram/respond', user_id=user_id, response=message)
-
-        # Subscribe the simulate_echo function to the publish_received topic
-        bot.subscribe('telegram/received', simulate_echo)
-        print("Subscribed to 'telegram/received' topic")
-
-        await bot.start()
-
-        # Keep the main task alive so background polling continues
-        while True:
-            await asyncio.sleep(3600)
-
-    asyncio.run(main())
-    
     
