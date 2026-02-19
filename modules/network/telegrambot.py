@@ -10,8 +10,7 @@ from telegram import ForceReply, Update
 from telegram.ext import Application, CommandHandler, ContextTypes, MessageHandler, filters
 
 class TelegramBot(BaseModule):
-    self._startup_exception = None
-    self._startup_error = threading.Event()
+
     def __init__(self, **kwargs):
         """
         Telegram Bot
@@ -53,6 +52,8 @@ class TelegramBot(BaseModule):
             except (TypeError, ValueError):
                 print(f"Invalid TELEGRAM_USER_ID value '{admin_env}', skipping admin whitelist entry")
 
+        self._startup_exception = None
+        self._startup_error = threading.Event()
         self.user_whitelist = normalized_whitelist
         if not self.user_whitelist:
             print("User whitelist missing!")
@@ -85,14 +86,14 @@ class TelegramBot(BaseModule):
         self._ensure_application_started()
 
     def _shutdown_wrapper(self, *args, **kwargs):
-        self.log("[TelegramBot] Shutting down Telegram bot...", type='info')
+        self.log("[TelegramBot] Shutting down Telegram bot...", level='info')
         asyncio.run_coroutine_threadsafe(self.shutdown(), self._loop)
         
     def handle_response_wrapper(self, user_id=None, message=None):
         """Test method to verify the bot is working."""
         self.log(f"Received response to send to user {user_id}: {message}")
         if user_id is None or message is None:
-            self.log("Missing user_id or message in response_wrapper; setting to admin", type='warning')
+            self.log("Missing user_id or message in response_wrapper; setting to admin", level='warning')
             user_id = self.admin
         asyncio.run_coroutine_threadsafe(self.handle_response(user_id, message), self._loop)
 
@@ -119,7 +120,7 @@ class TelegramBot(BaseModule):
     def _handle_startup_result(self, future):
         exc = future.exception()
         if exc is not None:
-            self.log(f"Failed to start Telegram application: {exc}", type='error')
+            self.log(f"Failed to start Telegram application: {exc}", level='error')
             self._startup_exception = exc
             self._startup_error.set()
 
@@ -169,7 +170,7 @@ class TelegramBot(BaseModule):
         
         # Check if user is in whitelist before processing
         if (user_id not in self.user_whitelist):
-            self.log(f"User {user_id} not in whitelist, ignoring message", type='warning')
+            self.log(f"User {user_id} not in whitelist, ignoring message", level='warning')
             return
         
         self.log(f"Received message from user {user_id}: {message}")
@@ -187,12 +188,12 @@ class TelegramBot(BaseModule):
         """Handle responses from the application and send them back to the user."""
         await self._wait_until_ready()
         if (user_id not in self.user_whitelist):
-            self.log(f"User {user_id} not in whitelist, skipping response", type='warning')
+            self.log(f"User {user_id} not in whitelist, skipping response", level='warning')
             return
         self.log(f"Handling response for user {user_id}: {message}")
         chat_id = self._chat_ids.get(user_id)
         if chat_id is None:
-            self.log(f"No chat history for user {user_id}; cannot deliver message", type='warning')
+            self.log(f"No chat history for user {user_id}; cannot deliver message", level='warning')
             return
         await self.application.bot.send_message(chat_id=chat_id, text=message)
     
