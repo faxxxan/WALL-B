@@ -32,6 +32,7 @@ class Personality(BaseModule):
         self.current_hz = 0
 
         self.imu = {} # Set in main.py
+        self.vision = None # Set in main.py
         self.euler = None
         self.balance_enabled = kwargs.get('balance_enabled', True)
         self.servos = {} # Set in main.py

@@ -102,7 +102,8 @@ class SystemLoop:
             if self._state == SystemLoop.STATE_SLEEPING:
                 continue
             self.messaging_service.publish('system/loop')
-            self.personality.loop()  # Call personality loop every cycle for more responsive updates
+            if self.personality is not None:
+                self.personality.loop()  # Call personality loop every cycle for more responsive updates
             now = time.time()
             if now - self._second_loop > 1:
                 self._second_loop = now
