@@ -159,9 +159,10 @@ class Servo(BaseModule):
                 new_position = self.range[0]
             elif new_position > self.range[1]:
                 new_position = self.range[1]
-            pc_move = round((degrees / self.range_degrees) * 100)
-            self.log(f"Moving servo {self.identifier} by {degrees} degrees (position {self.pos} -> {new_position} | {pc_move}% of range)")
-            self.move(new_position)
+            if self.range_degrees > 0:
+                pc_move = round((degrees / self.range_degrees) * 100)
+                self.log(f"Moving servo {self.identifier} by {degrees} degrees (position {self.pos} -> {new_position} | {pc_move}% of range)")
+                self.move(new_position)
 
     def move(self, position):
         """
