@@ -5,11 +5,9 @@ bno055:
   instances:
     - name: "imu_head"
       test_on_boot: false
-      bus: 1
       address: 0x28
     - name: "imu_body"
       test_on_boot: false
-      bus: 1
       line_offset: 1
       address: 0x29
   dependencies:

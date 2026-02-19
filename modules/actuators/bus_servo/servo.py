@@ -58,7 +58,7 @@ class Servo(BaseModule):
         self.center_on_boot = kwargs.get('center_on_boot', False) # Move to center of range on boot
         self.pos = None
         self.speed = kwargs.get('speed', 300) # 3073
-        self.acceleration = 50
+        self.acceleration = kwargs.get('acceleration', 50)
         
         # Initialize PortHandler instance
         # Set the port path

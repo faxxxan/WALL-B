@@ -32,7 +32,7 @@ import time
 from smbus import SMBus
 import spidev
 import ctypes
-from gpiozero import *
+from gpiozero import DigitalOutputDevice, DigitalInputDevice
 
 Device_SPI = 0
 Device_I2C = 1

@@ -24,6 +24,9 @@ class ChatGPT(BaseModule):
         """
         self.persona = kwargs.get('persona', 'You are a helpful assistant. You respond with short phrases where possible.')
         self.model = kwargs.get('model', 'gpt-4o-mini')
+        # Check for OPENAI_API_KEY and raise error if not found
+        if 'OPENAI_API_KEY' not in os.environ:
+            raise RuntimeError("ChatGPT: OPENAI_API_KEY environment variable not found. Please set it to your OpenAI API key.")
         self.client = OpenAI()
         
     def setup_messaging(self):
@@ -33,66 +36,79 @@ class ChatGPT(BaseModule):
         
     def text_completion(self, text):
         """
-        Get a text completion from the model and publish it to 'log'.
+        Get a text completion from the model and publish it to 'ai/response'.
         :param text: message to chat
         
-        Publishes 'log' with response
+        Publishes 'ai/response' with response
         """
-        completion = self.client.chat.completions.create(
-            model=self.model,
-            messages=[
-                {
-                    "role": "system", 
-                    "content": self.persona
-                },
-                {
-                    "role": "user",
-                    "content": text
-                }
-            ]
-        )
-
-        output = completion.choices[0].message.content
-        self.publish('ai/response', response=output)
-        return output
+        try:
+            completion = self.client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {
+                        "role": "system", 
+                        "content": self.persona
+                    },
+                    {
+                        "role": "user",
+                        "content": text
+                    }
+                ]
+            )
+            output = completion.choices[0].message.content
+            self.publish('ai/response', response=output)
+            return output
+        except Exception as e:
+            error_msg = f"[ChatGPT] Error: {e}"
+            self.log(error_msg, type='error')
+            self.publish('ai/response', response=error_msg)
+            return None
         
     def completion(self, text):
         """
         Chat with GPT
         :param text: message to chat
         
-        Publishes 'log' with response
-        Publishes 'animate' with available animations listed in config yaml
-        Publishes 'tts' with response
+        Publishes:
+        - 'tts' with response (default)
+        - 'animate' with action if output includes 'animate/'
+        - 'gpio/<target>' with state if output includes 'gpio/'
+        Also logs the response.
         """
-        completion = self.client.chat.completions.create(
-            model=self.model,
-            messages=[
-                {
-                    "role": "system", 
-                    "content": self.persona
-                },
-                {
-                    "role": "user",
-                    "content": text
-                }
-            ]
-        )
-
-        output = completion.choices[0].message.content
-        self.log(output)
-        # if output includes 'animate:', split on colon and sendMessage 'animate' with action
-        if 'animate/' in output:
-            action = output.split('/')[1]
-            self.publish('animate', action=action)
-        if 'gpio/' in output:
-            # If output includes 'gpio/', split on colon and sendMessage 'gpio' with action
-            t = output.split('/')[1]
-            state = output.split('/')[2] == 'on'
-            self.publish('gpio/' + t , state=state)
-        else:
-            self.publish('tts', msg=output)
-        return output
+        try:
+            completion = self.client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {
+                        "role": "system", 
+                        "content": self.persona
+                    },
+                    {
+                        "role": "user",
+                        "content": text
+                    }
+                ]
+            )
+            output = completion.choices[0].message.content
+            self.log(output)
+            # if output includes 'animate:', split on colon and sendMessage 'animate' with action
+            if 'animate/' in output:
+                action = output.split('/')[1]
+                self.publish('animate', action=action)
+            if 'gpio/' in output:
+                # If output includes 'gpio/', split on colon and sendMessage 'gpio' with action
+                t = output.split('/')[1]
+                state = output.split('/')[2] == 'on'
+                self.publish('gpio/' + t , state=state)
+            else:
+                self.publish('tts', msg=output)
+            return output
+        except Exception as e:
+            error_msg = f"[ChatGPT] Error: {e}"
+            self.log(error_msg, type='error')
+            self.publish('tts', msg=error_msg)
+            self.publish('ai/response', response=error_msg)
+            return None
 
                 
 if __name__ == '__main__':

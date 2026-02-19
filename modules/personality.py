@@ -158,8 +158,10 @@ class Personality(BaseModule):
         # self.log(f"Handling temperature: {temp} color: {temprgba}")
         if self.temperature > 70 and self.display_background != temprgba:
             self.publish('display/background', color=temprgba)
+            self.display_background = temprgba
         elif self.display_background != 'black':
             self.publish('display/background', color='black')
+            self.display_background = 'black'
             
     
     def random_animation(self):

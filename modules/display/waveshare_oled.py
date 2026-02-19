@@ -1,6 +1,5 @@
 import os
 import time
-import logging
 from PIL import Image, ImageDraw, ImageFont
 from modules.display.lib.waveshare import OLED_0in91
 from modules.base_module import BaseModule
@@ -10,7 +9,7 @@ class WaveshareOLED(BaseModule):
         self.picdir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'pic')
         try:
             self.disp = OLED_0in91.OLED_0in91()
-            logging.info("0.91inch OLED Module")
+            print("0.91inch OLED Module")
             self.disp.Init()
             self.clear_display()
             self.background = None
@@ -20,7 +19,7 @@ class WaveshareOLED(BaseModule):
             if kwargs.get('test_on_boot'):
                 self.draw_demo()
         except Exception as e:
-            logging.error(f"Failed to initialize OLED display: {e}")
+            print(f"Failed to initialize OLED display: {e}")
             self.disp = None
             
     def setup_messaging(self):
@@ -50,7 +49,7 @@ class WaveshareOLED(BaseModule):
         try:
             font = ImageFont.truetype(font_path, font_size)
         except Exception as e:
-            logging.error(f"Font load error: {e}")
+            self.log(f"Font load error: {e}", type='error')
             font = None
         if font:
             w, h = draw.textsize(text, font=font)
@@ -74,7 +73,7 @@ class WaveshareOLED(BaseModule):
             font1 = ImageFont.truetype(font_path, 12)
             font2 = ImageFont.truetype(font_path, 18)
         except Exception as e:
-            logging.error(f"Font load error: {e}")
+            self.log(f"Font load error: {e}", type='error')
             font1 = font2 = None
         draw.line([(0,0),(127,0)], fill=0)
         draw.line([(0,0),(0,31)], fill=0)
@@ -94,7 +93,7 @@ class WaveshareOLED(BaseModule):
         #     bmp = Image.open(bmp_path)
         #     Himage2.paste(bmp, (0,0))
         # except Exception as e:
-        #     logging.error(f"Bitmap load error: {e}")
+        #     self.log(f"Bitmap load error: {e}")
         # Himage2 = Himage2.rotate(0)
         # self.show_image(Himage2)
         # time.sleep(3)

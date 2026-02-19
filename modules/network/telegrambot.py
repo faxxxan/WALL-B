@@ -10,6 +10,8 @@ from telegram import ForceReply, Update
 from telegram.ext import Application, CommandHandler, ContextTypes, MessageHandler, filters
 
 class TelegramBot(BaseModule):
+    self._startup_exception = None
+    self._startup_error = threading.Event()
     def __init__(self, **kwargs):
         """
         Telegram Bot
@@ -79,13 +81,18 @@ class TelegramBot(BaseModule):
     def setup_messaging(self):
         self.subscribe('telegram/respond', self.handle_response_wrapper)
         # self.subscribe('telegram/received', self.handle_response_wrapper) # Test echoing received messages back to the user
+        self.subscribe('system/exit', self._shutdown_wrapper)
         self._ensure_application_started()
+
+    def _shutdown_wrapper(self, *args, **kwargs):
+        self.log("[TelegramBot] Shutting down Telegram bot...", type='info')
+        asyncio.run_coroutine_threadsafe(self.shutdown(), self._loop)
         
     def handle_response_wrapper(self, user_id=None, message=None):
         """Test method to verify the bot is working."""
-        print(f"Received response to send to user {user_id}: {message}")
+        self.log(f"Received response to send to user {user_id}: {message}")
         if user_id is None or message is None:
-            print("Missing user_id or message in response_wrapper; setting to admin")
+            self.log("Missing user_id or message in response_wrapper; setting to admin", type='warning')
             user_id = self.admin
         asyncio.run_coroutine_threadsafe(self.handle_response(user_id, message), self._loop)
 
@@ -112,7 +119,9 @@ class TelegramBot(BaseModule):
     def _handle_startup_result(self, future):
         exc = future.exception()
         if exc is not None:
-            print(f"Failed to start Telegram application: {exc}")
+            self.log(f"Failed to start Telegram application: {exc}", type='error')
+            self._startup_exception = exc
+            self._startup_error.set()
 
     async def shutdown(self):
         if not self._application_started:
@@ -125,9 +134,19 @@ class TelegramBot(BaseModule):
         self._application_started = False
         self._loop.call_soon_threadsafe(self._loop.stop)
 
-    async def _wait_until_ready(self):
+    async def _wait_until_ready(self, timeout=10.0):
+        # Fail fast if startup error occurred
+        if self._startup_error.is_set():
+            raise RuntimeError(f"TelegramBot failed to start: {self._startup_exception}")
+        waited = 0.0
+        interval = 0.05
         while not self._application_started:
-            await asyncio.sleep(0.05)
+            if self._startup_error.is_set():
+                raise RuntimeError(f"TelegramBot failed to start: {self._startup_exception}")
+            await asyncio.sleep(interval)
+            waited += interval
+            if waited >= timeout:
+                raise TimeoutError("TelegramBot: Timed out waiting for application to start.")
 
     @staticmethod
     async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -147,7 +166,13 @@ class TelegramBot(BaseModule):
         """Publish the user's message to the application via pubsub."""
         user_id = update.effective_user.id
         message = update.message.text
-        print(f"Received message from user {user_id}: {message}")
+        
+        # Check if user is in whitelist before processing
+        if (user_id not in self.user_whitelist):
+            self.log(f"User {user_id} not in whitelist, ignoring message", type='warning')
+            return
+        
+        self.log(f"Received message from user {user_id}: {message}")
 
         chat = update.effective_chat
         if chat is not None:
@@ -156,18 +181,18 @@ class TelegramBot(BaseModule):
         # Save the update for response handling
         # Publish the message to other parts of the application
         self.publish('telegram/received', user_id=user_id, message=message)
-        print(f"Published message from user {user_id}: {message} on topic telegram/received")
+        self.log(f"Published message from user {user_id}: {message} on topic telegram/received")
 
     async def handle_response(self, user_id: int, message: str) -> None:
         """Handle responses from the application and send them back to the user."""
         await self._wait_until_ready()
         if (user_id not in self.user_whitelist):
-            print(f"User {user_id} not in whitelist, skipping response")
+            self.log(f"User {user_id} not in whitelist, skipping response", type='warning')
             return
-        print(f"Handling response for user {user_id}: {message}")
+        self.log(f"Handling response for user {user_id}: {message}")
         chat_id = self._chat_ids.get(user_id)
         if chat_id is None:
-            print(f"No chat history for user {user_id}; cannot deliver message")
+            self.log(f"No chat history for user {user_id}; cannot deliver message", type='warning')
             return
         await self.application.bot.send_message(chat_id=chat_id, text=message)
     
