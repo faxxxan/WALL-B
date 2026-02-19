@@ -1,7 +1,7 @@
 bno055:
   enabled: true
   environment: robot
-  path: modules.bno055_imu.BNO055
+  path: modules.sensor.imu.bno055.BNO055
   instances:
     - name: "imu_head"
       test_on_boot: false
@@ -13,9 +13,6 @@ bno055:
       line_offset: 1
       address: 0x29
   dependencies:
-    unix:
-      - python3-smbus
     python:
-      - smbus
       - adafruit-circuitpython-bno055
       - adafruit-blinka

@@ -31,17 +31,6 @@ class BNO055(BaseModule):
                 self.read_data()
                 time.sleep(1)
 
-    # def setup_messaging(self):
-        # self.subscribe('system/loop', self.publish_changed_data)
-    # def temperature(self):
-    #     result = self.sensor.temperature
-    #     if abs(result - self.last_val) == 128:
-    #         result = self.sensor.temperature
-    #         if abs(result - self.last_val) == 128:
-    #             return 0b00111111 & result
-    #     self.last_val = result
-    #     return result
-
     def get_euler(self):
         return self.sensor.euler
     

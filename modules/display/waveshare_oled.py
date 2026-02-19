@@ -87,16 +87,16 @@ class WaveshareOLED(BaseModule):
         image1 = image1.rotate(0)
         self.show_image(image1)
         time.sleep(3)
-        # Draw bitmap image
-        Himage2 = Image.new('1', (self.disp.width, self.disp.height), 255)
-        bmp_path = os.path.join(self.picdir, '0in91.bmp')
-        try:
-            bmp = Image.open(bmp_path)
-            Himage2.paste(bmp, (0,0))
-        except Exception as e:
-            logging.error(f"Bitmap load error: {e}")
-        Himage2 = Himage2.rotate(0)
-        self.show_image(Himage2)
+        # # Draw bitmap image
+        # Himage2 = Image.new('1', (self.disp.width, self.disp.height), 255)
+        # bmp_path = os.path.join(self.picdir, '0in91.bmp')
+        # try:
+        #     bmp = Image.open(bmp_path)
+        #     Himage2.paste(bmp, (0,0))
+        # except Exception as e:
+        #     logging.error(f"Bitmap load error: {e}")
+        # Himage2 = Himage2.rotate(0)
+        # self.show_image(Himage2)
         # time.sleep(3)
         # self.clear_display()
 
