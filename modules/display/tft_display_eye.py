@@ -21,7 +21,7 @@ class TFTDisplayEye(TFTDisplay):
         self._move_eye_timer = None
         if kwargs.get('test_on_boot'):
             threading.Thread(target=self.init_eye, daemon=True).start()
-
+    
     def _eye_loop(self):
         # Proportional movement: move a fraction of the remaining distance each frame
         delay = 0.0005  # Faster update for smoother, more responsive movement

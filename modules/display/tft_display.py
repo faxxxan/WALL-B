@@ -31,6 +31,7 @@ class TFTDisplay(BaseModule):
             logging.error(f"Failed to initialize TFT display: {e}")
             
     def exit(self):
+        self.log("Exiting TFT display module, clearing display")
         self.set_background('BLACK')
         self.show_image(self.background)
         self.disp.bl_DutyCycle(0)

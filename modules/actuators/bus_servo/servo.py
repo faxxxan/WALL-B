@@ -48,6 +48,7 @@ class Servo(BaseModule):
         self.model = kwargs.get('model', 'ST')
         self.index = kwargs.get('id')
         self.range = kwargs.get('range')
+        self.range_degrees = kwargs.get('range_degrees', None)  # Optional range in degrees for easier control
         self.start = kwargs.get('start') # Default start position
         self.poses = kwargs.get('poses')  # Dictionary of poses
         self.baudrate = kwargs.get('baudrate', 1000000)
@@ -55,9 +56,9 @@ class Servo(BaseModule):
         self.calibrate_on_boot = kwargs.get('calibrate_on_boot', False) # Loop to show position for manual configuration
         self.demonstrate_on_boot = kwargs.get('demonstrate_on_boot', False) # Move to min and max to demonstrate range
         self.center_on_boot = kwargs.get('center_on_boot', False) # Move to center of range on boot
-        self.pos = self.start
-        self.speed = kwargs.get('speed', 500) # max 3073 for ST, 1023 for SC (TBC)
-        self.acceleration = kwargs.get('acceleration', 50) # max 32767 for ST, 65535 for SC (TBC)
+        self.pos = None
+        self.speed = kwargs.get('speed', 300) # 3073
+        self.acceleration = kwargs.get('acceleration', 50)
         
         # Initialize PortHandler instance
         # Set the port path
@@ -127,11 +128,12 @@ class Servo(BaseModule):
         # Move to start position
         # if self.get_pose_value('stand') is not None:
             # self.start = self.get_pose_value('stand')
-        self.move(self.start)
+        if self.start is not None:
+            self.move(self.start)
+        
         
     def _sc_write(self, type, value, verbose=False):
         comm_result, error = self.packetHandler.write2ByteTxRx(self.portHandler, self.index, type, value)
-        # self.log(f"[SCServo][{self.identifier}] Set speed: comm_result={comm_result}, error={error}")
         if hasattr(self.packetHandler, 'getTxRxResult') and verbose:
             self.log(f"[SCServo Result] {self.packetHandler.getTxRxResult(comm_result)}")
         if hasattr(self.packetHandler, 'getRxPacketError') and error != 0:
@@ -139,10 +141,7 @@ class Servo(BaseModule):
             # Attempting to clear error by toggling torque off and on
             comm_result, error = self.packetHandler.write1ByteTxRx(self.portHandler, self.index, ADDR_TORQUE_ENABLE, 0)
             time.sleep(0.1)
-            # comm_result, error = self.packetHandler.write1ByteTxRx(self.portHandler, self.index, ADDR_TORQUE_ENABLE, 1)
-            # time.sleep(0.1)
-
-            # Typical address for Present Load is 54 (1 byte), but check your servo's manual
+            # # Typical address for Present Load is 54 (1 byte), but check your servo's manual
             # ADDR_SCS_PRESENT_LOAD = 54
             # ADDR_SCS_PRESENT_POSITION = 56
             # ADDR_SCS_PRESENT_SPEED = 58
@@ -153,9 +152,28 @@ class Servo(BaseModule):
             # # Read present speed (2 bytes)
             # speed, speed_comm_result, speed_error = self.packetHandler.read2ByteTxRx(self.portHandler, self.index, ADDR_SCS_PRESENT_SPEED)
             # self.log(f"[SCServo][{self.identifier}] Error context: load={load} (comm_result={load_comm_result}, error={load_error}), position={pos} (comm_result={pos_comm_result}, error={pos_error}), speed={speed} (comm_result={speed_comm_result}, error={speed_error})")
-
         return comm_result == COMM_SUCCESS and error == 0
-            
+    
+    def move_degrees(self, degrees):
+        if self.range_degrees is None:
+            self.log(f"Servo {self.identifier} does not have range_degrees set, cannot move by degrees", level='error')
+            return
+        # Convert degrees to position value based on range, adjusting RELATIVE to current position
+        if self.range is not None and self.pos is not None:
+            # Calculate how many position units correspond to the degree change
+            units_per_degree = (self.range[1] - self.range[0]) / self.range_degrees
+            position_delta = degrees * units_per_degree
+            new_position = round(self.pos + position_delta)
+            # Clamp to range
+            if new_position < self.range[0]:
+                new_position = self.range[0]
+            elif new_position > self.range[1]:
+                new_position = self.range[1]
+            if self.range_degrees > 0:
+                pc_move = round((degrees / self.range_degrees) * 100)
+                self.log(f"Moving servo {self.identifier} by {degrees} degrees (position {self.pos} -> {new_position} | {pc_move}% of range)")
+                self.move(new_position)
+
     def move(self, position):
         """
         Move the servo to an absolute position.
@@ -174,7 +192,7 @@ class Servo(BaseModule):
                 self.pos = position  # Update current position
         elif self.model.startswith('SC'):
             if (
-            self._sc_write(ADDR_TORQUE_ENABLE, 1) and
+                self._sc_write(ADDR_TORQUE_ENABLE, 1) and
             self._sc_write(ADDR_SCS_GOAL_ACC, self.acceleration) and
             self._sc_write(ADDR_SCS_GOAL_SPEED, self.speed) and
             self._sc_write(ADDR_SCS_GOAL_POSITION, position)):
