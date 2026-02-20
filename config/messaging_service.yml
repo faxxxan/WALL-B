@@ -2,7 +2,7 @@ messaging_service:
   enabled: true # Required for framework to function
   path: modules.network.messaging_service.MessagingService
   config:
-    protocol: 'mqtt' # 'mqtt' or 'pubsub'
+    protocol: 'pubsub' # 'mqtt' or 'pubsub' - something is wrong with mqtt that prevents the loops from executing correctly
     mqtt_host: 'localhost' 
     mqtt_port: 1883
   dependencies:
