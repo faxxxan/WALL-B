@@ -6,21 +6,15 @@ servos:
     - name: "leg_r_tilt"
       model: 'ST3215'
       id: 1
-      range: [978, 3343]
-      start: 3187
-      poses:
-        - stand: 1269
-        - sit: 2048
-        - centre: 2048
+      range: [2237, 3249]
+      start: 2810
     - name: "leg_r_hip"
       model: 'ST3215'
       id: 3
-      range: [770, 3389]
-      start: 2911
-      poses:
-        - stand: 824
-        - sit: 1269
-        - centre: 2048
+      range: [0, 1991]
+      range_degrees: 180
+      # calibrate_on_boot: true
+      # start: 1688
     - name: "leg_r_knee"
       model: 'ST3215'
       id: 2
@@ -35,26 +29,35 @@ servos:
       id: 6
       range: [2459, 3872]
       start: 2762
-      poses:
-        - stand: 3721
-        - sit: 3721
-        - centre: 2048
     - name: "neck_pan"
       model: 'SC09'
       baudrate: 115200
-      id: 4
+      id: 5
       range: [0, 1023]
-      start: 200
+      range_degrees: 300
+      start: 511
       # calibrate_on_boot: true
-      demonstrate_on_boot: true
-      speed: 100
+      # demonstrate_on_boot: true
+      speed: 300 # tested up to 600
       acceleration: 1
     - name: "neck_tilt"
       model: 'SC09'
       baudrate: 115200
-      id: 5
-      range: [160, 638]
-      start: 511
+      id: 11
+      range: [30, 220]
+      range_degrees: 50
+      start: 120
+      speed: 300 # max=0, 1 - 3000 tested
+      # acceleration: 0 # max (no significant difference between this and 1 - 3000)
+      # demonstrate_on_boot: true
+    # - name: "neck_tilt2"
+    #   model: 'SC09'
+    #   baudrate: 115200
+    #   id: 4
+    #   range: [0, 610] # 180 degree (may need reducing)
+    #   start: 305
+    #   speed: 300
+      # acceleration: 1
       # demonstrate_on_boot: true
     - name: "leg_l_tilt"
       model: 'ST3215'
@@ -64,8 +67,9 @@ servos:
     - name: "leg_l_hip"
       model: 'ST3215'
       id: 8
-      range: [747, 3370]
-      start: 1180
+      range: [1014, 3098]
+      range_degrees: 180
+      # start: 2451 
     - name: "leg_l_knee"
       model: 'ST3215'
       id: 9

@@ -1,5 +1,7 @@
 import logging, json
 import os, datetime
+import shutil
+from glob import glob
 from modules.base_module import BaseModule
 
 class LogWrapper(BaseModule):
@@ -51,9 +53,25 @@ class LogWrapper(BaseModule):
         self.subscribe('log/warning', self.log, type='warning')
 
     def __del__(self):
-        if os.path.isfile(self.file):
-            os.rename(self.file, self.file + '.previous')
-        print(f"[Log file stored at {self.file}.previous]")
+        try:
+            if os.path.isfile(self.file):
+                prev_dir = os.path.join(os.path.dirname(self.file), 'previous')
+                os.makedirs(prev_dir, exist_ok=True)
+                timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+                base = os.path.basename(self.file)
+                prev_file = os.path.join(prev_dir, f"{base}.{timestamp}")
+                shutil.move(self.file, prev_file)
+                print(f"[Log file stored at {prev_file}]")
+                # Remove all but the 10 most recent logs
+                prev_logs = sorted(glob(os.path.join(prev_dir, f"{base}.*")), reverse=True)
+                for old_log in prev_logs[10:]:
+                    try:
+                        os.remove(old_log)
+                    except Exception as e:
+                        print(f"[Error removing old log {old_log}: {e}]")
+        except Exception as e:
+            # Avoid raising exceptions during GC/interpreter shutdown
+            print(f"[LogWrapper __del__ suppressed exception: {e}]")
 
     def log(self, message):
         self.log('info', message)

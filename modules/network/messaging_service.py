@@ -46,7 +46,11 @@ class PubSubMessagingService(MessagingService):
         
         ```
         """
-        print(f"[PubSubMessagingService] Subscribing to {topic} to call {callback.__self__.__class__.__name__}.{callback.__name__}")
+        if hasattr(callback, '__self__') and hasattr(callback, '__name__'):
+            cb_name = f"{callback.__self__.__class__.__name__}.{callback.__name__}"
+        else:
+            cb_name = getattr(callback, '__name__', repr(callback))
+        print(f"[PubSubMessagingService] Subscribing to {topic} to call {cb_name}")
         pub.subscribe(callback, topic, **kwargs)
 
     def publish(self, topic, *args, **kwargs):

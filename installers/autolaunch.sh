@@ -30,6 +30,7 @@ ExecStart=$BASE_DIR/startup.sh
 WorkingDirectory=$BASE_DIR
 User=$USER
 Restart=on-failure
+EnvironmentFile=/home/$USER/.myenv
 
 [Install]
 WantedBy=multi-user.target
@@ -48,6 +49,10 @@ EOF
 
     echo "To debug issues, run:"
     echo "sudo journalctl -u modular-biped-launcher.service -f"
+
+    echo "IMPORTANT: Ensure that environment variables are set in /home/$USER/.myenv for the service to function properly: E.g:"
+    echo "OPENAI_API_KEY=<yourkey>"
+    echo "etc for: TELEGRAM_BOT_TOKEN, TELEGRAM_USER_ID, ELEVENLABS_KEY as required"
 
 }
 
