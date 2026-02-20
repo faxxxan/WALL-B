@@ -242,18 +242,21 @@ class Personality(BaseModule):
         now = time.time()
         # if there are matches and the object reaction end time is in the past
         if matches and len(matches) > 0 and (self.object_reaction_end_time is None or now >= self.object_reaction_end_time):
-            if any(match['category'] == 'person' for match in matches):
-                for match in matches:
-                    if match['category'] == 'person':
-                        self.eye_track_person(match['bbox'])
-                        self.publish('gpio/laser', state=False)  # Turn off laser when person detected
-
+            # get all matches with category 'person'
+            people = [match for match in matches if match['category'] == 'person']
+            # if more than one person, choose the largest one (closest)
+            if len(people) > 1:
+                people.sort(key=lambda x: x['bbox'][2]*x['bbox'][3],
+                            reverse=True)  # Sort by bounding box area 
+            if len(people) > 0:
+                # self.publish('gpio/laser', state=False)  # Turn off laser when person detected
+                self.track_match(people[0]['bbox'])
                 self.last_vision_time = now
                 # Set the object reaction end time to 0.5 seconds from now
-                self.log(f"Vision detected objects: {matches}", 'debug')
-                self.object_reaction_end_time = now + 0.5
+            self.log(f"Vision detected objects: {matches}", 'debug')
+            self.object_reaction_end_time = now + 0.5
     
-    def eye_track_person(self, match):
+    def track_match(self, match):
         screen = (240, 240)  # TFT display size
         camera_size = (640, 480)  # Camera resolution
         # log/info: [Personality.handle_vision_detections:135] Vision detected objects: 
@@ -264,15 +267,15 @@ class Personality(BaseModule):
         
         # Get center position from match.bbox. 
         # Assuming bbox is in the format [x_min, y_min, x_width, y_width]
-        center_x = match[0] + (match[2] / 2)
-        center_y = match[1] + (match[3] / 2)
+        center_pos_x = match[0] + (match[2] / 2)
+        center_pos_y = match[1] + (match[3] / 2)
         
         # print(f"Person detected at coordinates: ({center_x}, {center_y})")
         
         # Convert to tft display coordinates where (0,0) is the top left corner and (240,240) is the bottom right corner
         # Assuming original coordinates are in a 640x480 space
-        center_x = int((center_x/camera_size[0]) * screen[0]) 
-        center_y = int((center_y/camera_size[1]) * screen[1])
+        center_x = int((center_pos_x/camera_size[0]) * screen[0]) 
+        center_y = int((center_pos_y/camera_size[1]) * screen[1])
         
         # print(f"Converted coordinates: ({center_x}, {center_y})")
         
@@ -290,6 +293,22 @@ class Personality(BaseModule):
         
         # print(f"Rotated coordinates: ({center_x}, {center_y})")
         self.publish('eye/look', coordinates=(center_x, center_y))
+        
+        track_threshold = [15, 15] # Minimum angle change to trigger servo movement
+        
+        # Move pan servo based on center_pos_x position relative to camera_size
+        pan_angle = int(((center_pos_x - (camera_size[0] / 2)) / (camera_size[0] / 2)) * 40)  # Scale to -40 to 40 degrees
+        if abs(pan_angle) > track_threshold[0]:  # Only move if the angle is greater than 5 degrees to avoid jitter
+            self.log(f"Moving neck pan to {pan_angle} degrees based on detected object position")
+            self.servos['neck_pan'].move_degrees(pan_angle)
+            
+        # Move tilt servo based on center_pos_y position relative to camera_size
+        # Focus on the top of the bounding box in the Y axis
+        top_section_y = match[1] + 0.33 * match[3]
+        tilt_angle = int(((top_section_y - (camera_size[1] / 2)) / (camera_size[1] / 2)) * 40)  # Scale to -40 to 40 degrees
+        if abs(tilt_angle) > track_threshold[1]:  # Only move if the angle is greater than 5 degrees to avoid jitter
+            self.log(f"Moving neck tilt to {tilt_angle} degrees based on detected object position")
+            self.servos['neck_tilt'].move_degrees(-tilt_angle)
 
     # Motion: Updates the last motion time
     def update_motion_time(self, value):

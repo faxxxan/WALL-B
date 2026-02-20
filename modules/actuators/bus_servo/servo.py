@@ -133,23 +133,29 @@ class Servo(BaseModule):
         if hasattr(self.packetHandler, 'getTxRxResult') and verbose:
             self.log(f"[SCServo Result] {self.packetHandler.getTxRxResult(comm_result)}")
         if hasattr(self.packetHandler, 'getRxPacketError') and error != 0:
-            self.log(f"[SCServo Error] {self.packetHandler.getRxPacketError(error)}")
-            # Typical address for Present Load is 54 (1 byte), but check your servo's manual
-            ADDR_SCS_PRESENT_LOAD = 54
-            ADDR_SCS_PRESENT_POSITION = 56
-            ADDR_SCS_PRESENT_SPEED = 58
-            # Read present load
-            load, load_comm_result, load_error = self.packetHandler.read1ByteTxRx(self.portHandler, self.index, ADDR_SCS_PRESENT_LOAD)
-            # Read present position (2 bytes)
-            pos, pos_comm_result, pos_error = self.packetHandler.read2ByteTxRx(self.portHandler, self.index, ADDR_SCS_PRESENT_POSITION)
-            # Read present speed (2 bytes)
-            speed, speed_comm_result, speed_error = self.packetHandler.read2ByteTxRx(self.portHandler, self.index, ADDR_SCS_PRESENT_SPEED)
-            self.log(f"[SCServo][{self.identifier}] Error context: load={load} (comm_result={load_comm_result}, error={load_error}), position={pos} (comm_result={pos_comm_result}, error={pos_error}), speed={speed} (comm_result={speed_comm_result}, error={speed_error})")
+            self.log(f"[SCServo Error] {self.identifier} {self.packetHandler.getRxPacketError(error)}")
+            # Attempting to clear error by toggling torque off and on
+            comm_result, error = self.packetHandler.write1ByteTxRx(self.portHandler, self.index, ADDR_TORQUE_ENABLE, 0)
+            time.sleep(0.1)
+            # # Typical address for Present Load is 54 (1 byte), but check your servo's manual
+            # ADDR_SCS_PRESENT_LOAD = 54
+            # ADDR_SCS_PRESENT_POSITION = 56
+            # ADDR_SCS_PRESENT_SPEED = 58
+            # # Read present load
+            # load, load_comm_result, load_error = self.packetHandler.read1ByteTxRx(self.portHandler, self.index, ADDR_SCS_PRESENT_LOAD)
+            # # Read present position (2 bytes)
+            # pos, pos_comm_result, pos_error = self.packetHandler.read2ByteTxRx(self.portHandler, self.index, ADDR_SCS_PRESENT_POSITION)
+            # # Read present speed (2 bytes)
+            # speed, speed_comm_result, speed_error = self.packetHandler.read2ByteTxRx(self.portHandler, self.index, ADDR_SCS_PRESENT_SPEED)
+            # self.log(f"[SCServo][{self.identifier}] Error context: load={load} (comm_result={load_comm_result}, error={load_error}), position={pos} (comm_result={pos_comm_result}, error={pos_error}), speed={speed} (comm_result={speed_comm_result}, error={speed_error})")
         return comm_result == COMM_SUCCESS and error == 0
     
     def move_degrees(self, degrees):
+        if self.range_degrees is None:
+            self.log(f"Servo {self.identifier} does not have range_degrees set, cannot move by degrees", level='error')
+            return
         # Convert degrees to position value based on range, adjusting RELATIVE to current position
-        if self.range is not None and self.range_degrees is not None and self.pos is not None:
+        if self.range is not None and self.pos is not None:
             # Calculate how many position units correspond to the degree change
             units_per_degree = (self.range[1] - self.range[0]) / self.range_degrees
             position_delta = degrees * units_per_degree
@@ -182,8 +188,8 @@ class Servo(BaseModule):
                 self.pos = position  # Update current position
         elif self.model.startswith('SC'):
             if (
-                #self._sc_write(ADDR_TORQUE_ENABLE, 1) and
-            #self._sc_write(ADDR_SCS_GOAL_ACC, self.acceleration) and
+                self._sc_write(ADDR_TORQUE_ENABLE, 1) and
+            self._sc_write(ADDR_SCS_GOAL_ACC, self.acceleration) and
             self._sc_write(ADDR_SCS_GOAL_SPEED, self.speed) and
             self._sc_write(ADDR_SCS_GOAL_POSITION, position)):
                 self.log(f"Moved SC servo {self.identifier} from {self.pos} to position {position} in range {self.range}")

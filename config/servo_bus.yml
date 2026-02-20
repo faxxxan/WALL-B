@@ -30,6 +30,7 @@ servos:
       baudrate: 115200
       id: 5
       range: [0, 1023]
+      range_degrees: 300
       start: 511
       # calibrate_on_boot: true
       # demonstrate_on_boot: true
@@ -39,7 +40,8 @@ servos:
       model: 'SC09'
       baudrate: 115200
       id: 11
-      range: [0, 240] # 70 degree
+      range: [30, 220]
+      range_degrees: 50
       start: 120
       speed: 300 # max=0, 1 - 3000 tested
       # acceleration: 0 # max (no significant difference between this and 1 - 3000)
