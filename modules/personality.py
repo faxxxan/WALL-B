@@ -274,7 +274,7 @@ class Personality(BaseModule):
                 self.track_match(people[0]['bbox'])
                 self.last_vision_time = now
                 # Set the object reaction end time to 0.5 seconds from now
-            self.log(f"Vision detected objects: {matches}", 'debug')
+            # self.log(f"Vision detected objects: {matches}", 'debug')
             self.object_reaction_end_time = now + 0.5
     
     def track_match(self, match):
