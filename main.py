@@ -28,6 +28,26 @@ def main():
     # Example: module_instances[0].some_method()
     # vision = module_instances['vision']
     
+    
+    # Inject bno055 modules into personality if both are enabled
+    # ['ControllerHandler', 'WaveshareOLED', 'MessagingService', 'TFTDisplayEye', 'InputRecorder', 'Laser', 'Personality', 'Motion', 'PiTemperature', 'XboxController', 'TelegramBot', 'Animate', 'LogWrapper', 'BNO055_imu_head', 'BNO055_imu_body', 'Vision', 'TTSModule', 'Servo_leg_r_tilt', 'Servo_leg_r_hip', 'Servo_leg_r_knee', 'Servo_leg_r_ankle', 'Servo_neck_pan', 'Servo_neck_tilt', 'Servo_neck_tilt2', 'Servo_leg_l_tilt', 'Servo_leg_l_hip', 'Servo_leg_l_knee', 'Servo_leg_l_ankle', 'ChatGPT'])
+    if 'Personality' in module_instances:
+        personality = module_instances['Personality']
+        # Store all servo modules in personality for easy access within Personality.servos
+        for key, module in module_instances.items():
+            if key.startswith('Servo_'):
+                personality.servos[module.identifier] = module        
+    
+        if 'BNO055_imu_head' in module_instances:
+            personality.imu['head'] = module_instances['BNO055_imu_head']
+        if 'BNO055_imu_body' in module_instances:
+            personality.imu['body'] = module_instances['BNO055_imu_body']
+            
+        if 'Vision' in module_instances:
+            personality.vision = module_instances['Vision']
+        
+    
+    
     ## output all module instance keys for reference
     # print(module_instances.keys())
     # dict_keys(['ArduinoSerial', 'NeoPx', 'BrailleSpeak', 'Animate', 'Vision', 'PiTemperature', 'Servo_leg_l_hip', 'Servo_leg_l_knee', 'Servo_leg_l_ankle', 'Servo_leg_r_hip', 'Servo_leg_r_knee', 'Servo_leg_r_ankle', 'Servo_tilt', 'Servo_pan', 'Translator', 'Tracking_tracking', 'Sensor', 'Buzzer_buzzer'])
@@ -72,7 +92,7 @@ def main():
         
     # Use the new SystemLoop class to run the main loop
     from system_loop import SystemLoop
-    system_loop = SystemLoop(messaging_service)
+    system_loop = SystemLoop(messaging_service, module_instances.get('Personality'))
     system_loop.start()
 
 if __name__ == '__main__':

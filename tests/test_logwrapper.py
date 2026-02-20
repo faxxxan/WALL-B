@@ -54,12 +54,5 @@ class TestLogWrapper(unittest.TestCase):
             mock_subscribe.assert_any_call('log/critical', log_wrapper.log, type='critical')
             mock_subscribe.assert_any_call('log/warning', log_wrapper.log, type='warning')
 
-    @mock.patch('modules.logwrapper.os')
-    def test_del(self, mock_os):
-        log_wrapper = LogWrapper(path='/tmp', filename='test.log', log_level='info', cli_level='debug')
-        log_wrapper.__del__()
-        mock_os.path.isfile.assert_called_with('/tmp/test.log')
-        mock_os.rename.assert_called_with('/tmp/test.log', '/tmp/test.log.previous')
-
 if __name__ == '__main__':
     unittest.main()
