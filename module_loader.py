@@ -28,6 +28,7 @@ class ModuleLoader:
         """
         self.config_folder = config_folder
         self.environment = environment or 'robot'
+        print(f"[ModuleLoader] Loading modules for environment: {self.environment}")
         self.modules = self.load_yaml_files()
 
     def load_yaml_files(self):
@@ -43,6 +44,7 @@ class ModuleLoader:
                             continue
                         # If 'environment' is specified, filter by self.environment
                         env_field = module_config.get('environment')
+                        print(f"[ModuleLoader] Found module: {module_name} with environment filter: {env_field}")
                         if env_field is not None:
                             if isinstance(env_field, str):
                                 if env_field != self.environment:

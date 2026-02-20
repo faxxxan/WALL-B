@@ -24,12 +24,29 @@ class SystemLoop:
         self.last_hz_time = time.time()
         self.current_hz = 0
         # Subscribe to system/sleep and system/wake
-        self.messaging_service.subscribe('system/sleep', self.log_state_request, state=SystemLoop.STATE_SLEEPING)
-        self.messaging_service.subscribe('system/wake', self.log_state_request, state=SystemLoop.STATE_RUNNING)
-        self.messaging_service.subscribe('system/throttle', self.log_state_request, state=SystemLoop.STATE_THROTTLED)
+        self.messaging_service.subscribe('system/sleep', self.log_sleep_request)
+        self.messaging_service.subscribe('system/wake', self.log_running_request)
+        self.messaging_service.subscribe('system/throttle', self.log_throttle_request)
         self.messaging_service.subscribe('gpio/motion', self._last_motion_update)
 
-    def log_state_request(self, requestor, state):
+    def log_sleep_request(self, requestor=None, **kwargs):
+        self.log_state_request(requestor=requestor, state=SystemLoop.STATE_SLEEPING, **kwargs)
+    
+    def log_running_request(self, requestor=None, **kwargs):
+        self.log_state_request(requestor=requestor, state=SystemLoop.STATE_RUNNING, **kwargs)
+    
+    def log_throttle_request(self, requestor=None, **kwargs):
+        self.log_state_request(requestor=requestor, state=SystemLoop.STATE_THROTTLED, **kwargs)
+
+    def log_state_request(self, requestor=None, state=None, **kwargs):
+        # Try to extract from kwargs if not provided
+        if requestor is None:
+            requestor = kwargs.get('requestor', 'unknown')
+        if state is None:
+            state = kwargs.get('state')
+        if state is None:
+            self.messaging_service.publish('log', message=f"[SystemLoop] log_state_request called without state. Args: requestor={requestor}, kwargs={kwargs}")
+            return
         self._state_requests[requestor] = state
         # print(self._state_requests)
         # self.messaging_service.publish('log', message=f"[SystemLoop] State request from {requestor}: {state}, currently in state: {self._state}")
@@ -51,7 +68,7 @@ class SystemLoop:
     # Sleep or wake (or throttled) based on seconds since last motion
     # No motion module running = no motion updates, so system stays awake
     def _last_motion_update(self, value):
-        self.log_state_request('gpio/motion', SystemLoop.STATE_RUNNING if value is None or value < 30 else SystemLoop.STATE_SLEEPING)
+        self.log_state_request('gpio/motion', state=(SystemLoop.STATE_RUNNING if value is None or value < 30 else SystemLoop.STATE_SLEEPING))
         
     def _on_throttle(self, *args, **kwargs):
         if self._state != SystemLoop.STATE_THROTTLED:

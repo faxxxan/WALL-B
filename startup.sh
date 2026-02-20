@@ -13,6 +13,17 @@ sudo pkill -f "$BASE_DIR/main.py"
 # sudo modprobe bcm2835-v4l2 # Enable camera (if needed)
 sudo pigpiod # Start the GPIO daemon.
 
+# If mac
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  # macOS specific commands (if any)
+  echo "Running on macOS"
+  brew services start mosquitto
+else
+  # Linux specific commands
+  echo "Running on Linux"
+  sudo systemctl start mosquitto
+fi
+
 # Accept an optional environment argument and pass as --env (default to no argument, main.py defaults to 'robot')
 if [ -n "$1" ]; then
 	ENV_ARG="--env $1"
@@ -21,5 +32,3 @@ else
 fi
 "$BASE_DIR/myenv/bin/python3" "$BASE_DIR/main.py" $ENV_ARG
 
-# start mosquitto for mqtt broker
-# sudo systemctl start mosquitto

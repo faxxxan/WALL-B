@@ -1,3 +1,4 @@
 animate:
   enabled: true
+  environment: 'robot'
   path: modules.animate.Animate    

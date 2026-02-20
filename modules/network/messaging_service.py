@@ -1,5 +1,5 @@
 import json
-# import paho.mqtt.client as mqtt
+import paho.mqtt.client as mqtt
 from pubsub import pub
 
 class MessagingService:
@@ -86,7 +86,43 @@ class MQTTMessagingService(MessagingService):
         self.client.loop_stop()
 
     def subscribe(self, topic, callback, **kwargs):
-        raise NotImplementedError
-    
-    def publish(self, topic, message=None):
-        raise NotImplementedError
+        """
+        Subscribe to an MQTT topic and call the callback on message.
+        """
+        def on_message(client, userdata, msg):
+            try:
+                payload = msg.payload.decode('utf-8')
+                # Try to parse as JSON, fallback to string
+                try:
+                    data = json.loads(payload)
+                except Exception:
+                    data = payload
+                # Call the callback with the message or unpacked kwargs
+                if isinstance(data, dict):
+                    callback(**data)
+                else:
+                    callback(data)
+            except Exception as e:
+                print(f"[MQTTMessagingService] Error in on_message: {e}")
+
+        qos = kwargs.get('qos', 1)
+        self.client.subscribe(topic, qos=qos)
+        self.client.message_callback_add(topic, on_message)
+        print(f"[MQTTMessagingService] Subscribed to topic: {topic}")
+
+    def publish(self, topic, *args, **kwargs):
+        """
+        Publish a message to an MQTT topic.
+        - If only one argument is provided, send it as-is.
+        - If multiple arguments or keyword arguments are provided, send as JSON.
+        """
+        qos = kwargs.pop('qos', 1)
+        if len(args) == 1 and not kwargs:
+            payload = args[0]
+            if not isinstance(payload, str):
+                payload = json.dumps(payload)
+            self.client.publish(topic, payload, qos=qos)
+        else:
+            # Send kwargs as JSON
+            self.client.publish(topic, json.dumps(kwargs), qos=qos)
+        # print(f"[MQTTMessagingService] Published to topic: {topic}")
