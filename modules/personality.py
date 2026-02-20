@@ -53,6 +53,8 @@ class Personality(BaseModule):
         self.subscribe('gpio/motion', self.update_motion_time)
         self.subscribe('serial', self.track_serial_idle)
         self.subscribe('system/temperature', self.handle_temperature)
+        # self.subscribe('system/loop/10', self.test_servos)
+        # self.publish('gpio/laser', state=True) # Turn on laser if no one has been detected
         self.subscribe('telegram/received', self.handle_user_message)
         self.subscribe('ai/response', self.handle_ai_response)
         self.subscribe('system/debug/log_hz', self.update_current_hz)
@@ -63,6 +65,25 @@ class Personality(BaseModule):
         #     self.subscribe('imu/imu_body/data', self.handle_imu_data)
         # self.publish('gpio/laser', state=True) # Turn on laser if no one has been detected
 
+    def test_servos(self):
+        
+        self.log("Testing neck tilt servos")
+        # Reset
+        self.publish('servo:neck_pan:mvabs', position=200)
+        self.publish('servo:neck_tilt:mvabs', position=511)
+        self.publish('servo:neck_tilt2:mvabs', position=511)
+        time.sleep(2)
+        self.publish('servo:neck_tilt:mv', delta=-150)
+        self.publish('servo:neck_tilt2:mv', delta=150)
+        time.sleep(2)
+        self.publish('servo:neck_tilt:mv', delta=300)
+        self.publish('servo:neck_tilt2:mv', delta=-300)
+        time.sleep(2)
+        self.publish('servo:neck_pan:mv', delta=200)
+        time.sleep(2)
+        self.publish('servo:neck_pan:mv', delta=-400)
+        self.log("Neck tilt servos test complete")
+    
     def update_current_hz(self, hz):
         self.current_hz = hz
 

@@ -111,11 +111,15 @@ class Servo(BaseModule):
             self.calibrate_to_center()
         
         if self.demonstrate_on_boot:
-            self.log(f"Demonstrating servo {self.identifier} movement")
+            self.log(f"Demonstrating servo {self.identifier} movement, speed={self.speed}, acceleration={self.acceleration}")
             if self.range is not None:
-                time.sleep(1)
+                time.sleep(2)
                 self.move(self.range[0])
                 time.sleep(5)
+                # move to halfway
+                mid = (self.range[0] + self.range[1]) // 2
+                self.move(mid)
+                time.sleep(2)
                 self.move(self.range[1])
                 time.sleep(5)
             else:
@@ -192,7 +196,7 @@ class Servo(BaseModule):
             self._sc_write(ADDR_SCS_GOAL_ACC, self.acceleration) and
             self._sc_write(ADDR_SCS_GOAL_SPEED, self.speed) and
             self._sc_write(ADDR_SCS_GOAL_POSITION, position)):
-                self.log(f"Moved SC servo {self.identifier} from {self.pos} to position {position} in range {self.range}")
+                self.log(f"Moved SC servo {self.identifier} from {self.pos} to position {position} in range {self.range}  at speed {self.speed} and acceleration {self.acceleration} ")
                 self.pos = position  # Update current position
             else:
                 self.log(f"Failed to move SC servo {self.identifier} to position {position}", level='error')
@@ -367,7 +371,6 @@ class Servo(BaseModule):
             self.packetHandler.write2ByteTxRx(self.portHandler, self.index, ADDR_SCS_GOAL_SPEED, self.speed)
             self.packetHandler.write2ByteTxRx(self.portHandler, self.index, ADDR_SCS_GOAL_POSITION, self.pos)
             self.log(f"Moved servo {self.identifier} to position {self.pos}")
-
 
 
 
