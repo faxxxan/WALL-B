@@ -68,6 +68,7 @@ servos:
       model: 'ST3215'
       id: 8
       range: [1014, 3098]
+      range_degrees: 180
       # start: 2451 
     - name: "leg_l_knee"
       model: 'ST3215'
