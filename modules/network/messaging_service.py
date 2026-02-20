@@ -105,7 +105,8 @@ class MQTTMessagingService(MessagingService):
             except Exception as e:
                 print(f"[MQTTMessagingService] Error in on_message: {e}")
 
-        self.client.subscribe(topic)
+        qos = kwargs.get('qos', 1)
+        self.client.subscribe(topic, qos=qos)
         self.client.message_callback_add(topic, on_message)
         print(f"[MQTTMessagingService] Subscribed to topic: {topic}")
 
@@ -115,12 +116,13 @@ class MQTTMessagingService(MessagingService):
         - If only one argument is provided, send it as-is.
         - If multiple arguments or keyword arguments are provided, send as JSON.
         """
+        qos = kwargs.pop('qos', 1)
         if len(args) == 1 and not kwargs:
             payload = args[0]
             if not isinstance(payload, str):
                 payload = json.dumps(payload)
-            self.client.publish(topic, payload)
+            self.client.publish(topic, payload, qos=qos)
         else:
             # Send kwargs as JSON
-            self.client.publish(topic, json.dumps(kwargs))
+            self.client.publish(topic, json.dumps(kwargs), qos=qos)
         # print(f"[MQTTMessagingService] Published to topic: {topic}")
