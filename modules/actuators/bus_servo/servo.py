@@ -141,6 +141,8 @@ class Servo(BaseModule):
             # Attempting to clear error by toggling torque off and on
             comm_result, error = self.packetHandler.write1ByteTxRx(self.portHandler, self.index, ADDR_TORQUE_ENABLE, 0)
             time.sleep(0.1)
+            # comm_result, error = self.packetHandler.write1ByteTxRx(self.portHandler, self.index, ADDR_TORQUE_ENABLE, )
+            # self._sc_write(type, value)
             # # Typical address for Present Load is 54 (1 byte), but check your servo's manual
             # ADDR_SCS_PRESENT_LOAD = 54
             # ADDR_SCS_PRESENT_POSITION = 56
@@ -159,6 +161,8 @@ class Servo(BaseModule):
             self.log(f"Servo {self.identifier} does not have range_degrees set, cannot move by degrees", level='error')
             return
         # Convert degrees to position value based on range, adjusting RELATIVE to current position
+        self.pos = self.get_position()  # Update current position before calculating new position
+        time.sleep(0.1)
         if self.range is not None and self.pos is not None:
             # Calculate how many position units correspond to the degree change
             units_per_degree = (self.range[1] - self.range[0]) / self.range_degrees

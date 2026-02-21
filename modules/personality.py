@@ -35,6 +35,7 @@ class Personality(BaseModule):
         self.vision = None # Set in main.py
         self.euler = None
         self.balance_enabled = kwargs.get('balance_enabled', True)
+        self.chicken_head_enabled = kwargs.get('chicken_head_enabled', False)
         self.servos = {} # Set in main.py
 
         # Define possible actions
@@ -49,7 +50,7 @@ class Personality(BaseModule):
         """Subscribe to necessary topics."""
         self.subscribe('system/loop/1', self.loop_second)
         self.subscribe('system/loop/10', self.loop_10)
-        self.subscribe('vision/detections', self.handle_vision_detections)
+        # self.subscribe('vision/detections', self.handle_vision_detections) # Enable after testing north facing
         self.subscribe('gpio/motion', self.update_motion_time)
         self.subscribe('serial', self.track_serial_idle)
         self.subscribe('system/temperature', self.handle_temperature)
@@ -86,6 +87,25 @@ class Personality(BaseModule):
     
     def update_current_hz(self, hz):
         self.current_hz = hz
+        
+    def chicken_head(self):
+        """ Using self.imu['head'] data (if present), rotate the head to face the same direction (0 degrees from get_euler()[1]). """
+        if not self.chicken_head_enabled or 'head' not in self.imu:
+            return
+        euler = self.imu['head'].get_euler()
+        yaw = euler[0]
+        pitch = euler[1]    
+        print(f"Current head pitch: {yaw}, pitch: {pitch}")
+        if yaw < 180:
+            zero_yaw = -yaw
+        else:
+            zero_yaw = 360 - yaw # Prevent turning more than 180 degrees in either direction
+            
+        print(f"Pitch: {pitch}, Angle to zero yaw: {zero_yaw}")
+        if abs(pitch) > 5:
+            self.servos['neck_tilt'].move_degrees(pitch)
+        if abs(zero_yaw) > 5:
+            self.servos['neck_pan'].move_degrees(zero_yaw)
 
     def balance(self):
         """Use head and body IMU data to maintain balance by adjusting leg servos."""
@@ -150,6 +170,7 @@ class Personality(BaseModule):
         now = time.time()
         self.cycle_display()
         self.balance()
+        self.chicken_head() # Testing head movement based on IMU data. Should be disabled in normal operation to avoid constant movement.
         
         # Handle ongoing object reaction
         if self.object_reaction_end_time and now >= self.object_reaction_end_time:
