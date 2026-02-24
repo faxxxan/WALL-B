@@ -43,7 +43,6 @@ class Servo(BaseModule):
         """
         Servo class
         """
-        
         self.identifier = kwargs.get('name')
         self.model = kwargs.get('model', 'ST')
         self.index = kwargs.get('id')
@@ -59,7 +58,11 @@ class Servo(BaseModule):
         self.pos = None
         self.speed = kwargs.get('speed', 300) # 3073
         self.acceleration = kwargs.get('acceleration', 50)
-        
+        # After loading YAML:
+        poses_list = kwargs.get('poses', [])
+        # Convert to dict:
+        self.poses = {list(pose.keys())[0]: list(pose.values())[0] for pose in poses_list}
+
         # Initialize PortHandler instance
         # Set the port path
         # Get methods and members of PortHandlerLinux or PortHandlerWindows
@@ -81,8 +84,7 @@ class Servo(BaseModule):
         if not self.portHandler.setBaudRate(self.baudrate):
             raise Exception("Failed to change the baudrate")
         
-    
-    def exit(self):
+    def detach(self):
         # Detach servo
         if self.model.startswith('ST'):
             # Disable torque for STServo
@@ -95,12 +97,15 @@ class Servo(BaseModule):
             if not self.handle_errors(scs_comm_result, scs_error):
                 self.log(f"SC Servo {self.identifier} disabled")
     
+    def exit(self):
+        self.detach()
         self.portHandler.closePort()
 
     def setup_messaging(self):
         self.subscribe('servo:' + self.identifier + ':mvabs', self.move)
         self.subscribe('servo:' + self.identifier + ':mv', self.move_relative)
         self.subscribe('system/exit', self.exit)
+        self.subscribe('servo/pose', self.move_to_pose)
         
         if self.calibrate_on_boot:
             self.calibrate_dynamic() # Log will show current position repeatedly to help with manual configuration
@@ -113,15 +118,9 @@ class Servo(BaseModule):
         if self.demonstrate_on_boot:
             self.log(f"Demonstrating servo {self.identifier} movement, speed={self.speed}, acceleration={self.acceleration}")
             if self.range is not None:
-                time.sleep(2)
-                self.move(self.range[0])
-                time.sleep(5)
-                # move to halfway
-                mid = (self.range[0] + self.range[1]) // 2
-                self.move(mid)
-                time.sleep(2)
-                self.move(self.range[1])
-                time.sleep(5)
+                self.move(self.range[0]) # Move to min range
+                self.move((self.range[0] + self.range[1]) // 2) # Move to center
+                self.move(self.range[1]) # Move to max range
             else:
                 self.log(f"Range not set for servo {self.identifier}, cannot demonstrate movement", level='warning')
         
@@ -131,7 +130,17 @@ class Servo(BaseModule):
         if self.start is not None:
             self.move(self.start)
         
-        
+    def move_to_pose(self, pose_name):
+        # print(self.poses)
+        pose_value = self.poses.get(pose_name)
+        # print(f"{self.identifier} - Pose '{pose_name}' value: {pose_value}")
+        my_pose_value = pose_value.get(self.identifier)
+        print(f"Moving servo {self.identifier} to pose '{pose_name}' with value {my_pose_value}")
+        if my_pose_value is not None:
+            self.move(my_pose_value)
+        else:
+            self.log(f"Pose '{pose_name}' not found for servo {self.identifier}", level='warning')
+            
     def _sc_write(self, type, value, verbose=False):
         comm_result, error = self.packetHandler.write2ByteTxRx(self.portHandler, self.index, type, value)
         if hasattr(self.packetHandler, 'getTxRxResult') and verbose:
@@ -183,6 +192,10 @@ class Servo(BaseModule):
         Move the servo to an absolute position.
         :param position: Position to move to (0-100)
         """
+        while self.is_moving():
+            self.log(f"Waiting for servo {self.identifier} to finish moving before accepting new command")
+            time.sleep(0.1)  # Wait for current movement to finish before accepting new command
+            
         # self.log(f"(MOVE) Moving servo {self.identifier} from {self.pos} to position {position} for range {self.range}")
         if position < self.range[0] or position > self.range[1]:
             self.log(f"Position {position} out of range ({self.range[0]}-{self.range[1]})", level='error')
@@ -219,6 +232,14 @@ class Servo(BaseModule):
         # Move to new position
         self.move(new_position)
         
+        
+    def is_moving(self):
+        if self.get_moving() == 1:
+            return True
+        elif self.pos != self.get_position():
+            print(f"Warning: Servo {self.identifier} is not reporting as moving but position {self.get_position()} does not match target position {self.pos}")
+        return False
+        
     def get_position(self):
         """
         Get the current position of the servo.
@@ -243,6 +264,20 @@ class Servo(BaseModule):
                 return sts_present_speed
         else:
             return self.sc_get_position_speed('speed')
+    
+    def get_moving(self):
+        """
+        Get the current moving status of the servo.
+        """
+        if self.model.startswith('ST'):
+            # Read STServo moving status
+            moving, sts_comm_result, sts_error = self.packetHandler.ReadMoving(self.index)
+            if not self.handle_errors(sts_comm_result, sts_error):
+                return moving
+        else:
+            # SCServo does not have a direct moving status, so we can infer it by checking if speed is non-zero or if position is changing over time.
+            speed = self.get_speed()
+            return speed != 0
         
         
     def sc_get_position_speed(self, pos_or_speed):
@@ -325,6 +360,7 @@ class Servo(BaseModule):
         Complete on key press. and store in self.range
         """
         self.log(f"Calibrating servo {self.identifier}. Move the servo to find min and max positions. Press any key to finish...")
+        self.detach()
         min_pos = None
         max_pos = None
         try:
@@ -338,7 +374,9 @@ class Servo(BaseModule):
                 if max_pos is None or pos > max_pos:
                     max_pos = pos
                 # Print on the same line, pad with spaces to clear previous content
-                print(f"\rCurrent position: {pos}, Min: {min_pos}, Max: {max_pos}      ", end='', flush=True)
+                # (4095 = 360 degrees, so 1264 = 111 degrees)
+                range_degrees = (360/4095)*(max_pos - min_pos) if min_pos is not None and max_pos is not None else 'N/A'
+                print(f"\rCurrent position: {pos}, Min: {min_pos}, Max: {max_pos} Range(deg): {range_degrees}", end='', flush=True)
                 time.sleep(0.05)
                 if sys.stdin in select.select([sys.stdin], [], [], 0)[0]:
                     sys.stdin.read(1)  # Consume the key so buffer is cleared
@@ -364,13 +402,13 @@ class Servo(BaseModule):
         # Write STServo goal position
         
         if self.model.startswith('ST'):
-            self.pos = ST_MAX//2  # Update current position
+            self.pos = (self.range[0] + self.range[1]) // 2  # Update current position to center
             sts_comm_result, sts_error = self.packetHandler.WritePosEx(self.index, self.pos, self.speed, self.acceleration)
             if not self.handle_errors(sts_comm_result, sts_error):
                 self.log(f"Moved servo {self.identifier} to position {self.pos}")
                 
         elif self.model.startswith('SC'):
-            self.pos = SC_MAX//2  # Update current position
+            self.pos = (self.range[0] + self.range[1]) // 2  # Update current position to center
             self.packetHandler.write1ByteTxRx(self.portHandler, self.index, ADDR_SCS_GOAL_ACC, self.acceleration)
             self.packetHandler.write2ByteTxRx(self.portHandler, self.index, ADDR_SCS_GOAL_SPEED, self.speed)
             self.packetHandler.write2ByteTxRx(self.portHandler, self.index, ADDR_SCS_GOAL_POSITION, self.pos)

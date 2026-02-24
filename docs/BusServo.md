@@ -64,6 +64,7 @@ There are some limitations to the SC servos as they do not support continuous ro
 - Overload error occurring fairly frequently on SC servos. However when testing with scheduled movements the issue is far less frequent. This may be due to sending commands too quickly in succession. Cycling torque off/on seems to resolve the error, otherwise you need to power cycle the servo.
 - To disable torque on SC servos use: `self.packetHandler.write1ByteTxRx(self.portHandler, self.index, ADDR_TORQUE_ENABLE, 0)`, change the 0 to 1 to enable torque.
 - One of the SC servos definitely seems more prone to overload errors than the others. It may be a faulty servo. This servo also doesn't always respect speed settings. It can be set to 3000 and move quickly on one movement then slow the next without a change in speed being commanded. This issue may be directional, as both the original SC servos show this behaviour in one direction only.
+- In some cases the overload error does seem to be caused by load on the servo, in which case toggling the torque does not resolve this. The neck pan is an example of this where the SC servo needed to be replaced with the more powerful ST servo.
 
 ## References
 https://www.waveshare.com/wiki/ST3215_Servo
