@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import collections
 import sys
 import select
 import time
@@ -58,6 +59,7 @@ class Servo(BaseModule):
         self.pos = None
         self.speed = kwargs.get('speed', 300) # 3073
         self.acceleration = kwargs.get('acceleration', 50)
+        self._move_queue = collections.deque()
         # After loading YAML:
         poses_list = kwargs.get('poses', [])
         # Convert to dict:
@@ -102,10 +104,12 @@ class Servo(BaseModule):
         self.portHandler.closePort()
 
     def setup_messaging(self):
-        self.subscribe('servo:' + self.identifier + ':mvabs', self.move)
+        self.subscribe('servo:' + self.identifier + ':mvabs', self.queue_move)
         self.subscribe('servo:' + self.identifier + ':mv', self.move_relative)
+        self.subscribe('servo:' + self.identifier + ':queue', self.queue_move)
         self.subscribe('system/exit', self.exit)
         self.subscribe('servo/pose', self.move_to_pose)
+        self.subscribe('system/loop', self.process_queue)
         
         if self.calibrate_on_boot:
             self.calibrate_dynamic() # Log will show current position repeatedly to help with manual configuration
@@ -171,7 +175,6 @@ class Servo(BaseModule):
             return
         # Convert degrees to position value based on range, adjusting RELATIVE to current position
         self.pos = self.get_position()  # Update current position before calculating new position
-        time.sleep(0.1)
         if self.range is not None and self.pos is not None:
             # Calculate how many position units correspond to the degree change
             units_per_degree = (self.range[1] - self.range[0]) / self.range_degrees
@@ -187,15 +190,46 @@ class Servo(BaseModule):
                 self.log(f"Moving servo {self.identifier} by {degrees} degrees (position {self.pos} -> {new_position} | {pc_move}% of range)")
                 self.move(new_position)
 
-    def move(self, position):
+    def queue_move(self, position, speed=None, acceleration=None, delay=0, **kwargs):
+        """
+        Add a move request to the queue.
+        :param position: Target position
+        :param speed: Optional speed override
+        :param acceleration: Optional acceleration override
+        :param delay: Optional delay in seconds before executing (for animation)
+        """
+        self._move_queue.append({
+            'position': position,
+            'speed': speed if speed is not None else self.speed,
+            'acceleration': acceleration if acceleration is not None else self.acceleration,
+            'timestamp': time.time(),
+            'delay': delay,
+        })
+
+    def process_queue(self, **kwargs):
+        """
+        Process the next item in the move queue if the servo is not moving.
+        Called on system/loop.
+        """
+        if not self._move_queue:
+            return
+        if self.is_moving():
+            return
+        next_item = self._move_queue[0]
+        if time.time() - next_item['timestamp'] >= next_item['delay']:
+            self._move_queue.popleft()
+            self.move(next_item['position'], next_item['speed'], next_item['acceleration'])
+
+    def move(self, position, speed=None, acceleration=None):
         """
         Move the servo to an absolute position.
-        :param position: Position to move to (0-100)
+        :param position: Position to move to
+        :param speed: Optional speed override
+        :param acceleration: Optional acceleration override
         """
-        while self.is_moving():
-            self.log(f"Waiting for servo {self.identifier} to finish moving before accepting new command")
-            time.sleep(0.1)  # Wait for current movement to finish before accepting new command
-            
+        speed = speed if speed is not None else self.speed
+        acceleration = acceleration if acceleration is not None else self.acceleration
+
         # self.log(f"(MOVE) Moving servo {self.identifier} from {self.pos} to position {position} for range {self.range}")
         if position < self.range[0] or position > self.range[1]:
             self.log(f"Position {position} out of range ({self.range[0]}-{self.range[1]})", level='error')
@@ -203,17 +237,17 @@ class Servo(BaseModule):
         
         # Write STServo goal position
         if self.model.startswith('ST'):
-            sts_comm_result, sts_error = self.packetHandler.WritePosEx(self.index, position, self.speed, self.acceleration)
+            sts_comm_result, sts_error = self.packetHandler.WritePosEx(self.index, position, speed, acceleration)
             if not self.handle_errors(sts_comm_result, sts_error):
                 self.log(f"Moved ST servo {self.identifier} from {self.pos} to position {position}")
                 self.pos = position  # Update current position
         elif self.model.startswith('SC'):
             if (
                 self._sc_write(ADDR_TORQUE_ENABLE, 1) and
-            self._sc_write(ADDR_SCS_GOAL_ACC, self.acceleration) and
-            self._sc_write(ADDR_SCS_GOAL_SPEED, self.speed) and
+            self._sc_write(ADDR_SCS_GOAL_ACC, acceleration) and
+            self._sc_write(ADDR_SCS_GOAL_SPEED, speed) and
             self._sc_write(ADDR_SCS_GOAL_POSITION, position)):
-                self.log(f"Moved SC servo {self.identifier} from {self.pos} to position {position} in range {self.range}  at speed {self.speed} and acceleration {self.acceleration} ")
+                self.log(f"Moved SC servo {self.identifier} from {self.pos} to position {position} in range {self.range}  at speed {speed} and acceleration {acceleration} ")
                 self.pos = position  # Update current position
             else:
                 self.log(f"Failed to move SC servo {self.identifier} to position {position}", level='error')
