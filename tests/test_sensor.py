@@ -5,7 +5,7 @@ from unittest import mock
 mock_gpiozero = mock.MagicMock()
 mock_gpiozero.MotionSensor = mock.MagicMock()
 with mock.patch.dict('sys.modules', {'gpiozero': mock_gpiozero}):
-    from modules.gpio.motion import Motion as Sensor
+    from modules.gpio.motion.motion import Motion as Sensor
 
 class TestSensor(unittest.TestCase):
 

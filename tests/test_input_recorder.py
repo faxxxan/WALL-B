@@ -4,7 +4,7 @@ import time
 
 class TestInputRecorder(unittest.TestCase):
     def setUp(self):
-        from modules.input_recorder import InputRecorder
+        from modules.input_recorder.input_recorder import InputRecorder
         self.recorder = InputRecorder(animations_dir='/tmp')
         self.recorder.log = lambda *a, **k: None
         self.recorder.save_events = MagicMock()

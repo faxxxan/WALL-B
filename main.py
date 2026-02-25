@@ -17,7 +17,7 @@ def main():
     env = args.env
 
     # Dynamically load and initialize modules, passing env
-    loader = ModuleLoader(config_folder="config", environment=env)
+    loader = ModuleLoader(config_folder="modules", environment=env)
     module_instances = loader.load_modules()
 
     # Set messaging service for all modules

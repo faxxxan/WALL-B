@@ -4,17 +4,22 @@ import importlib.util
 from pubsub import pub
 
 class ModuleLoader:
-    def __init__(self, config_folder='config', environment=None):
+    def __init__(self, config_folder='modules', environment=None):
         """
         ModuleLoader class
-        :param config_folder: folder containing the module configuration files
+        :param config_folder: root folder to search for module config.yml files (searched recursively)
         
-        Example config file:
-        config/modules.yml
+        Each module lives in its own directory containing:
+          - <module>.py   (Python implementation)
+          - config.yml    (module configuration)
+          - README.md     (documentation)
+          - tests/        (unit tests)
+        
+        Example config.yml:
         ---
         buzzer:
             enabled: true # Required
-            path: "modules.audio.buzzer.Buzzer" # Required
+            path: "modules.audio.buzzer.buzzer.Buzzer" # Required
             config: # Passed as **kwargs to the module's __init__ method
                 pin: 27
                 name: 'buzzer'
@@ -32,8 +37,12 @@ class ModuleLoader:
         self.modules = self.load_yaml_files()
 
     def load_yaml_files(self):
-        """Load and parse YAML files from the config folder."""
-        config_files = [os.path.join(self.config_folder, f) for f in os.listdir(self.config_folder) if f.endswith('.yml')]
+        """Recursively search config_folder for config.yml files and load module configurations."""
+        config_files = []
+        for root, dirs, files in os.walk(self.config_folder):
+            for f in files:
+                if f == 'config.yml':
+                    config_files.append(os.path.join(root, f))
         loaded_modules = []
         for file_path in config_files:
             with open(file_path, 'r') as stream:

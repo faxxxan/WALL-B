@@ -14,7 +14,7 @@ sys.modules['adafruit_bno055'] = mock_adafruit_bno055
 sys.modules['pubsub'] = mock_pubsub
 sys.modules['pubsub.pub'] = mock_pubsub.pub
 
-from modules.sensor.imu.bno055 import BNO055
+from modules.sensor.imu.bno055.bno055 import BNO055
 
 
 def make_sensor(**kwargs):
@@ -75,7 +75,7 @@ class TestBNO055Init(unittest.TestCase):
         def fake_read_data(self_inner):
             call_count['n'] += 1
 
-        with patch('modules.sensor.imu.bno055.time.sleep', side_effect=StopIteration), \
+        with patch('modules.sensor.imu.bno055.bno055.time.sleep', side_effect=StopIteration), \
              patch.object(BNO055, 'read_data', fake_read_data):
             with self.assertRaises(StopIteration):
                 make_sensor(test_on_boot=True)

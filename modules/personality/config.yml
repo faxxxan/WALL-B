@@ -1,0 +1,6 @@
+personality:
+  enabled: true
+  path: modules.personality.personality.Personality
+  config:
+    mode: 6 # Config.MODE_LIVE
+    sleep_timeout: 60  # Time in seconds before entering sleep mode

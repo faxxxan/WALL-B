@@ -2,11 +2,11 @@ import unittest
 from unittest import mock
 import os
 import logging
-from modules.logwrapper import LogWrapper
+from modules.logwrapper.logwrapper import LogWrapper
 
 class TestLogWrapper(unittest.TestCase):
 
-    @mock.patch('modules.logwrapper.logging')
+    @mock.patch('modules.logwrapper.logwrapper.logging')
     def test_init(self, mock_logging):
         log_wrapper = LogWrapper(path='/tmp', filename='test.log', log_level='info', cli_level='debug')
         self.assertEqual(log_wrapper.path, '/tmp')
@@ -21,19 +21,19 @@ class TestLogWrapper(unittest.TestCase):
             datefmt='%Y/%m/%d %I:%M:%S %p'
         )
 
-    @mock.patch('modules.logwrapper.logging')
+    @mock.patch('modules.logwrapper.logwrapper.logging')
     def test_log(self, mock_logging):
         log_wrapper = LogWrapper(path='/tmp', filename='test.log', log_level='info', cli_level='debug')
         log_wrapper.log('Test message', type='info')
         mock_logging.log.assert_called_with(logging.INFO, 'Test message')
 
-    @mock.patch('modules.logwrapper.logging')
+    @mock.patch('modules.logwrapper.logwrapper.logging')
     def test_log_json_message(self, mock_logging):
         log_wrapper = LogWrapper(path='/tmp', filename='test.log', log_level='info', cli_level='debug')
         log_wrapper.log('{"message": "Test JSON message"}', type='info')
         mock_logging.log.assert_called_with(logging.INFO, 'Test JSON message')
 
-    @mock.patch('modules.logwrapper.logging')
+    @mock.patch('modules.logwrapper.logwrapper.logging')
     def test_log_with_translator(self, mock_logging):
         mock_translator = mock.Mock()
         mock_translator.request.return_value = 'Translated message'
@@ -42,7 +42,7 @@ class TestLogWrapper(unittest.TestCase):
         mock_translator.request.assert_called_with('Test message')
         mock_logging.log.assert_called_with(logging.INFO, 'Translated message')
 
-    @mock.patch('modules.logwrapper.logging')
+    @mock.patch('modules.logwrapper.logwrapper.logging')
     def test_setup_messaging(self, mock_logging):
         log_wrapper = LogWrapper(path='/tmp', filename='test.log', log_level='info', cli_level='debug')
         with mock.patch.object(log_wrapper, 'subscribe') as mock_subscribe:

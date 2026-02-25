@@ -1,0 +1,6 @@
+serial:
+  enabled: false
+  path: "modules.network.arduinoserial.arduinoserial.ArduinoSerial"
+  config:
+    port: '/dev/ttyAMA0'
+    baudrate: '115200'

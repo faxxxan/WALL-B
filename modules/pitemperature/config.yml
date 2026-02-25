@@ -1,0 +1,4 @@
+pitemperature:
+  enabled: true
+  environment: robot
+  path: modules.pitemperature.pitemperature.PiTemperature

@@ -1,0 +1,10 @@
+telegram:
+  enabled: true
+  path: modules.network.telegrambot.telegrambot.TelegramBot
+  config:
+    user_whitelist: []
+  dependencies:
+    python:
+      - python-telegram-bot
+    additional:
+      - https://core.telegram.org/bots/tutorial#obtain-your-bot-token

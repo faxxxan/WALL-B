@@ -4,7 +4,7 @@ import unittest
 from unittest.mock import MagicMock, patch
 sys.modules['yaml'] = MagicMock()
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from modules.xbox_controller import XboxController
+from modules.xbox_controller.xbox_controller import XboxController
 
 
 class TestXboxController(unittest.TestCase):
