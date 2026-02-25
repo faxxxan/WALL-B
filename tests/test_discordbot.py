@@ -2,7 +2,7 @@ import asyncio
 import sys
 import types
 import unittest
-from unittest.mock import AsyncMock, MagicMock, Mock, patch, PropertyMock
+from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 # ---------------------------------------------------------------------------
 # Stub out the 'discord' package so tests run without installing it.
@@ -21,12 +21,17 @@ class _Intents:
 class _Thread:
     pass
 
+# Minimal discord.DMChannel sentinel
+class _DMChannel:
+    pass
+
 # Minimal discord.HTTPException
 class _HTTPException(Exception):
     pass
 
 discord_stub.Intents = _Intents
 discord_stub.Thread = _Thread
+discord_stub.DMChannel = _DMChannel
 discord_stub.HTTPException = _HTTPException
 
 # discord.Client used inside DiscordBot.__init__
@@ -74,7 +79,16 @@ def _make_bot(prompt="Test prompt", knowledge_sources=None, token="fake-token"):
             knowledge_sources=knowledge_sources or [],
         )
         bot._loop = asyncio.new_event_loop()
+        # Provide a messaging service so log() calls don't raise.
+        bot._messaging_service = Mock()
         return bot
+
+
+def _make_ai_mock(return_value="AI response"):
+    """Return a mock ChatGPT instance whose completion() returns *return_value*."""
+    mock_ai = Mock()
+    mock_ai.completion.return_value = return_value
+    return mock_ai
 
 
 # ---------------------------------------------------------------------------
@@ -110,6 +124,10 @@ class TestDiscordBotInit(unittest.TestCase):
         self.assertIn("https://example.com/repo", bot.system_prompt)
         self.assertIn("Help me", bot.system_prompt)
 
+    def test_ai_instance_defaults_to_none(self):
+        bot = _make_bot()
+        self.assertIsNone(bot.ai_instance)
+
     def test_background_thread_started(self):
         with patch("threading.Thread") as mock_thread_cls, \
              patch.dict("os.environ", {"DISCORD_BOT_TOKEN": "tok"}):
@@ -124,16 +142,14 @@ class TestDiscordBotMessaging(unittest.TestCase):
 
     def setUp(self):
         self.bot = _make_bot()
-        self.mock_ms = Mock()
-        self.bot._messaging_service = self.mock_ms
 
     def test_setup_messaging_subscribes_to_topics(self):
         with patch.object(self.bot, "subscribe") as mock_sub:
             self.bot.setup_messaging()
             topics = [call[0][0] for call in mock_sub.call_args_list]
-            self.assertIn("ai/response", topics)
             self.assertIn("discord/send", topics)
             self.assertIn("system/exit", topics)
+            self.assertNotIn("ai/response", topics)
 
     def test_handle_ai_response_stores_response(self):
         self.bot.handle_ai_response(response="Great answer!")
@@ -158,57 +174,42 @@ class TestDiscordBotMessaging(unittest.TestCase):
 
 
 class TestDiscordBotGetAiResponse(unittest.TestCase):
-    """Tests for the synchronous AI-request helper."""
+    """Tests for the direct AI-request helper."""
 
     def setUp(self):
         self.bot = _make_bot()
 
-    def test_returns_none_when_no_subscriber(self):
-        with patch.object(self.bot, "publish"):
-            result = self.bot._get_ai_response("question")
-        self.assertIsNone(result)
+    def test_returns_error_when_no_ai_instance(self):
+        """When ai_instance is not set, returns an error string."""
+        result = self.bot._get_ai_response("question")
+        self.assertIn("[Error:", result)
 
-    def test_returns_none_when_ai_responds_with_none(self):
-        """Bot handles a None response from the AI module gracefully."""
-
-        def fake_publish(topic, **kwargs):
-            if topic == "ai/input":
-                self.bot.handle_ai_response(response=None)
-
-        with patch.object(self.bot, "publish", side_effect=fake_publish):
-            result = self.bot._get_ai_response("question?")
-        self.assertIsNone(result)
-
-    def test_returns_empty_string_when_ai_responds_with_empty(self):
-        """Bot returns an empty string when the AI module yields one."""
-
-        def fake_publish(topic, **kwargs):
-            if topic == "ai/input":
-                self.bot.handle_ai_response(response="")
-
-        with patch.object(self.bot, "publish", side_effect=fake_publish):
-            result = self.bot._get_ai_response("question?")
-        self.assertEqual(result, "")
-
-    def test_returns_response_set_during_publish(self):
-        """Simulate ChatGPT setting the response synchronously during publish."""
-
-        def fake_publish(topic, **kwargs):
-            if topic == "ai/input":
-                self.bot.handle_ai_response(response="AI says hello")
-
-        with patch.object(self.bot, "publish", side_effect=fake_publish):
-            result = self.bot._get_ai_response("hello?")
+    def test_calls_ai_instance_and_returns_response(self):
+        """Calls ai_instance.completion() with the text and returns the result."""
+        self.bot.ai_instance = _make_ai_mock("AI says hello")
+        result = self.bot._get_ai_response("hello?")
+        self.bot.ai_instance.completion.assert_called_once_with("hello?")
         self.assertEqual(result, "AI says hello")
 
-    def test_lock_serialises_requests(self):
-        """The _ai_lock context manager must be entered and exited."""
-        mock_lock = MagicMock()
-        self.bot._ai_lock = mock_lock
-        with patch.object(self.bot, "publish"):
-            self.bot._get_ai_response("test")
-        mock_lock.__enter__.assert_called_once()
-        mock_lock.__exit__.assert_called_once()
+    def test_returns_none_when_ai_returns_none(self):
+        """Propagates None from ai_instance.completion()."""
+        self.bot.ai_instance = _make_ai_mock(None)
+        result = self.bot._get_ai_response("q")
+        self.assertIsNone(result)
+
+    def test_returns_empty_string_when_ai_returns_empty(self):
+        """Propagates empty string from ai_instance.completion()."""
+        self.bot.ai_instance = _make_ai_mock("")
+        result = self.bot._get_ai_response("q")
+        self.assertEqual(result, "")
+
+    def test_handles_exception_from_ai_instance(self):
+        """Returns an error string when ai_instance.completion() raises."""
+        mock_ai = Mock()
+        mock_ai.completion.side_effect = Exception("boom")
+        self.bot.ai_instance = mock_ai
+        result = self.bot._get_ai_response("q")
+        self.assertIn("[Error:", result)
 
 
 class TestDiscordBotOnMessage(unittest.TestCase):
@@ -216,21 +217,26 @@ class TestDiscordBotOnMessage(unittest.TestCase):
 
     def setUp(self):
         self.bot = _make_bot()
+        self.bot.ai_instance = _make_ai_mock("AI response")
 
     def _run(self, coro):
         return asyncio.run(coro)
 
-    def _make_message(self, content="hello", in_thread=False, from_bot=False):
+    def _make_message(self, content="hello", in_thread=False, from_bot=False,
+                      is_dm=False):
         msg = MagicMock()
         msg.content = content
         # Use the actual bot user object so that identity comparisons work.
         msg.author = self.bot._bot.user if from_bot else MagicMock()
-        msg.mentions = [self.bot._bot.user]
+        msg.mentions = [] if is_dm else [self.bot._bot.user]
         msg.reply = AsyncMock()
         if in_thread:
             msg.channel = MagicMock(spec=discord_stub.Thread)
             msg.channel.send = AsyncMock()
             msg.channel.history = MagicMock(return_value=_async_iter([]))
+        elif is_dm:
+            msg.channel = MagicMock(spec=discord_stub.DMChannel)
+            msg.channel.send = AsyncMock()
         else:
             msg.channel = MagicMock()
             msg.create_thread = AsyncMock(return_value=MagicMock(send=AsyncMock()))
@@ -239,31 +245,19 @@ class TestDiscordBotOnMessage(unittest.TestCase):
 
     def test_ignores_own_messages(self):
         msg = self._make_message(from_bot=True)
-        with patch.object(self.bot, "publish") as mock_pub:
-            self._run(self.bot._on_message(msg))
-            mock_pub.assert_not_called()
+        self._run(self.bot._on_message(msg))
+        self.bot.ai_instance.completion.assert_not_called()
 
     def test_ignores_messages_without_mention(self):
         msg = self._make_message()
         msg.mentions = []  # bot not mentioned
-        with patch.object(self.bot, "publish") as mock_pub:
-            self._run(self.bot._on_message(msg))
-            mock_pub.assert_not_called()
-
-    def test_empty_content_after_mention_sends_greeting(self):
-        msg = self._make_message(content=f"<@{self.bot._bot.user.id}>")
         self._run(self.bot._on_message(msg))
-        msg.reply.assert_called_once()
+        self.bot.ai_instance.completion.assert_not_called()
 
-    def test_publishes_ai_input_when_mentioned(self):
+    def test_calls_ai_when_mentioned(self):
         msg = self._make_message(content=f"<@{self.bot._bot.user.id}> What is this?")
-
-        def fake_publish(topic, **kwargs):
-            if topic == "ai/input":
-                self.bot._current_response = "The answer."
-
-        with patch.object(self.bot, "publish", side_effect=fake_publish):
-            self._run(self.bot._on_message(msg))
+        self._run(self.bot._on_message(msg))
+        self.bot.ai_instance.completion.assert_called_once()
 
     def test_creates_thread_for_channel_message(self):
         msg = self._make_message(
@@ -272,34 +266,24 @@ class TestDiscordBotOnMessage(unittest.TestCase):
         mock_thread = MagicMock()
         mock_thread.send = AsyncMock()
         msg.create_thread = AsyncMock(return_value=mock_thread)
-
-        def fake_publish(topic, **kwargs):
-            if topic == "ai/input":
-                self.bot._current_response = "Sure!"
-
-        with patch.object(self.bot, "publish", side_effect=fake_publish):
-            self._run(self.bot._on_message(msg))
-
+        self.bot.ai_instance = _make_ai_mock("Sure!")
+        self._run(self.bot._on_message(msg))
         msg.create_thread.assert_called_once()
-        mock_thread.send.assert_called_once_with("Sure!")
+        # The response should contain the AI's answer (plus the footer).
+        sent_text = mock_thread.send.call_args[0][0]
+        self.assertIn("Sure!", sent_text)
 
     def test_replies_in_existing_thread(self):
         msg = self._make_message(
             content=f"<@{self.bot._bot.user.id}> Explain.", in_thread=True
         )
-
-        def fake_publish(topic, **kwargs):
-            if topic == "ai/input":
-                self.bot._current_response = "Explanation here."
-
-        with patch.object(self.bot, "publish", side_effect=fake_publish):
-            self._run(self.bot._on_message(msg))
-
-        msg.channel.send.assert_called_once_with("Explanation here.")
+        self.bot.ai_instance = _make_ai_mock("Explanation here.")
+        self._run(self.bot._on_message(msg))
+        sent_text = msg.channel.send.call_args[0][0]
+        self.assertIn("Explanation here.", sent_text)
 
     def test_thread_context_included_in_ai_prompt(self):
         """Previous thread messages must be forwarded to the AI as context."""
-        # Build a prior message in the thread.
         prior_msg = MagicMock()
         prior_msg.author = MagicMock()
         prior_msg.author.display_name = "Alice"
@@ -312,19 +296,64 @@ class TestDiscordBotOnMessage(unittest.TestCase):
         )
         msg.channel.history = MagicMock(return_value=_async_iter([prior_msg]))
 
-        published_texts = []
+        self._run(self.bot._on_message(msg))
 
-        def capture_publish(topic, **kwargs):
-            if topic == "ai/input":
-                published_texts.append(kwargs.get("text", ""))
-                self.bot._current_response = "Sure!"
+        call_text = self.bot.ai_instance.completion.call_args[0][0]
+        self.assertIn("Alice: What is modular-biped?", call_text)
+        self.assertIn("Can you elaborate?", call_text)
 
-        with patch.object(self.bot, "publish", side_effect=capture_publish):
-            self._run(self.bot._on_message(msg))
+    def test_empty_content_after_mention_still_calls_ai(self):
+        """Empty content after stripping the @mention is still sent to the AI."""
+        msg = self._make_message(content=f"<@{self.bot._bot.user.id}>")
+        self._run(self.bot._on_message(msg))
+        self.bot.ai_instance.completion.assert_called_once()
+        call_text = self.bot.ai_instance.completion.call_args[0][0]
+        self.assertIn("Question:", call_text)
 
-        self.assertEqual(len(published_texts), 1)
-        self.assertIn("Alice: What is modular-biped?", published_texts[0])
-        self.assertIn("Can you elaborate?", published_texts[0])
+    # ------------------------------------------------------------------
+    # DM (private message) tests
+    # ------------------------------------------------------------------
+
+    def test_responds_to_dm_without_mention(self):
+        """DMs should be responded to without requiring a @mention."""
+        msg = self._make_message(content="What is modular-biped?", is_dm=True)
+        self.bot.ai_instance = _make_ai_mock("It is a robot project.")
+        self._run(self.bot._on_message(msg))
+        self.bot.ai_instance.completion.assert_called_once()
+        msg.channel.send.assert_called_once()
+
+    def test_dm_response_contains_ai_answer(self):
+        """The response sent to a DM should contain the AI-generated text."""
+        msg = self._make_message(content="Hello there!", is_dm=True)
+        self.bot.ai_instance = _make_ai_mock("Hello human!")
+        self._run(self.bot._on_message(msg))
+        sent_text = msg.channel.send.call_args[0][0]
+        self.assertIn("Hello human!", sent_text)
+
+    def test_dm_does_not_create_thread(self):
+        """DM responses must be sent directly to the channel, not via a thread."""
+        msg = self._make_message(content="A question", is_dm=True)
+        self.bot.ai_instance = _make_ai_mock("An answer")
+        self._run(self.bot._on_message(msg))
+        # create_thread should not have been called on the message.
+        self.assertFalse(
+            hasattr(msg, "create_thread") and msg.create_thread.called
+        )
+        msg.channel.send.assert_called_once()
+
+    def test_ignores_own_dm(self):
+        """The bot should ignore its own DM messages."""
+        msg = self._make_message(content="test", is_dm=True, from_bot=True)
+        self._run(self.bot._on_message(msg))
+        self.bot.ai_instance.completion.assert_not_called()
+
+    def test_dm_content_not_stripped_of_mentions(self):
+        """DM content should be passed to the AI as-is (no mention stripping)."""
+        msg = self._make_message(content="What is @someone doing?", is_dm=True)
+        self._run(self.bot._on_message(msg))
+        call_text = self.bot.ai_instance.completion.call_args[0][0]
+        # The original question text should be preserved in the prompt.
+        self.assertIn("What is @someone doing?", call_text)
 
 
 class TestDiscordBotSendResponse(unittest.TestCase):
@@ -343,10 +372,18 @@ class TestDiscordBotSendResponse(unittest.TestCase):
         self._run(self.bot._send_response(msg, "reply text"))
         msg.channel.send.assert_called_once_with("reply text")
 
+    def test_send_to_dm_channel(self):
+        """DM channel responses should be sent directly, not via a thread."""
+        msg = MagicMock()
+        msg.channel = MagicMock(spec=discord_stub.DMChannel)
+        msg.channel.send = AsyncMock()
+        self._run(self.bot._send_response(msg, "dm reply"))
+        msg.channel.send.assert_called_once_with("dm reply")
+
     def test_creates_thread_in_channel(self):
         msg = MagicMock()
         msg.content = "short question"
-        msg.channel = MagicMock()  # Not a Thread
+        msg.channel = MagicMock()  # Not a Thread or DMChannel
         mock_thread = MagicMock()
         mock_thread.send = AsyncMock()
         msg.create_thread = AsyncMock(return_value=mock_thread)

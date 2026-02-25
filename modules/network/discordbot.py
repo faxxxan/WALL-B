@@ -15,26 +15,33 @@ class DiscordBot(BaseModule):
     Discord Bot module.
 
     Hosts a Discord bot that monitors for mentions and answers questions
-    using the ChatGPT module (via ai/input / ai/response pubsub topics) with
+    using the ChatGPT module directly (via ``ai_instance``) with
     GitHub-hosted knowledge sources specified in the config YAML.
 
-    Any time the bot is tagged in a post the bot will:
+    The bot responds to:
+    - Private messages (DMs): every message in a DM channel is processed
+      without requiring the bot to be @mentioned.
+    - Server channels / threads: the bot must be explicitly @mentioned.
+
+    Any time the bot is triggered it will:
       1. Collect the thread context (if the post is already inside a thread).
       2. Forward the question together with the system prompt and knowledge
-         sources to the AI module via the ``ai/input`` topic.
-      3. Post the reply back to the thread (or create a new thread from the
-         original post when one does not yet exist).
+         sources to the AI module via ``ai_instance.completion()``.
+      3. Post the reply back:
+         - In a DM: directly in the DM channel.
+         - In a thread: directly in that thread.
+         - In a regular channel: create a new thread from the original post.
 
     Requires the environment variable ``DISCORD_BOT_TOKEN``.
+    The ``ai_instance`` attribute must be set to a ``ChatGPT`` instance
+    (e.g. via ``main.py``) before the bot will be able to answer questions.
 
     Subscribes to:
-      - ``ai/response``     – receives the AI-generated reply
       - ``discord/send``    – allows other modules to send a message to a
                               specific channel (kwarg: channel_id, message)
       - ``system/exit``     – gracefully shuts down the bot
 
     Publishes to:
-      - ``ai/input``        – sends the assembled question to the AI module
       - ``log/*``           – standard logging (via BaseModule.log)
 
     Example config (config/discordbot.yml):
@@ -145,29 +152,31 @@ class DiscordBot(BaseModule):
         """
         Called by discord.py for every message the bot can see.
 
-        Only acts when the bot is explicitly @mentioned and the message is
-        not from the bot itself.
+        Responds to:
+        - Any message in a private DM channel (no @mention required).
+        - Messages in servers/threads where the bot is explicitly @mentioned.
+        Does not respond to its own messages.
         """
         print(f"Received message: {message.content} (mentions: {[m.display_name for m in message.mentions]})")
-        
+
         if message.author == self._bot.user:
             return
 
-        if self._bot.user not in message.mentions:
+        # Private messages: respond to everything without requiring a mention.
+        is_dm = isinstance(message.channel, discord.DMChannel)
+
+        if not is_dm and self._bot.user not in message.mentions:
             return
 
-        print("Bot was mentioned! Processing message...")
-        
-        # Strip all @mentions from the content to get the bare question.
-        content = message.content
-        for mention in message.mentions:
-            content = content.replace(f"<@{mention.id}>", "")
-            content = content.replace(f"<@!{mention.id}>", "")
-        content = content.strip()
+        print("Processing message...")
 
-        # if not content:
-        #     await message.reply("Hello! How can I help you?")
-        #     return
+        # Strip @mentions from content (only relevant for channel/thread messages).
+        content = message.content
+        if not is_dm:
+            for mention in message.mentions:
+                content = content.replace(f"<@{mention.id}>", "")
+                content = content.replace(f"<@!{mention.id}>", "")
+        content = content.strip()
 
         # If the message is already inside a thread, collect recent context.
         if isinstance(message.channel, discord.Thread):
@@ -239,11 +248,11 @@ class DiscordBot(BaseModule):
         """
         Send *response* back to Discord.
 
-        If the original message is inside a thread, the reply is posted
-        directly to that thread.  Otherwise a new thread is created from
-        the message so the conversation stays organised.
+        - DM channels and existing threads: reply directly in the channel.
+        - Regular server channels: create a new thread from the message so
+          the conversation stays organised.
         """
-        if isinstance(message.channel, discord.Thread):
+        if isinstance(message.channel, (discord.Thread, discord.DMChannel)):
             await message.channel.send(response)
         else:
             thread_name = (message.content[:_MAX_THREAD_NAME_CONTENT] + "...") if len(message.content) > _MAX_THREAD_NAME_CONTENT else message.content
