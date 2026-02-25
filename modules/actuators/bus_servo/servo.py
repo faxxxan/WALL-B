@@ -274,7 +274,7 @@ class Servo(BaseModule):
     def is_moving(self):
         if self.get_moving() == 1:
             return True
-        elif self.pos != self.get_position():
+        elif abs(self.pos - self.get_position()) > 15:
             print(f"Warning: Servo {self.identifier} is not reporting as moving but position {self.get_position()} does not match target position {self.pos}")
         return False
         
