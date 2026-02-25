@@ -35,7 +35,12 @@ class Personality(BaseModule):
         self.vision = None # Set in main.py
         self.euler = None
         self.balance_enabled = kwargs.get('balance_enabled', True)
+        self.chicken_head_enabled = kwargs.get('chicken_head_enabled', False)
+        self.track_people = kwargs.get('track_people', True) # Uses vision data to track detected people with the eyes, and optionally neck servos.
+        self.track_people_servos = kwargs.get('track_people_servos', False) # Moves neck servos to track detected people.
+        self.one_leg_balance_enabled = kwargs.get('one_leg_balance_enabled', True)
         self.servos = {} # Set in main.py
+        self.pose = None
 
         # Define possible actions
         self.actions = [
@@ -49,7 +54,8 @@ class Personality(BaseModule):
         """Subscribe to necessary topics."""
         self.subscribe('system/loop/1', self.loop_second)
         self.subscribe('system/loop/10', self.loop_10)
-        self.subscribe('vision/detections', self.handle_vision_detections)
+        if self.track_people:
+            self.subscribe('vision/detections', self.handle_vision_detections) # Enable after testing north facing
         self.subscribe('gpio/motion', self.update_motion_time)
         self.subscribe('serial', self.track_serial_idle)
         self.subscribe('system/temperature', self.handle_temperature)
@@ -84,8 +90,74 @@ class Personality(BaseModule):
         self.publish('servo:neck_pan:mv', delta=-400)
         self.log("Neck tilt servos test complete")
     
+    def output_current_pose(self):
+        """Get current pose of all servos and return as a json object."""
+        # Iterate over each self.servos and get current position
+        
+        for name, servo in self.servos.items():
+            servo.detach() # Disable torque to get accurate position reading without resistance
+        while True:
+            pose = {}
+            for name, servo in self.servos.items():
+                try:
+                    pos = servo.get_position()
+                    pose[name] = pos
+                except Exception as e:
+                    self.log(f"Error getting position for servo {name}: {e}", level='error')
+            print(f"\r{pose}    ", end='', flush=True)
+            time.sleep(1)
+    
     def update_current_hz(self, hz):
         self.current_hz = hz
+        
+    def chicken_head(self):
+        """ Using self.imu['head'] data (if present), rotate the head to face the same direction (0 degrees from get_euler()[1]). """
+        if not self.chicken_head_enabled or 'head' not in self.imu:
+            return
+        euler = self.imu['head'].get_euler()
+        yaw = euler[0]
+        pitch = euler[1]    
+        print(f"Current head pitch: {yaw}, pitch: {pitch}")
+        if yaw < 180:
+            zero_yaw = -yaw
+        else:
+            zero_yaw = 360 - yaw # Prevent turning more than 180 degrees in either direction
+            
+        print(f"Pitch: {pitch}, Angle to zero yaw: {zero_yaw}")
+        if abs(pitch) > 5:
+            self.servos['neck_tilt'].move_degrees(pitch)
+        if abs(zero_yaw) > 5:
+            self.servos['neck_pan'].move_degrees(zero_yaw)
+            
+    def one_leg_balance(self):
+        """ Use body IMU data to move legs into a one legged stance by lifting one leg and adjusting the other leg and body to maintain balance. """
+        if not self.one_leg_balance_enabled or 'body' not in self.imu:
+            return
+        euler = self.imu['body'].get_euler()
+        roll = euler[2]
+        
+        if abs(roll) < 8:
+            if abs(roll) < 3:
+                return   # No need to adjust for small angles
+            # Return to center pos
+            self.servos['leg_l_tilt'].move(self.servos['leg_l_tilt'].start)
+            self.servos['leg_r_tilt'].move(self.servos['leg_r_tilt'].start)
+            return
+        print(f"Current body roll: {roll}")
+        # This should just show one leg extend under the body, and the other knee bending. For demo only
+        if roll > 0:
+            # self.servos['leg_l_knee'].move_degrees(-90)
+            self.servos['leg_l_tilt'].move_degrees(roll)
+            self.servos['leg_r_tilt'].move(self.servos['leg_r_tilt'].start)
+            # self.servos['leg_r_knee'].move_degrees(90)
+            pass
+        else:
+            self.servos['leg_r_tilt'].move_degrees(roll)
+            # self.servos['leg_l_tilt'].calibrate_to_center()
+            self.servos['leg_l_tilt'].move(self.servos['leg_l_tilt'].start)
+            # self.servos['leg_r_knee'].move_degrees(-90)
+            # self.servos['leg_r_tilt'].move_degrees(-pitch)
+            # self.servos['leg_l_knee'].move_degrees(90)
 
     def balance(self):
         """Use head and body IMU data to maintain balance by adjusting leg servos."""
@@ -113,9 +185,10 @@ class Personality(BaseModule):
     
     def cycle_display(self):
         """Cycle through different display states. Display time, temperature, uptime, tilt, and Hz for 5 seconds each."""
+        states = ['time', 'temperature', 'uptime', 'tilt', 'hz', 'pose']
         if self.display_change and time.time() - self.display_change >= 5:
             self.display_change = time.time()
-            self.display_state = (self.display_state + 1) % 5
+            self.display_state = (self.display_state + 1) % len(states)
 
         if self.display_state == 0:
             # Display current time
@@ -138,9 +211,38 @@ class Personality(BaseModule):
                 self.publish('display/body/text', text=f"T: No Data", font_size=26)
         elif self.display_state == 4:
             self.publish('display/body/text', text=f"{self.current_hz}Hz", font_size=20)
+        elif self.display_state == 5:
+            self.publish('display/body/text', text=f"{self.pose}", font_size=20)
 
     def loop_10(self):
+        # loop 3 times:
+        # for i in range(3):
+        #     self.servos['leg_l_ankle'].move(1000, speed=0)
+        #     self.servos['leg_l_ankle'].move(1500, speed=0) 
+        # self.servos['leg_l_ankle'].move_degrees(50)
         # self.scan_vision()
+        # self.output_current_pose()
+        # self.publish('servo/pose', pose_name='wave_1') # For testing pose movement
+        # time.sleep(1)
+        # current_pose = self.estimate_current_pose()
+        # if current_pose not in self.servos['leg_r_tilt'].poses:
+        #     return
+        # if current_pose == 'sit':
+            # self.publish('servo/pose', pose_name='wave_1') # For testing pose movement
+            # self.publish('servo/pose', pose_name='wave_2') # For testing pose movement
+            # self.publish('servo/pose', pose_name='wave_1') # For testing pose movement
+            # self.publish('servo/pose', pose_name='wave_2') # For testing pose movement
+            # self.publish('servo/pose', pose_name='sit') # For testing pose movement
+            # self.pose = 'sit'
+        # elif current_pose == 'sit_edge':
+        #     self.pose = 'sit_edge_swing_l'
+        # elif current_pose == 'sit_edge_swing_l':
+        #     self.pose = 'sit_edge_swing_r'
+        # elif current_pose == 'sit_edge_swing_r':
+        #     self.pose = 'sit_edge'
+        # elif current_pose == 'legs_forward':
+        #     self.pose = 'sit'
+        # self.publish('servo/pose', pose_name=self.pose) # For testing pose movement
         pass
     
     def loop(self):
@@ -150,6 +252,9 @@ class Personality(BaseModule):
         now = time.time()
         self.cycle_display()
         self.balance()
+        self.chicken_head()
+        self.one_leg_balance()
+        self.estimate_current_pose()
         
         # Handle ongoing object reaction
         if self.object_reaction_end_time and now >= self.object_reaction_end_time:
@@ -171,6 +276,31 @@ class Personality(BaseModule):
         # If serial has been idle for more than 10 seconds, call random_animation()
         if self.last_serial_time and (now - self.last_serial_time > 10):
             self.random_animation()
+    
+    def estimate_current_pose(self):
+        """ Identify current pose by matching servo positions to known poses in config. Do not require exact match of values, but 'close enough' check"""
+        current_pose = {}
+        for name, servo in self.servos.items():
+            try:
+                pos = servo.pos # setting as servo.pos because servo.get_position() is not showing the expected value. Will investigate
+                # actual_pos = servo.get_position()
+                # if pos != actual_pos:
+                #     self.log(f"Warning: Position mismatch for servo {name}. servo.pos: {pos}, get_position(): {actual_pos}. Diff: {pos - actual_pos}", level='warning')
+                current_pose[name] = pos
+            except Exception as e:
+                self.log(f"Error getting position for servo {name}: {e}", level='error')
+        # print(f"Current positions: {current_pose}")
+        try:
+            for pose_name, pose_values in self.servos['leg_r_tilt'].poses.items():
+                if all(abs(current_pose.get(servo_name, 0) - pose_value) < 100 for servo_name, pose_value in pose_values.items()):
+                    # print(f"Current pose is approximately: {pose_name}")
+                    self.pose = pose_name
+                    return pose_name
+        except Exception as e:
+            self.log(f"Error estimating current pose: {e}", level='warning')
+        # print("Current pose does not match any known poses")
+        return None
+        
     
     def handle_temperature(self, value):
         """Handle temperature updates."""
@@ -314,6 +444,9 @@ class Personality(BaseModule):
         
         # print(f"Rotated coordinates: ({center_x}, {center_y})")
         self.publish('eye/look', coordinates=(center_x, center_y))
+        
+        if not self.track_people_servos:
+            return
         
         track_threshold = [15, 15] # Minimum angle change to trigger servo movement
         

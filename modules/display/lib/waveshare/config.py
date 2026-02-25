@@ -56,7 +56,6 @@ class RaspberryPi:
         self.RST_PIN = self.gpio_mode(rst,self.OUTPUT)
         self.DC_PIN = self.gpio_mode(dc,self.OUTPUT)
 
-
     def delay_ms(self,delaytime):
         time.sleep(delaytime / 1000.0)
 

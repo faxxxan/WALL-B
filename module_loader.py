@@ -72,10 +72,10 @@ class ModuleLoader:
         instances = {}  # Use a dictionary to store instances for easy access
         for module in self.modules:
             print(f"Enabling {module['path']}")
-            # get path excluding the last part
-            module_path = module['path'].rsplit('.', 1)[0].replace('.', '/')  # e.g., "modules.servo"
-            module_name = module['path'].split('.')[-1]  # e.g., "Servo"
-            instances_config = module.get('instances', [module.get('config')])  # Get all instances or just use config 
+            module_path = module['path'].rsplit('.', 1)[0].replace('.', '/')
+            module_name = module['path'].split('.')[-1]
+            instances_config = module.get('instances', [module.get('config')])
+            shared_config = module.get('config', {})
             if instances_config[0] is None:
                 instances_config = [{}]
 
@@ -87,15 +87,18 @@ class ModuleLoader:
             except Exception as e:
                 print(f"Error loading module {module_name}: {e}")
 
-            # Create instances of the module
+            # If multiple instances, pass shared config to each instance
+            multiple_instances = 'instances' in module and isinstance(module['instances'], list) and len(module['instances']) > 0
             for instance_config in instances_config:
-                # Pass the instance config to the module's __init__ method as **kwargs
-                instance_name = module_name + '_' + instance_config.get('name') if instance_config.get('name') is not None else module_name # Use the module name and instance name as the key or module_name if single instance
-                instance = getattr(mod, module_name)(**instance_config)
-
-                # Store the instance in the dictionary
+                # Merge shared config if multiple instances
+                if multiple_instances:
+                    # Avoid overwriting instance-specific keys with shared config
+                    merged_config = {**shared_config, **instance_config}
+                else:
+                    merged_config = instance_config
+                instance_name = module_name + '_' + instance_config.get('name') if instance_config.get('name') is not None else module_name
+                instance = getattr(mod, module_name)(**merged_config)
                 instances[instance_name] = instance
-                # print(f"[ModuleLoader] Loaded module: {module_name} instance: {instance_name}")
 
         print("All modules loaded")
-        return instances  # Return the dictionary of instances
+        return instances
