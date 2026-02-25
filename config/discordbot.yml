@@ -1,0 +1,18 @@
+discordbot:
+  enabled: false
+  path: modules.network.discordbot.DiscordBot
+  config:
+    prompt: >
+      You are a helpful assistant for the modular-biped open-source robotics
+      project. Answer questions clearly and concisely, referencing the provided
+      knowledge sources where relevant. If you are unsure of an answer, say so
+      and direct the user to the appropriate knowledge source.
+    knowledge_sources:
+      - https://github.com/makerforgetech/modular-biped/wiki
+      - https://github.com/makerforgetech/modular-biped/discussions
+      - https://github.com/makerforgetech/modular-biped
+  dependencies:
+    python:
+      - discord.py
+    additional:
+      - https://discord.com/developers/applications
