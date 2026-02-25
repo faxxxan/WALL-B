@@ -227,6 +227,10 @@ class Servo(BaseModule):
         :param speed: Optional speed override
         :param acceleration: Optional acceleration override
         """
+        if position is None:
+            self.log(f"Position is None for servo {self.identifier}, cannot move", level='error')
+            return
+        
         speed = speed if speed is not None else self.speed
         acceleration = acceleration if acceleration is not None else self.acceleration
 

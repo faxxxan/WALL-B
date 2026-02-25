@@ -17,32 +17,34 @@ servos:
     - name: "leg_r_tilt"
       model: 'ST3215'
       id: 1
-      range: [2511, 3944] # 1012 total range (4095 = 360 degrees, so 1012 = 89 degrees)
-      range_degrees: 125
+      range: [2511, 3944] # 1433 total range (4095 = 360 degrees)
+      range_degrees: 125.9
       start: 2810
       # calibrate_on_boot: true
     - name: "leg_r_hip"
       model: 'ST3215'
       id: 3
       range: [0, 2063]
-      range_degrees: 180
+      range_degrees: 181.3
       # calibrate_on_boot: true
       # start: 1688
     - name: "leg_r_knee"
       model: 'ST3215'
       id: 2
       range: [717, 3297]
-      start: 1345
+      range_degrees: 226.2
+      # start: 1345
     - name: "leg_r_ankle"
       model: 'ST3215'
       id: 6
       range: [2459, 3872]
-      start: 2762
+      range_degrees: 123.7
+      # start: 2762
     - name: "neck_pan"
       model: 'ST3215'
       id: 12
       range: [0, 3412] # 300 degrees = 3412, 360 degrees = 4095
-      range_degrees: 360
+      range_degrees: 299.7
       start: 1706
       # calibrate_on_boot: true
       # demonstrate_on_boot: true
@@ -61,7 +63,7 @@ servos:
       baudrate: 115200
       id: 11
       range: [30, 220]
-      range_degrees: 50
+      range_degrees: 55.6
       start: 120
       speed: 60 # max=0, 1 - 3000 tested
       # acceleration: 0 # max (no significant difference between this and 1 - 3000)
@@ -78,24 +80,26 @@ servos:
     - name: "leg_l_tilt"
       model: 'ST3215'
       id: 7
-      range: [8, 1796] # 1264 total range (4095 = 360 degrees, so 1264 = 111 degrees)
-      range_degrees: 157
+      range: [8, 1796] # 1788 total range (4095 = 360 degrees)
+      range_degrees: 156.9
       start: 1617
       # calibrate_on_boot: true
     - name: "leg_l_hip"
       model: 'ST3215'
       id: 8
       range: [853, 3098]
-      range_degrees: 180
+      range_degrees: 197.3
       # start: 2451 
     - name: "leg_l_knee"
       model: 'ST3215'
       id: 9
       range: [1332, 3404]
-      start: 2643
+      range_degrees: 181.1
+      # start: 2643
     - name: "leg_l_ankle"
       model: 'ST3215'
       id: 10
       range: [614, 2270]
-      start: 1566
-      demonstrate_on_boot: true
+      range_degrees: 145.2
+      # start: 1566
+      # demonstrate_on_boot: true
