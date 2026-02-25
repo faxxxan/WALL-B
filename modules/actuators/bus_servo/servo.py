@@ -104,12 +104,12 @@ class Servo(BaseModule):
         self.portHandler.closePort()
 
     def setup_messaging(self):
-        self.subscribe('servo:' + self.identifier + ':mvabs', self.queue_move)
+        self.subscribe('servo:' + self.identifier + ':mvabs', self.move)
         self.subscribe('servo:' + self.identifier + ':mv', self.move_relative)
-        self.subscribe('servo:' + self.identifier + ':queue', self.queue_move)
+        self.subscribe('servo:' + self.identifier + ':queue', self.move)
         self.subscribe('system/exit', self.exit)
         self.subscribe('servo/pose', self.move_to_pose)
-        self.subscribe('system/loop', self.process_queue)
+        self.subscribe('system/loop', self._process_queue)
         
         if self.calibrate_on_boot:
             self.calibrate_dynamic() # Log will show current position repeatedly to help with manual configuration
@@ -190,7 +190,7 @@ class Servo(BaseModule):
                 self.log(f"Moving servo {self.identifier} by {degrees} degrees (position {self.pos} -> {new_position} | {pc_move}% of range)")
                 self.move(new_position)
 
-    def queue_move(self, position, speed=None, acceleration=None, delay=0, **kwargs):
+    def move(self, position, speed=None, acceleration=None, delay=0, **kwargs):
         """
         Add a move request to the queue.
         :param position: Target position
@@ -206,7 +206,7 @@ class Servo(BaseModule):
             'delay': delay,
         })
 
-    def process_queue(self, **kwargs):
+    def _process_queue(self, **kwargs):
         """
         Process the next item in the move queue if the servo is not moving.
         Called on system/loop.
@@ -218,9 +218,9 @@ class Servo(BaseModule):
         next_item = self._move_queue[0]
         if time.time() - next_item['timestamp'] >= next_item['delay']:
             self._move_queue.popleft()
-            self.move(next_item['position'], next_item['speed'], next_item['acceleration'])
+            self._do_move(next_item['position'], next_item['speed'], next_item['acceleration'])
 
-    def move(self, position, speed=None, acceleration=None):
+    def _do_move(self, position, speed=None, acceleration=None):
         """
         Move the servo to an absolute position.
         :param position: Position to move to

@@ -74,10 +74,10 @@ class TestBusServoQueue(unittest.TestCase):
         self.sv.handle_errors = MagicMock(return_value=False)
 
     # ------------------------------------------------------------------
-    # queue_move
+    # move (queues the request)
     # ------------------------------------------------------------------
     def test_queue_move_adds_item(self):
-        self.sv.queue_move(500)
+        self.sv.move(500)
         self.assertEqual(len(self.sv._move_queue), 1)
         item = self.sv._move_queue[0]
         self.assertEqual(item['position'], 500)
@@ -87,106 +87,106 @@ class TestBusServoQueue(unittest.TestCase):
         self.assertAlmostEqual(item['timestamp'], time.time(), delta=1.0)
 
     def test_queue_move_speed_acceleration_override(self):
-        self.sv.queue_move(200, speed=100, acceleration=10)
+        self.sv.move(200, speed=100, acceleration=10)
         item = self.sv._move_queue[0]
         self.assertEqual(item['speed'], 100)
         self.assertEqual(item['acceleration'], 10)
 
     def test_queue_move_delay_stored(self):
-        self.sv.queue_move(300, delay=2.5)
+        self.sv.move(300, delay=2.5)
         item = self.sv._move_queue[0]
         self.assertEqual(item['delay'], 2.5)
 
     def test_queue_move_multiple_items(self):
-        self.sv.queue_move(100)
-        self.sv.queue_move(200)
-        self.sv.queue_move(300)
+        self.sv.move(100)
+        self.sv.move(200)
+        self.sv.move(300)
         self.assertEqual(len(self.sv._move_queue), 3)
         positions = [item['position'] for item in self.sv._move_queue]
         self.assertEqual(positions, [100, 200, 300])
 
     # ------------------------------------------------------------------
-    # process_queue
+    # _process_queue
     # ------------------------------------------------------------------
     def test_process_queue_empty_does_nothing(self):
-        self.sv.move = MagicMock()
-        self.sv.process_queue()
-        self.sv.move.assert_not_called()
+        self.sv._do_move = MagicMock()
+        self.sv._process_queue()
+        self.sv._do_move.assert_not_called()
 
     def test_process_queue_calls_move_when_idle(self):
         self.sv.is_moving = MagicMock(return_value=False)
-        self.sv.move = MagicMock()
-        self.sv.queue_move(500)
-        self.sv.process_queue()
-        self.sv.move.assert_called_once_with(500, self.sv.speed, self.sv.acceleration)
+        self.sv._do_move = MagicMock()
+        self.sv.move(500)
+        self.sv._process_queue()
+        self.sv._do_move.assert_called_once_with(500, self.sv.speed, self.sv.acceleration)
         self.assertEqual(len(self.sv._move_queue), 0)
 
     def test_process_queue_does_not_move_while_moving(self):
         self.sv.is_moving = MagicMock(return_value=True)
-        self.sv.move = MagicMock()
-        self.sv.queue_move(500)
-        self.sv.process_queue()
-        self.sv.move.assert_not_called()
+        self.sv._do_move = MagicMock()
+        self.sv.move(500)
+        self.sv._process_queue()
+        self.sv._do_move.assert_not_called()
         self.assertEqual(len(self.sv._move_queue), 1)
 
     def test_process_queue_respects_delay(self):
         self.sv.is_moving = MagicMock(return_value=False)
-        self.sv.move = MagicMock()
+        self.sv._do_move = MagicMock()
         # Add item with a future delay
-        self.sv.queue_move(500, delay=100)
-        self.sv.process_queue()
+        self.sv.move(500, delay=100)
+        self.sv._process_queue()
         # Should NOT move yet because delay has not elapsed
-        self.sv.move.assert_not_called()
+        self.sv._do_move.assert_not_called()
         self.assertEqual(len(self.sv._move_queue), 1)
 
     def test_process_queue_executes_after_delay_elapsed(self):
         self.sv.is_moving = MagicMock(return_value=False)
-        self.sv.move = MagicMock()
-        self.sv.queue_move(500, delay=0)
+        self.sv._do_move = MagicMock()
+        self.sv.move(500, delay=0)
         # Backdate the timestamp to simulate delay already elapsed
         self.sv._move_queue[0]['timestamp'] = time.time() - 5
-        self.sv.process_queue()
-        self.sv.move.assert_called_once()
+        self.sv._process_queue()
+        self.sv._do_move.assert_called_once()
 
     def test_process_queue_processes_one_item_per_call(self):
         self.sv.is_moving = MagicMock(return_value=False)
-        self.sv.move = MagicMock()
-        self.sv.queue_move(100)
-        self.sv.queue_move(200)
-        self.sv.process_queue()
+        self.sv._do_move = MagicMock()
+        self.sv.move(100)
+        self.sv.move(200)
+        self.sv._process_queue()
         # Only first item should be processed
         self.assertEqual(len(self.sv._move_queue), 1)
-        self.sv.move.assert_called_once_with(100, self.sv.speed, self.sv.acceleration)
+        self.sv._do_move.assert_called_once_with(100, self.sv.speed, self.sv.acceleration)
 
     def test_process_queue_uses_per_item_speed_acceleration(self):
         self.sv.is_moving = MagicMock(return_value=False)
-        self.sv.move = MagicMock()
-        self.sv.queue_move(400, speed=50, acceleration=5)
-        self.sv.process_queue()
-        self.sv.move.assert_called_once_with(400, 50, 5)
+        self.sv._do_move = MagicMock()
+        self.sv.move(400, speed=50, acceleration=5)
+        self.sv._process_queue()
+        self.sv._do_move.assert_called_once_with(400, 50, 5)
 
     # ------------------------------------------------------------------
-    # move – no blocking sleep
+    # _do_move – no blocking sleep, speed/acceleration params
     # ------------------------------------------------------------------
     def test_move_does_not_block(self):
-        """move() must not call time.sleep (blocking removed)."""
+        """_do_move() must not call time.sleep (blocking removed)."""
         self.sv.is_moving = MagicMock(return_value=True)
         with patch('time.sleep') as mock_sleep:
-            # Even when is_moving returns True, move() should not sleep
-            self.sv.move(500)
+            # Even when is_moving returns True, _do_move() should not sleep
+            self.sv._do_move(500)
         mock_sleep.assert_not_called()
 
     def test_move_accepts_speed_acceleration_params(self):
-        """move() should use supplied speed/acceleration, not instance defaults."""
+        """_do_move() should use supplied speed/acceleration, not instance defaults."""
         self.sv.is_moving = MagicMock(return_value=False)
-        self.sv.move(500, speed=10, acceleration=2)
+        self.sv._do_move(500, speed=10, acceleration=2)
         self.ph.WritePosEx.assert_called_once_with(
             self.sv.index, 500, 10, 2
         )
 
     def test_move_uses_instance_defaults_when_not_supplied(self):
         self.sv.is_moving = MagicMock(return_value=False)
-        self.sv.move(500)
+        self.sv._do_move(500)
         self.ph.WritePosEx.assert_called_once_with(
             self.sv.index, 500, self.sv.speed, self.sv.acceleration
         )
@@ -219,7 +219,7 @@ class TestBusServoQueue(unittest.TestCase):
         # Find the callback registered for ':mvabs'
         subscriptions = {c.args[0]: c.args[1] for c in messaging_service.subscribe.call_args_list}
         self.assertIn('servo:test_servo:mvabs', subscriptions)
-        self.assertEqual(subscriptions['servo:test_servo:mvabs'], self.sv.queue_move)
+        self.assertEqual(subscriptions['servo:test_servo:mvabs'], self.sv.move)
 
 
 if __name__ == '__main__':
