@@ -65,6 +65,8 @@ class DiscordBot(BaseModule):
                 "Set it as an environment variable or pass it as a keyword argument."
             )
 
+        self.ai_instance = None  # Will be set via set_chatgpt()
+
         self.prompt = kwargs.get(
             "prompt",
             "You are a helpful assistant. Answer questions clearly and concisely.",
@@ -75,7 +77,7 @@ class DiscordBot(BaseModule):
         if self.knowledge_sources:
             sources_str = "\n".join(f"- {s}" for s in self.knowledge_sources)
             self.system_prompt = (
-                f"{self.prompt}\n\nReference the following knowledge sources "
+                f"{self.prompt}\n\nParse and reference the following knowledge sources "
                 f"when answering questions:\n{sources_str}"
             )
         else:
@@ -94,7 +96,8 @@ class DiscordBot(BaseModule):
         # Register event handlers via decorators.
         @self._bot.event
         async def on_ready():
-            self.log(f"Discord bot logged in as {self._bot.user}")
+            self.log(f"Discord bot logged in as {self._bot.user}.")
+            self.log(f"GPT instance set: {self.ai_instance is not None}")
 
         @self._bot.event
         async def on_message(message):
@@ -116,14 +119,14 @@ class DiscordBot(BaseModule):
 
     def setup_messaging(self):
         """Subscribe to pubsub topics after the messaging service is set."""
-        self.subscribe("ai/response", self.handle_ai_response)
+        # self.subscribe("ai/response", self.handle_ai_response)
         self.subscribe("discord/send", self.handle_send)
         self.subscribe("system/exit", self._shutdown_wrapper)
 
     # ------------------------------------------------------------------
     # Bot lifecycle
     # ------------------------------------------------------------------
-
+    
     def _run_bot(self):
         """Entry point for the background thread running the Discord event loop."""
         asyncio.set_event_loop(self._loop)
@@ -145,12 +148,16 @@ class DiscordBot(BaseModule):
         Only acts when the bot is explicitly @mentioned and the message is
         not from the bot itself.
         """
+        print(f"Received message: {message.content} (mentions: {[m.display_name for m in message.mentions]})")
+        
         if message.author == self._bot.user:
             return
 
         if self._bot.user not in message.mentions:
             return
 
+        print("Bot was mentioned! Processing message...")
+        
         # Strip all @mentions from the content to get the bare question.
         content = message.content
         for mention in message.mentions:
@@ -158,9 +165,9 @@ class DiscordBot(BaseModule):
             content = content.replace(f"<@!{mention.id}>", "")
         content = content.strip()
 
-        if not content:
-            await message.reply("Hello! How can I help you?")
-            return
+        # if not content:
+        #     await message.reply("Hello! How can I help you?")
+        #     return
 
         # If the message is already inside a thread, collect recent context.
         if isinstance(message.channel, discord.Thread):
@@ -184,12 +191,19 @@ class DiscordBot(BaseModule):
 
         # Offload the synchronous AI call to a thread-pool executor so the
         # Discord event loop is not blocked while waiting for the AI.
+        
+        print(f"Full text sent to AI:\n{full_text}")
+        
         loop = asyncio.get_running_loop()
         response = await loop.run_in_executor(
             None, self._get_ai_response, full_text
         )
 
         if response:
+            footer = "\n\n*I am a bot and currently in beta.*"
+            footer += "\n\n*If you want to help support the project, buy me a coffee: https://buymeacoffee.com/makerforgetech*"
+            response += footer
+            print (f"AI response:\n{response}")
             await self._send_response(message, response)
 
     # ------------------------------------------------------------------
@@ -198,18 +212,16 @@ class DiscordBot(BaseModule):
 
     def _get_ai_response(self, text):
         """
-        Publish to ``ai/input`` and return the response synchronously.
-
-        Because pypubsub dispatches callbacks synchronously, the ChatGPT
-        module will call ``handle_ai_response`` (and thus set
-        ``self._current_response``) before ``publish`` returns.
-
-        The lock serialises concurrent requests so responses are not mixed up.
+        Call the ChatGPT module's completion() method directly.
         """
-        with self._ai_lock:
-            self._current_response = None
-            self.publish("ai/input", text=text)
-            return self._current_response
+        if not self.ai_instance:
+            self.log("ChatGPT instance not set in DiscordBot.", level="error")
+            return "[Error: ChatGPT module not available]"
+        try:
+            return self.ai_instance.completion(text)
+        except Exception as e:
+            self.log(f"Error calling ChatGPT completion: {e}", level="error")
+            return f"[Error: {e}]"
 
     def handle_ai_response(self, response):
         """

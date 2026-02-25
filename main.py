@@ -28,6 +28,12 @@ def main():
     # Example: module_instances[0].some_method()
     # vision = module_instances['vision']
     
+    # print(module_instances.keys())
+    # Pass ChatGPT instance to DiscordBot if both are present
+    if 'ChatGPT' in module_instances and 'DiscordBot' in module_instances:
+        chatgpt = module_instances['ChatGPT']
+        discordbot = module_instances['DiscordBot']
+        discordbot.ai_instance = chatgpt
     
     # Inject bno055 modules into personality if both are enabled
     # ['ControllerHandler', 'WaveshareOLED', 'MessagingService', 'TFTDisplayEye', 'InputRecorder', 'Laser', 'Personality', 'Motion', 'PiTemperature', 'XboxController', 'TelegramBot', 'Animate', 'LogWrapper', 'BNO055_imu_head', 'BNO055_imu_body', 'Vision', 'TTSModule', 'Servo_leg_r_tilt', 'Servo_leg_r_hip', 'Servo_leg_r_knee', 'Servo_leg_r_ankle', 'Servo_neck_pan', 'Servo_neck_tilt', 'Servo_neck_tilt2', 'Servo_leg_l_tilt', 'Servo_leg_l_hip', 'Servo_leg_l_knee', 'Servo_leg_l_ankle', 'ChatGPT'])

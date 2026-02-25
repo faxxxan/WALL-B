@@ -1,10 +1,11 @@
 discordbot:
-  enabled: false
+  enabled: true
+  environment: laptop
   path: modules.network.discordbot.DiscordBot
   config:
     prompt: >
       You are a helpful assistant for the modular-biped open-source robotics
-      project. Answer questions clearly and concisely, referencing the provided
+      project. Answer questions clearly and concisely, parse the provided
       knowledge sources where relevant. If you are unsure of an answer, say so
       and direct the user to the appropriate knowledge source.
     knowledge_sources:
