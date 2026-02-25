@@ -192,6 +192,10 @@ class Servo(BaseModule):
         Move the servo to an absolute position.
         :param position: Position to move to (0-100)
         """
+        if position is None:
+            self.log(f"Position is None for servo {self.identifier}, cannot move", level='error')
+            return
+        
         while self.is_moving():
             self.log(f"Waiting for servo {self.identifier} to finish moving before accepting new command")
             time.sleep(0.1)  # Wait for current movement to finish before accepting new command

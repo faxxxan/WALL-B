@@ -34,11 +34,11 @@ class Personality(BaseModule):
         self.imu = {} # Set in main.py
         self.vision = None # Set in main.py
         self.euler = None
-        self.balance_enabled = kwargs.get('balance_enabled', False)
+        self.balance_enabled = kwargs.get('balance_enabled', True)
         self.chicken_head_enabled = kwargs.get('chicken_head_enabled', False)
         self.track_people = kwargs.get('track_people', True) # Uses vision data to track detected people with the eyes, and optionally neck servos.
         self.track_people_servos = kwargs.get('track_people_servos', False) # Moves neck servos to track detected people.
-        self.one_leg_balance_enabled = kwargs.get('one_leg_balance_enabled', False)
+        self.one_leg_balance_enabled = kwargs.get('one_leg_balance_enabled', True)
         self.servos = {} # Set in main.py
         self.pose = None
 
@@ -185,9 +185,10 @@ class Personality(BaseModule):
     
     def cycle_display(self):
         """Cycle through different display states. Display time, temperature, uptime, tilt, and Hz for 5 seconds each."""
+        states = ['time', 'temperature', 'uptime', 'tilt', 'hz', 'pose']
         if self.display_change and time.time() - self.display_change >= 5:
             self.display_change = time.time()
-            self.display_state = (self.display_state + 1) % 5
+            self.display_state = (self.display_state + 1) % len(states)
 
         if self.display_state == 0:
             # Display current time
@@ -210,6 +211,8 @@ class Personality(BaseModule):
                 self.publish('display/body/text', text=f"T: No Data", font_size=26)
         elif self.display_state == 4:
             self.publish('display/body/text', text=f"{self.current_hz}Hz", font_size=20)
+        elif self.display_state == 5:
+            self.publish('display/body/text', text=f"{self.pose}", font_size=20)
 
     def loop_10(self):
         # self.scan_vision()
@@ -279,11 +282,15 @@ class Personality(BaseModule):
             except Exception as e:
                 self.log(f"Error getting position for servo {name}: {e}", level='error')
         # print(f"Current positions: {current_pose}")
-        for pose_name, pose_values in self.servos['leg_r_tilt'].poses.items():
-            if all(abs(current_pose.get(servo_name, 0) - pose_value) < 100 for servo_name, pose_value in pose_values.items()):
-                print(f"Current pose is approximately: {pose_name}")
-                return pose_name
-        print("Current pose does not match any known poses")
+        try:
+            for pose_name, pose_values in self.servos['leg_r_tilt'].poses.items():
+                if all(abs(current_pose.get(servo_name, 0) - pose_value) < 100 for servo_name, pose_value in pose_values.items()):
+                    # print(f"Current pose is approximately: {pose_name}")
+                    self.pose = pose_name
+                    return pose_name
+        except Exception as e:
+            self.log(f"Error estimating current pose: {e}", level='warning')
+        # print("Current pose does not match any known poses")
         return None
         
     
