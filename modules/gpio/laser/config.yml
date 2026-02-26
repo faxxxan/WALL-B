@@ -1,10 +1,8 @@
-motion:
-  enabled: true
-  environment: robot
-  path: 'modules.gpio.laser.laser.Laser'
+laser:
   config:
     pin: 6
     test_on_boot: false
   dependencies:
     python:
-      - gpiozero
+    - gpiozero
+  class: Laser

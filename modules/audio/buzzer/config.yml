@@ -1,9 +1,8 @@
 buzzer:
-  enabled: false
-  path: "modules.audio.buzzer.buzzer.Buzzer"
   config:
     pin: 27
-    name: 'buzzer'
+    name: buzzer
   dependencies:
     python:
-      - gpiozero
+    - gpiozero
+  class: Buzzer

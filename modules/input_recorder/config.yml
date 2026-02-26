@@ -1,5 +1,4 @@
 input_recorder:
-  enabled: true
-  path: modules.input_recorder.input_recorder.InputRecorder
   config:
     animations_dir: animations/recorded
+  class: InputRecorder

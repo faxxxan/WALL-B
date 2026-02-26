@@ -1,10 +1,9 @@
 translator:
-  enabled: false
-  path: modules.translator.translator.Translator
   config:
     default:
-      src: "en"
-      dest: "en"
+      src: en
+      dest: en
   dependencies:
     python:
-      - googletrans==3.1.0a0
+    - googletrans==3.1.0a0
+  class: Translator

@@ -1,0 +1,117 @@
+# Module enable/disable configuration
+# Set enabled: true to load a module at startup
+# Use environment: to restrict to a specific environment (e.g. robot, laptop)
+# Module keys must match the top-level key in each module's config.yml
+
+animate:
+  enabled: true
+  environment: robot
+
+braillespeak:
+  enabled: false
+
+bus_servo:
+  enabled: true
+  environment: robot
+
+buzzer:
+  enabled: false
+
+bno055:
+  enabled: true
+  environment: robot
+
+chatgpt:
+  enabled: true
+
+controller_handler:
+  enabled: true
+
+discordbot:
+  enabled: true
+  environment: laptop
+
+gpio_motion:
+  enabled: true
+  environment: robot
+
+gpio_read:
+  enabled: false
+
+i2c_servo:
+  enabled: false
+
+input_recorder:
+  enabled: true
+
+laser:
+  enabled: true
+  environment: robot
+
+logwrapper:
+  enabled: true
+
+messaging_service:
+  enabled: true
+
+mpu6050:
+  enabled: false
+
+neopixel:
+  enabled: false
+
+neopixel_emotions:
+  enabled: false
+
+oled_display:
+  enabled: true
+  environment: robot
+
+personality:
+  enabled: true
+
+piservo:
+  enabled: false
+
+pitemperature:
+  enabled: true
+  environment: robot
+
+rtl_sdr:
+  enabled: false
+
+serial:
+  enabled: false
+
+servo:
+  enabled: false
+
+speechinput:
+  enabled: false
+
+telegram:
+  enabled: true
+
+tft_display:
+  enabled: true
+  environment: robot
+
+tracking:
+  enabled: false
+
+translator:
+  enabled: false
+
+ttsmodule:
+  enabled: true
+  environment: robot
+
+vision_imx500:
+  enabled: true
+  environment: robot
+
+vision_opencv:
+  enabled: false
+
+xbox_controller:
+  enabled: true

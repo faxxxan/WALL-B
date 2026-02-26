@@ -1,9 +1,8 @@
-motion:
-  enabled: false
-  path: 'modules.gpio.read.read.Read'
+gpio_read:
   config:
     pin: 5
     test_on_boot: false
   dependencies:
     python:
-      - gpiozero
+    - gpiozero
+  class: Read

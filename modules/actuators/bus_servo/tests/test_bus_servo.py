@@ -8,7 +8,7 @@ mock_sc_sdk = MagicMock()
 sys.modules['modules.actuators.bus_servo.STservo_sdk'] = mock_st_sdk
 sys.modules['modules.actuators.bus_servo.SCservo_sdk'] = mock_sc_sdk
 
-from modules.actuators.bus_servo.servo import Servo
+from modules.actuators.bus_servo.bus_servo import Servo
 
 class TestBusServo(unittest.TestCase):
 
