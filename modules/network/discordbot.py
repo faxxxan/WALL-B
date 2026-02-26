@@ -1,6 +1,8 @@
 import asyncio
 import os
 import threading
+import urllib.request
+from html.parser import HTMLParser
 
 import discord
 from modules.base_module import BaseModule
@@ -8,6 +10,38 @@ from modules.base_module import BaseModule
 # Discord thread names are limited to 100 characters.  We reserve 3 for the
 # trailing ellipsis ("...") so the effective content limit is 97 characters.
 _MAX_THREAD_NAME_CONTENT = 97
+
+# Default character limit applied to each fetched knowledge-source URL.
+_DEFAULT_MAX_CHARS_PER_SOURCE = 5000
+
+
+class _TextExtractor(HTMLParser):
+    """Minimal HTML-to-text converter for extracting knowledge-source content."""
+
+    # Tags whose content adds no meaningful text (scripts, navigation, etc.)
+    _SKIP_TAGS = {"script", "style", "nav", "header", "footer", "aside"}
+
+    def __init__(self):
+        super().__init__()
+        self._chunks = []
+        self._skip_depth = 0
+
+    def handle_starttag(self, tag, attrs):
+        if tag in self._SKIP_TAGS:
+            self._skip_depth += 1
+
+    def handle_endtag(self, tag):
+        if tag in self._SKIP_TAGS and self._skip_depth > 0:
+            self._skip_depth -= 1
+
+    def handle_data(self, data):
+        if self._skip_depth == 0:
+            text = data.strip()
+            if text:
+                self._chunks.append(text)
+
+    def get_text(self):
+        return " ".join(self._chunks)
 
 
 class DiscordBot(BaseModule):
@@ -18,6 +52,12 @@ class DiscordBot(BaseModule):
     using the ChatGPT module directly (via ``ai_instance``) with
     GitHub-hosted knowledge sources specified in the config YAML.
 
+    At startup the text content of each ``knowledge_sources`` URL is fetched
+    and embedded directly into the system prompt so that ChatGPT can draw on
+    the actual information rather than just seeing bare hyperlinks.  Each
+    source is truncated to ``max_chars_per_source`` characters (default
+    5,000) to keep prompt size manageable.
+
     The bot responds to:
     - Private messages (DMs): every message in a DM channel is processed
       without requiring the bot to be @mentioned.
@@ -25,8 +65,9 @@ class DiscordBot(BaseModule):
 
     Any time the bot is triggered it will:
       1. Collect the thread context (if the post is already inside a thread).
-      2. Forward the question together with the system prompt and knowledge
-         sources to the AI module via ``ai_instance.completion()``.
+      2. Forward the question together with the system prompt (which now
+         contains the fetched knowledge) to the AI via
+         ``ai_instance.completion()``.
       3. Post the reply back:
          - In a DM: directly in the DM channel.
          - In a thread: directly in that thread.
@@ -51,6 +92,7 @@ class DiscordBot(BaseModule):
           path: modules.network.discordbot.DiscordBot
           config:
             prompt: "You are a helpful assistant for the modular-biped project..."
+            max_chars_per_source: 5000
             knowledge_sources:
               - https://github.com/makerforgetech/modular-biped/wiki
               - https://github.com/makerforgetech/modular-biped/discussions
@@ -61,8 +103,10 @@ class DiscordBot(BaseModule):
         Initialise the Discord bot.
 
         :kwarg prompt: System prompt sent to the AI for every request.
-        :kwarg knowledge_sources: List of URLs the AI should reference when
-            answering questions.
+        :kwarg knowledge_sources: List of URLs whose content will be fetched
+            and embedded in the system prompt.
+        :kwarg max_chars_per_source: Maximum characters to include from each
+            fetched URL (default 5,000).
         :kwarg token: Bot token (falls back to DISCORD_BOT_TOKEN env var).
         """
         self.token = os.getenv("DISCORD_BOT_TOKEN", kwargs.get("token", None))
@@ -79,14 +123,26 @@ class DiscordBot(BaseModule):
             "You are a helpful assistant. Answer questions clearly and concisely.",
         )
         self.knowledge_sources = kwargs.get("knowledge_sources", [])
+        self.max_chars_per_source = kwargs.get(
+            "max_chars_per_source", _DEFAULT_MAX_CHARS_PER_SOURCE
+        )
 
-        # Build the system prompt once, including any knowledge-source URLs.
+        # Build the system prompt, embedding fetched content from each URL so
+        # ChatGPT can draw on the actual text rather than bare hyperlinks.
         if self.knowledge_sources:
-            sources_str = "\n".join(f"- {s}" for s in self.knowledge_sources)
-            self.system_prompt = (
-                f"{self.prompt}\n\nParse and reference the following knowledge sources "
-                f"when answering questions:\n{sources_str}"
-            )
+            parts = [
+                self.prompt,
+                "\nKnowledge base (use this content to answer questions accurately):",
+            ]
+            for url in self.knowledge_sources:
+                content = self._fetch_knowledge_source_content(
+                    url, self.max_chars_per_source
+                )
+                if content:
+                    parts.append(f"\n### Source: {url}\n{content}")
+                else:
+                    parts.append(f"\n### Source: {url}\n(Content could not be loaded)")
+            self.system_prompt = "\n".join(parts)
         else:
             self.system_prompt = self.prompt
 
@@ -231,6 +287,31 @@ class DiscordBot(BaseModule):
         except Exception as e:
             self.log(f"Error calling ChatGPT completion: {e}", level="error")
             return f"[Error: {e}]"
+
+    @staticmethod
+    def _fetch_knowledge_source_content(url, max_chars=_DEFAULT_MAX_CHARS_PER_SOURCE):
+        """
+        Fetch *url* and return its text content, stripped of HTML markup.
+
+        The result is truncated to *max_chars* characters.  Returns ``None``
+        on any network or parsing error so callers can fall back gracefully.
+        """
+        try:
+            req = urllib.request.Request(
+                url,
+                headers={"User-Agent": "Mozilla/5.0 (compatible; DiscordBot/1.0)"},
+            )
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                raw = resp.read().decode("utf-8", errors="replace")
+            extractor = _TextExtractor()
+            extractor.feed(raw)
+            # Collapse repeated whitespace for a cleaner prompt.
+            text = " ".join(extractor.get_text().split())
+            if len(text) > max_chars:
+                text = text[:max_chars] + "..."
+            return text or None
+        except Exception:
+            return None
 
     def handle_ai_response(self, response):
         """

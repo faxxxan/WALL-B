@@ -5,9 +5,12 @@ discordbot:
   config:
     prompt: >
       You are a helpful assistant for the modular-biped open-source robotics
-      project. Answer questions clearly and concisely, parse the provided
+      project. Answer questions clearly and concisely, using the provided
       knowledge sources where relevant. If you are unsure of an answer, say so
       and direct the user to the appropriate knowledge source.
+    # Maximum characters to extract from each knowledge source URL.
+    # Increase for more context (higher token usage) or decrease to save tokens.
+    max_chars_per_source: 5000
     knowledge_sources:
       - https://github.com/makerforgetech/modular-biped/wiki
       - https://github.com/makerforgetech/modular-biped/discussions

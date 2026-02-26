@@ -1,4 +1,5 @@
 import asyncio
+import io
 import sys
 import types
 import unittest
@@ -62,17 +63,30 @@ sys.modules["discord"] = discord_stub
 # ---------------------------------------------------------------------------
 # Now import the module under test (with discord already stubbed).
 # ---------------------------------------------------------------------------
-from modules.network.discordbot import DiscordBot  # noqa: E402
+from modules.network.discordbot import DiscordBot, _TextExtractor  # noqa: E402
 
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _make_bot(prompt="Test prompt", knowledge_sources=None, token="fake-token"):
-    """Return a DiscordBot instance with background thread suppressed."""
+def _mock_urlopen(html_content=b""):
+    """Return a context-manager mock for urllib.request.urlopen."""
+    mock_resp = MagicMock()
+    mock_resp.__enter__ = Mock(return_value=mock_resp)
+    mock_resp.__exit__ = Mock(return_value=False)
+    mock_resp.read.return_value = html_content
+    return Mock(return_value=mock_resp)
+
+
+def _make_bot(prompt="Test prompt", knowledge_sources=None, token="fake-token",
+              urlopen_mock=None):
+    """Return a DiscordBot instance with background thread and network suppressed."""
+    if urlopen_mock is None:
+        urlopen_mock = _mock_urlopen(b"")
     with patch("threading.Thread") as mock_thread, \
-         patch.dict("os.environ", {"DISCORD_BOT_TOKEN": token}):
+         patch.dict("os.environ", {"DISCORD_BOT_TOKEN": token}), \
+         patch("modules.network.discordbot.urllib.request.urlopen", urlopen_mock):
         mock_thread.return_value = Mock()
         bot = DiscordBot(
             prompt=prompt,
@@ -94,6 +108,40 @@ def _make_ai_mock(return_value="AI response"):
 # ---------------------------------------------------------------------------
 # Tests
 # ---------------------------------------------------------------------------
+
+class TestTextExtractor(unittest.TestCase):
+    """Tests for the HTML-to-text helper."""
+
+    def test_plain_text_passthrough(self):
+        ex = _TextExtractor()
+        ex.feed("<p>Hello world</p>")
+        self.assertEqual(ex.get_text(), "Hello world")
+
+    def test_strips_script_content(self):
+        ex = _TextExtractor()
+        ex.feed("<p>Visible</p><script>secret()</script>")
+        self.assertNotIn("secret", ex.get_text())
+        self.assertIn("Visible", ex.get_text())
+
+    def test_strips_style_content(self):
+        ex = _TextExtractor()
+        ex.feed("<style>.cls{color:red}</style><p>Content</p>")
+        self.assertNotIn("color", ex.get_text())
+        self.assertIn("Content", ex.get_text())
+
+    def test_strips_nav_content(self):
+        ex = _TextExtractor()
+        ex.feed("<nav>Menu</nav><main>Article</main>")
+        self.assertNotIn("Menu", ex.get_text())
+        self.assertIn("Article", ex.get_text())
+
+    def test_nested_skip_tags(self):
+        """Nested skip tags should not expose intermediate content."""
+        ex = _TextExtractor()
+        ex.feed("<script><script>inner</script></script><p>after</p>")
+        self.assertNotIn("inner", ex.get_text())
+        self.assertIn("after", ex.get_text())
+
 
 class TestDiscordBotInit(unittest.TestCase):
     """Tests for __init__ and configuration."""
@@ -117,7 +165,8 @@ class TestDiscordBotInit(unittest.TestCase):
         bot = _make_bot(prompt="Hello", knowledge_sources=[])
         self.assertEqual(bot.system_prompt, "Hello")
 
-    def test_system_prompt_with_sources(self):
+    def test_system_prompt_with_sources_contains_url(self):
+        """The URL must appear in the system prompt (as a ### Source header)."""
         sources = ["https://example.com/wiki", "https://example.com/repo"]
         bot = _make_bot(prompt="Help me", knowledge_sources=sources)
         self.assertIn("https://example.com/wiki", bot.system_prompt)
@@ -130,11 +179,112 @@ class TestDiscordBotInit(unittest.TestCase):
 
     def test_background_thread_started(self):
         with patch("threading.Thread") as mock_thread_cls, \
-             patch.dict("os.environ", {"DISCORD_BOT_TOKEN": "tok"}):
+             patch.dict("os.environ", {"DISCORD_BOT_TOKEN": "tok"}), \
+             patch("modules.network.discordbot.urllib.request.urlopen",
+                   _mock_urlopen(b"")):
             mock_thread = Mock()
             mock_thread_cls.return_value = mock_thread
             DiscordBot(prompt="p")
             mock_thread.start.assert_called_once()
+
+
+class TestDiscordBotKnowledgeSources(unittest.TestCase):
+    """Tests for knowledge-source URL fetching and prompt embedding."""
+
+    def test_fetched_content_embedded_in_system_prompt(self):
+        """Text content from a knowledge-source URL must appear in the prompt."""
+        html = b"<html><body><p>Wiki article about modular-biped.</p></body></html>"
+        bot = _make_bot(
+            prompt="Base prompt",
+            knowledge_sources=["https://example.com/wiki"],
+            urlopen_mock=_mock_urlopen(html),
+        )
+        self.assertIn("Wiki article about modular-biped.", bot.system_prompt)
+        self.assertIn("https://example.com/wiki", bot.system_prompt)
+
+    def test_unavailable_source_shows_fallback_message(self):
+        """When a URL cannot be fetched the prompt should note that gracefully."""
+        failing_urlopen = Mock(side_effect=Exception("network error"))
+        bot = _make_bot(
+            prompt="Base prompt",
+            knowledge_sources=["https://example.com/wiki"],
+            urlopen_mock=failing_urlopen,
+        )
+        self.assertIn("https://example.com/wiki", bot.system_prompt)
+        self.assertIn("could not be loaded", bot.system_prompt)
+
+    def test_content_truncated_to_max_chars(self):
+        """Fetched content must be truncated to max_chars_per_source."""
+        long_text = ("word " * 2000).encode()  # ~10,000 chars
+        html = b"<p>" + long_text + b"</p>"
+        with patch("threading.Thread"), \
+             patch.dict("os.environ", {"DISCORD_BOT_TOKEN": "tok"}), \
+             patch("modules.network.discordbot.urllib.request.urlopen",
+                   _mock_urlopen(html)):
+            bot = DiscordBot(
+                prompt="p",
+                knowledge_sources=["https://example.com"],
+                max_chars_per_source=200,
+            )
+        # The embedded content section should not exceed 200 chars (plus "...").
+        source_section = bot.system_prompt.split("### Source:")[-1]
+        self.assertLessEqual(len(source_section.strip()), 300)
+        self.assertTrue(source_section.strip().endswith("..."))
+
+    def test_navigation_stripped_from_fetched_content(self):
+        """<nav> content must be stripped before embedding."""
+        html = (
+            b"<nav>Home | About | Contact</nav>"
+            b"<main><p>Actual article content here.</p></main>"
+        )
+        bot = _make_bot(
+            prompt="p",
+            knowledge_sources=["https://example.com"],
+            urlopen_mock=_mock_urlopen(html),
+        )
+        self.assertIn("Actual article content here.", bot.system_prompt)
+        self.assertNotIn("Home | About | Contact", bot.system_prompt)
+
+    def test_fetch_knowledge_source_content_returns_none_on_error(self):
+        """Static method returns None when the URL cannot be fetched."""
+        with patch("modules.network.discordbot.urllib.request.urlopen",
+                   side_effect=Exception("timeout")):
+            result = DiscordBot._fetch_knowledge_source_content("https://example.com")
+        self.assertIsNone(result)
+
+    def test_fetch_knowledge_source_content_strips_html(self):
+        """Static method returns plain text, not raw HTML."""
+        html = b"<html><body><h1>Title</h1><p>Body text.</p></body></html>"
+        with patch("modules.network.discordbot.urllib.request.urlopen",
+                   _mock_urlopen(html)):
+            result = DiscordBot._fetch_knowledge_source_content(
+                "https://example.com", max_chars=1000
+            )
+        self.assertIn("Title", result)
+        self.assertIn("Body text.", result)
+        self.assertNotIn("<h1>", result)
+        self.assertNotIn("<p>", result)
+
+    def test_multiple_sources_all_embedded(self):
+        """All knowledge-source URLs must have their content embedded."""
+        html_a = b"<p>Content from source A.</p>"
+        html_b = b"<p>Content from source B.</p>"
+        responses = [_mock_urlopen(html_a)(), _mock_urlopen(html_b)()]
+        side_effects = iter(responses)
+
+        def urlopen_side_effect(req, timeout=10):
+            return next(side_effects)
+
+        with patch("threading.Thread"), \
+             patch.dict("os.environ", {"DISCORD_BOT_TOKEN": "tok"}), \
+             patch("modules.network.discordbot.urllib.request.urlopen",
+                   side_effect=urlopen_side_effect):
+            bot = DiscordBot(
+                prompt="p",
+                knowledge_sources=["https://a.com", "https://b.com"],
+            )
+        self.assertIn("Content from source A.", bot.system_prompt)
+        self.assertIn("Content from source B.", bot.system_prompt)
 
 
 class TestDiscordBotMessaging(unittest.TestCase):
