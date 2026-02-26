@@ -132,5 +132,5 @@ class SystemLoop:
             if now - self._minute_loop > 60:
                 self._minute_loop = now
                 self.messaging_service.publish('system/loop/60')
-                self.messaging_service.publish('log', message=f"System currently in state: {self._state} with sleep interval: {self.sleep_interval}s")
+                # self.messaging_service.publish('log', message=f"System currently in state: {self._state} with sleep interval: {self.sleep_interval}s")
             
