@@ -245,19 +245,18 @@ class DiscordBot(BaseModule):
             if thread_lines:
                 context = "\n".join(thread_lines)
                 full_text = (
-                    f"{self.system_prompt}\n\n"
-                    f"Thread context:\n{context}\n\n"
+                    f"Thread context:\n{context}"
                     f"Question: {content}"
                 )
             else:
-                full_text = f"{self.system_prompt}\n\nQuestion: {content}"
+                full_text = f"Question: {content}"
         else:
-            full_text = f"{self.system_prompt}\n\nQuestion: {content}"
+            full_text = f"Question: {content}"
 
         # Offload the synchronous AI call to a thread-pool executor so the
         # Discord event loop is not blocked while waiting for the AI.
         
-        print(f"Full text sent to AI:\n{full_text}")
+        # print(f"Full text sent to AI:\n{full_text}")
         
         loop = asyncio.get_running_loop()
         response = await loop.run_in_executor(
@@ -266,24 +265,29 @@ class DiscordBot(BaseModule):
 
         if response:
             footer = "\n\n*I am a bot and currently in beta.*"
-            footer += "\n\n*If you want to help support the project, buy me a coffee: https://buymeacoffee.com/makerforgetech*"
+            footer += "\n*If you want to help support the project, buy me a coffee: https://buymeacoffee.com/makerforgetech*"
             response += footer
             print (f"AI response:\n{response}")
             await self._send_response(message, response)
+            
+        # log the timestamp and full content of the message for debugging
+        self.log(f"Received message at {message.created_at} from {message.author}: {message.content}\n\nFull text sent to AI:\n\n{[full_text]}\n\nResponse:\n\n{response}\n\nPrompt:{self.system_prompt}", level="file")
 
     # ------------------------------------------------------------------
     # AI integration (pubsub)
     # ------------------------------------------------------------------
 
-    def _get_ai_response(self, text):
+    def _get_ai_response(self, text, prompt=None):
         """
         Call the ChatGPT module's completion() method directly.
         """
+        if prompt is None:
+            prompt = self.system_prompt
         if not self.ai_instance:
             self.log("ChatGPT instance not set in DiscordBot.", level="error")
             return "[Error: ChatGPT module not available]"
         try:
-            return self.ai_instance.completion(text)
+            return self.ai_instance.text_completion(text, persona=prompt)
         except Exception as e:
             self.log(f"Error calling ChatGPT completion: {e}", level="error")
             return f"[Error: {e}]"

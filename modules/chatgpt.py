@@ -34,7 +34,7 @@ class ChatGPT(BaseModule):
         self.subscribe('speech', self.completion)
         self.subscribe('ai/input', self.text_completion)
         
-    def text_completion(self, text):
+    def text_completion(self, text, persona=None):
         """
         Get a text completion from the model and publish it to 'ai/response'.
         :param text: message to chat
@@ -42,12 +42,14 @@ class ChatGPT(BaseModule):
         Publishes 'ai/response' with response
         """
         try:
+            if persona is None:
+                persona = self.persona
             completion = self.client.chat.completions.create(
                 model=self.model,
                 messages=[
                     {
                         "role": "system", 
-                        "content": self.persona
+                        "content": persona
                     },
                     {
                         "role": "user",
