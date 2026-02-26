@@ -218,7 +218,7 @@ class DiscordBot(BaseModule):
         - Messages in servers/threads where the bot is explicitly @mentioned.
         Does not respond to its own messages.
         """
-        print(f"Received message: {message.content} (mentions: {[m.display_name for m in message.mentions]})")
+        # print(f"Received message: {message.content} (mentions: {[m.display_name for m in message.mentions]})")
 
         if message.author == self._bot.user:
             return
@@ -229,7 +229,7 @@ class DiscordBot(BaseModule):
         if not is_dm and self._bot.user not in message.mentions:
             return
 
-        print("Processing message...")
+        self.log(f"Processing message from {message.author}: {message.content}", level="info")
 
         # Strip @mentions from content (only relevant for channel/thread messages).
         content = message.content
@@ -271,7 +271,7 @@ class DiscordBot(BaseModule):
         if response:
             if self.footer:
                 response += f"\n\n{self.footer}"
-            print (f"AI response:\n{response}")
+            # print (f"AI response:\n{response}")
             await self._send_response(message, response)
             
         # log the timestamp and full content of the message for debugging
@@ -341,17 +341,30 @@ class DiscordBot(BaseModule):
         - Regular server channels: create a new thread from the message so
           the conversation stays organised.
         """
-        if isinstance(message.channel, (discord.Thread, discord.DMChannel)):
-            await message.channel.send(response)
-        else:
-            thread_name = (message.content[:_MAX_THREAD_NAME_CONTENT] + "...") if len(message.content) > _MAX_THREAD_NAME_CONTENT else message.content
-            thread_name = thread_name.strip() or "Discussion"
-            try:
-                thread = await message.create_thread(name=thread_name)
-                await thread.send(response)
-            except discord.HTTPException:
-                # Fallback: reply inline if thread creation fails.
-                await message.reply(response)
+        if len(response) > 2000:
+            # split into chunks of 2000 characters and send as multiple messages to avoid Discord limits
+            for i in range(0, len(response), 2000):
+                chunk = response[i:i+2000]
+                await self._send_response(message, chunk)
+            return
+        try:
+            if isinstance(message.channel, (discord.Thread, discord.DMChannel)):
+                await message.channel.send(response)
+            else:
+                thread_name = (message.content[:_MAX_THREAD_NAME_CONTENT] + "...") if len(message.content) > _MAX_THREAD_NAME_CONTENT else message.content
+                thread_name = thread_name.strip() or "Discussion"
+                try:
+                    thread = await message.create_thread(name=thread_name)
+                    await thread.send(response)
+                except discord.HTTPException as e:
+                    # Fallback: reply inline if thread creation fails.
+                    self.log(f"Failed to create thread or send response in thread: {e}", level="error")
+                    try:
+                        await message.reply(response)
+                    except Exception as e2:
+                        self.log(f"Failed to reply inline after thread failure: {e2}", level="error")
+        except Exception as e:
+            self.log(f"Failed to send response: {e}", level="error")
 
     def handle_send(self, channel_id=None, message=None):
         """
