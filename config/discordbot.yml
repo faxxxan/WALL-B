@@ -11,6 +11,10 @@ discordbot:
     # Maximum characters to extract from each knowledge source URL.
     # Increase for more context (higher token usage) or decrease to save tokens.
     max_chars_per_source: 20000
+    # Footer appended to every AI response (Markdown supported).
+    footer: |
+      *I am a bot and currently in beta.*
+      *If you want to help support the project, buy me a coffee: https://buymeacoffee.com/makerforgetech*
     knowledge_sources:
       - https://github.com/makerforgetech/modular-biped/wiki
       - https://github.com/makerforgetech/modular-biped/wiki/Files

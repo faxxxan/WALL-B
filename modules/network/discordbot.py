@@ -93,6 +93,7 @@ class DiscordBot(BaseModule):
           config:
             prompt: "You are a helpful assistant for the modular-biped project..."
             max_chars_per_source: 5000
+            footer: "*I am a bot and currently in beta.*"
             knowledge_sources:
               - https://github.com/makerforgetech/modular-biped/wiki
               - https://github.com/makerforgetech/modular-biped/discussions
@@ -102,11 +103,14 @@ class DiscordBot(BaseModule):
         """
         Initialise the Discord bot.
 
-        :kwarg prompt: System prompt sent to the AI for every request.
+        :kwarg prompt: System prompt sent to the AI as the ``persona`` argument
+            for every request.
         :kwarg knowledge_sources: List of URLs whose content will be fetched
             and embedded in the system prompt.
         :kwarg max_chars_per_source: Maximum characters to include from each
             fetched URL (default 5,000).
+        :kwarg footer: Text appended to every AI response before posting to
+            Discord.  Supports Markdown.
         :kwarg token: Bot token (falls back to DISCORD_BOT_TOKEN env var).
         """
         self.token = os.getenv("DISCORD_BOT_TOKEN", kwargs.get("token", None))
@@ -126,6 +130,7 @@ class DiscordBot(BaseModule):
         self.max_chars_per_source = kwargs.get(
             "max_chars_per_source", _DEFAULT_MAX_CHARS_PER_SOURCE
         )
+        self.footer = kwargs.get("footer", "")
 
         # Build the system prompt, embedding fetched content from each URL so
         # ChatGPT can draw on the actual text rather than bare hyperlinks.
@@ -245,7 +250,7 @@ class DiscordBot(BaseModule):
             if thread_lines:
                 context = "\n".join(thread_lines)
                 full_text = (
-                    f"Thread context:\n{context}"
+                    f"Thread context:\n{context}\n\n"
                     f"Question: {content}"
                 )
             else:
@@ -264,9 +269,8 @@ class DiscordBot(BaseModule):
         )
 
         if response:
-            footer = "\n\n*I am a bot and currently in beta.*"
-            footer += "\n*If you want to help support the project, buy me a coffee: https://buymeacoffee.com/makerforgetech*"
-            response += footer
+            if self.footer:
+                response += f"\n\n{self.footer}"
             print (f"AI response:\n{response}")
             await self._send_response(message, response)
             

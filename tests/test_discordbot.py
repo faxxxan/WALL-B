@@ -80,7 +80,7 @@ def _mock_urlopen(html_content=b""):
 
 
 def _make_bot(prompt="Test prompt", knowledge_sources=None, token="fake-token",
-              urlopen_mock=None):
+              urlopen_mock=None, footer=""):
     """Return a DiscordBot instance with background thread and network suppressed."""
     if urlopen_mock is None:
         urlopen_mock = _mock_urlopen(b"")
@@ -91,6 +91,7 @@ def _make_bot(prompt="Test prompt", knowledge_sources=None, token="fake-token",
         bot = DiscordBot(
             prompt=prompt,
             knowledge_sources=knowledge_sources or [],
+            footer=footer,
         )
         bot._loop = asyncio.new_event_loop()
         # Provide a messaging service so log() calls don't raise.
@@ -99,9 +100,9 @@ def _make_bot(prompt="Test prompt", knowledge_sources=None, token="fake-token",
 
 
 def _make_ai_mock(return_value="AI response"):
-    """Return a mock ChatGPT instance whose completion() returns *return_value*."""
+    """Return a mock ChatGPT instance whose text_completion() returns *return_value*."""
     mock_ai = Mock()
-    mock_ai.completion.return_value = return_value
+    mock_ai.text_completion.return_value = return_value
     return mock_ai
 
 
@@ -173,9 +174,13 @@ class TestDiscordBotInit(unittest.TestCase):
         self.assertIn("https://example.com/repo", bot.system_prompt)
         self.assertIn("Help me", bot.system_prompt)
 
-    def test_ai_instance_defaults_to_none(self):
+    def test_footer_defaults_to_empty(self):
         bot = _make_bot()
-        self.assertIsNone(bot.ai_instance)
+        self.assertEqual(bot.footer, "")
+
+    def test_footer_from_kwarg(self):
+        bot = _make_bot(footer="*Beta bot*")
+        self.assertEqual(bot.footer, "*Beta bot*")
 
     def test_background_thread_started(self):
         with patch("threading.Thread") as mock_thread_cls, \
@@ -335,28 +340,30 @@ class TestDiscordBotGetAiResponse(unittest.TestCase):
         self.assertIn("[Error:", result)
 
     def test_calls_ai_instance_and_returns_response(self):
-        """Calls ai_instance.completion() with the text and returns the result."""
+        """Calls ai_instance.text_completion() with the text and persona, and returns the result."""
         self.bot.ai_instance = _make_ai_mock("AI says hello")
         result = self.bot._get_ai_response("hello?")
-        self.bot.ai_instance.completion.assert_called_once_with("hello?")
+        self.bot.ai_instance.text_completion.assert_called_once_with(
+            "hello?", persona=self.bot.system_prompt
+        )
         self.assertEqual(result, "AI says hello")
 
     def test_returns_none_when_ai_returns_none(self):
-        """Propagates None from ai_instance.completion()."""
+        """Propagates None from ai_instance.text_completion()."""
         self.bot.ai_instance = _make_ai_mock(None)
         result = self.bot._get_ai_response("q")
         self.assertIsNone(result)
 
     def test_returns_empty_string_when_ai_returns_empty(self):
-        """Propagates empty string from ai_instance.completion()."""
+        """Propagates empty string from ai_instance.text_completion()."""
         self.bot.ai_instance = _make_ai_mock("")
         result = self.bot._get_ai_response("q")
         self.assertEqual(result, "")
 
     def test_handles_exception_from_ai_instance(self):
-        """Returns an error string when ai_instance.completion() raises."""
+        """Returns an error string when ai_instance.text_completion() raises."""
         mock_ai = Mock()
-        mock_ai.completion.side_effect = Exception("boom")
+        mock_ai.text_completion.side_effect = Exception("boom")
         self.bot.ai_instance = mock_ai
         result = self.bot._get_ai_response("q")
         self.assertIn("[Error:", result)
@@ -376,6 +383,7 @@ class TestDiscordBotOnMessage(unittest.TestCase):
                       is_dm=False):
         msg = MagicMock()
         msg.content = content
+        msg.created_at = "2024-01-01T00:00:00"
         # Use the actual bot user object so that identity comparisons work.
         msg.author = self.bot._bot.user if from_bot else MagicMock()
         msg.mentions = [] if is_dm else [self.bot._bot.user]
@@ -396,18 +404,18 @@ class TestDiscordBotOnMessage(unittest.TestCase):
     def test_ignores_own_messages(self):
         msg = self._make_message(from_bot=True)
         self._run(self.bot._on_message(msg))
-        self.bot.ai_instance.completion.assert_not_called()
+        self.bot.ai_instance.text_completion.assert_not_called()
 
     def test_ignores_messages_without_mention(self):
         msg = self._make_message()
         msg.mentions = []  # bot not mentioned
         self._run(self.bot._on_message(msg))
-        self.bot.ai_instance.completion.assert_not_called()
+        self.bot.ai_instance.text_completion.assert_not_called()
 
     def test_calls_ai_when_mentioned(self):
         msg = self._make_message(content=f"<@{self.bot._bot.user.id}> What is this?")
         self._run(self.bot._on_message(msg))
-        self.bot.ai_instance.completion.assert_called_once()
+        self.bot.ai_instance.text_completion.assert_called_once()
 
     def test_creates_thread_for_channel_message(self):
         msg = self._make_message(
@@ -448,7 +456,7 @@ class TestDiscordBotOnMessage(unittest.TestCase):
 
         self._run(self.bot._on_message(msg))
 
-        call_text = self.bot.ai_instance.completion.call_args[0][0]
+        call_text = self.bot.ai_instance.text_completion.call_args[0][0]
         self.assertIn("Alice: What is modular-biped?", call_text)
         self.assertIn("Can you elaborate?", call_text)
 
@@ -456,9 +464,34 @@ class TestDiscordBotOnMessage(unittest.TestCase):
         """Empty content after stripping the @mention is still sent to the AI."""
         msg = self._make_message(content=f"<@{self.bot._bot.user.id}>")
         self._run(self.bot._on_message(msg))
-        self.bot.ai_instance.completion.assert_called_once()
-        call_text = self.bot.ai_instance.completion.call_args[0][0]
+        self.bot.ai_instance.text_completion.assert_called_once()
+        call_text = self.bot.ai_instance.text_completion.call_args[0][0]
         self.assertIn("Question:", call_text)
+
+    def test_footer_appended_to_response(self):
+        """Configured footer must be appended to the AI response."""
+        self.bot.footer = "*Beta bot.*"
+        msg = self._make_message(content=f"<@{self.bot._bot.user.id}> Hi")
+        mock_thread = MagicMock()
+        mock_thread.send = AsyncMock()
+        msg.create_thread = AsyncMock(return_value=mock_thread)
+        self.bot.ai_instance = _make_ai_mock("Hello!")
+        self._run(self.bot._on_message(msg))
+        sent_text = mock_thread.send.call_args[0][0]
+        self.assertIn("Hello!", sent_text)
+        self.assertIn("*Beta bot.*", sent_text)
+
+    def test_no_footer_when_empty(self):
+        """When footer is empty no extra text should be appended."""
+        self.bot.footer = ""
+        msg = self._make_message(content=f"<@{self.bot._bot.user.id}> Hi")
+        mock_thread = MagicMock()
+        mock_thread.send = AsyncMock()
+        msg.create_thread = AsyncMock(return_value=mock_thread)
+        self.bot.ai_instance = _make_ai_mock("Exact answer")
+        self._run(self.bot._on_message(msg))
+        sent_text = mock_thread.send.call_args[0][0]
+        self.assertEqual(sent_text, "Exact answer")
 
     # ------------------------------------------------------------------
     # DM (private message) tests
@@ -469,7 +502,7 @@ class TestDiscordBotOnMessage(unittest.TestCase):
         msg = self._make_message(content="What is modular-biped?", is_dm=True)
         self.bot.ai_instance = _make_ai_mock("It is a robot project.")
         self._run(self.bot._on_message(msg))
-        self.bot.ai_instance.completion.assert_called_once()
+        self.bot.ai_instance.text_completion.assert_called_once()
         msg.channel.send.assert_called_once()
 
     def test_dm_response_contains_ai_answer(self):
@@ -495,13 +528,13 @@ class TestDiscordBotOnMessage(unittest.TestCase):
         """The bot should ignore its own DM messages."""
         msg = self._make_message(content="test", is_dm=True, from_bot=True)
         self._run(self.bot._on_message(msg))
-        self.bot.ai_instance.completion.assert_not_called()
+        self.bot.ai_instance.text_completion.assert_not_called()
 
     def test_dm_content_not_stripped_of_mentions(self):
         """DM content should be passed to the AI as-is (no mention stripping)."""
         msg = self._make_message(content="What is @someone doing?", is_dm=True)
         self._run(self.bot._on_message(msg))
-        call_text = self.bot.ai_instance.completion.call_args[0][0]
+        call_text = self.bot.ai_instance.text_completion.call_args[0][0]
         # The original question text should be preserved in the prompt.
         self.assertIn("What is @someone doing?", call_text)
 
