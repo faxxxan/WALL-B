@@ -210,6 +210,183 @@ class TestModuleLoader(unittest.TestCase):
             result = loader._load_environment_config()
         self.assertEqual(result, {})
 
+    # ── inject_dependencies tests ─────────────────────────────────────────────
+
+    def _make_loader_with_module(self, module_key='my_module', class_name='MyClass'):
+        """Create a ModuleLoader with a single pre-loaded module (bypassing file I/O)."""
+        loader = ModuleLoader.__new__(ModuleLoader)
+        loader.config_folder = 'modules'
+        loader.environment = 'archie'
+        loader.modules = [{'_module_key': module_key, '_class': class_name}]
+        return loader
+
+    def test_inject_simple_attribute(self):
+        # inject: attr: TargetKey sets target.attr = instances['TargetKey']
+        class Target:
+            vision = None
+        class Source:
+            pass
+
+        loader = self._make_loader_with_module()
+        target_inst = Target()
+        source_inst = Source()
+        instances = {'MyClass': target_inst, 'Vision': source_inst}
+        self.mock_env.return_value = {
+            'my_module': {'enabled': True, 'inject': {'vision': 'Vision'}}
+        }
+        loader.inject_dependencies(instances)
+        self.assertIs(target_inst.vision, source_inst)
+
+    def test_inject_dict_path(self):
+        # inject: attr.subkey: TargetKey sets target.attr['subkey'] = instances['TargetKey']
+        class Target:
+            imu = {}
+        class IMU:
+            pass
+
+        loader = self._make_loader_with_module()
+        target_inst = Target()
+        imu_inst = IMU()
+        instances = {'MyClass': target_inst, 'BNO055_imu_head': imu_inst}
+        self.mock_env.return_value = {
+            'my_module': {'enabled': True, 'inject': {'imu.head': 'BNO055_imu_head'}}
+        }
+        loader.inject_dependencies(instances)
+        self.assertIs(target_inst.imu['head'], imu_inst)
+
+    def test_inject_wildcard_pattern(self):
+        # inject: servos: "Servo_*" builds a dict of {identifier: instance}
+        class Target:
+            servos = {}
+        class ServoInst:
+            def __init__(self, name):
+                self.identifier = name
+
+        loader = self._make_loader_with_module()
+        target_inst = Target()
+        servo_a = ServoInst('leg_l')
+        servo_b = ServoInst('leg_r')
+        instances = {
+            'MyClass': target_inst,
+            'Servo_leg_l': servo_a,
+            'Servo_leg_r': servo_b,
+        }
+        self.mock_env.return_value = {
+            'my_module': {'enabled': True, 'inject': {'servos': 'Servo_*'}}
+        }
+        loader.inject_dependencies(instances)
+        self.assertIn('leg_l', target_inst.servos)
+        self.assertIn('leg_r', target_inst.servos)
+        self.assertIs(target_inst.servos['leg_l'], servo_a)
+        self.assertIs(target_inst.servos['leg_r'], servo_b)
+
+    def test_inject_missing_source_logs_and_skips(self):
+        # Missing source should not raise; attribute is left unchanged
+        class Target:
+            vision = None
+
+        loader = self._make_loader_with_module()
+        target_inst = Target()
+        instances = {'MyClass': target_inst}  # 'Vision' not present
+        self.mock_env.return_value = {
+            'my_module': {'enabled': True, 'inject': {'vision': 'Vision'}}
+        }
+        loader.inject_dependencies(instances)
+        self.assertIsNone(target_inst.vision)  # unchanged
+
+    def test_on_inject_calls_method(self):
+        # on_inject: [start] calls target.start() after injection
+        class Target:
+            started = False
+            def start(self):
+                self.started = True
+
+        loader = self._make_loader_with_module()
+        target_inst = Target()
+        instances = {'MyClass': target_inst}
+        self.mock_env.return_value = {
+            'my_module': {'enabled': True, 'on_inject': ['start']}
+        }
+        loader.inject_dependencies(instances)
+        self.assertTrue(target_inst.started)
+
+    def test_on_inject_string_form(self):
+        # on_inject: start  (string, not list) also works
+        class Target:
+            called = False
+            def start(self):
+                self.called = True
+
+        loader = self._make_loader_with_module()
+        target_inst = Target()
+        instances = {'MyClass': target_inst}
+        self.mock_env.return_value = {
+            'my_module': {'enabled': True, 'on_inject': 'start'}
+        }
+        loader.inject_dependencies(instances)
+        self.assertTrue(target_inst.called)
+
+    def test_inject_injects_messaging_service_automatically(self):
+        # inject_dependencies always injects messaging service for all non-MessagingService modules
+        class MessagingServiceModule:
+            messaging_service = object()
+        class OtherModule:
+            messaging_service = None
+
+        loader = self._make_loader_with_module()
+        ms_inst = MessagingServiceModule()
+        other_inst = OtherModule()
+        instances = {'MessagingService': ms_inst, 'MyClass': other_inst}
+        self.mock_env.return_value = {}
+        loader.inject_dependencies(instances)
+        self.assertIs(other_inst.messaging_service, ms_inst.messaging_service)
+
+    def test_resolve_inject_source_simple(self):
+        loader = ModuleLoader.__new__(ModuleLoader)
+        instances = {'Vision': object()}
+        result = loader._resolve_inject_source('Vision', instances)
+        self.assertIs(result, instances['Vision'])
+
+    def test_resolve_inject_source_wildcard(self):
+        loader = ModuleLoader.__new__(ModuleLoader)
+        class Inst:
+            def __init__(self, id_):
+                self.identifier = id_
+        a, b = Inst('neck_pan'), Inst('neck_tilt')
+        instances = {'Servo_neck_pan': a, 'Servo_neck_tilt': b, 'Other': object()}
+        result = loader._resolve_inject_source('Servo_*', instances)
+        self.assertEqual(set(result.keys()), {'neck_pan', 'neck_tilt'})
+
+    def test_resolve_inject_source_wildcard_no_match(self):
+        loader = ModuleLoader.__new__(ModuleLoader)
+        result = loader._resolve_inject_source('Servo_*', {'Other': object()})
+        self.assertIsNone(result)
+
+    def test_set_attr_simple(self):
+        loader = ModuleLoader.__new__(ModuleLoader)
+        class TestTarget:
+            vision = None
+        target = TestTarget()
+        loader._set_attr(target, 'vision', 'val')
+        self.assertEqual(target.vision, 'val')
+
+    def test_set_attr_dict_path(self):
+        loader = ModuleLoader.__new__(ModuleLoader)
+        class TestTarget:
+            imu = {}
+        target = TestTarget()
+        loader._set_attr(target, 'imu.head', 'val')
+        self.assertEqual(target.imu['head'], 'val')
+
+    def test_set_attr_creates_dict_if_absent(self):
+        loader = ModuleLoader.__new__(ModuleLoader)
+        class TestTarget:
+            pass
+        target = TestTarget()
+        target.imu = None  # not a dict
+        loader._set_attr(target, 'imu.head', 'val')
+        self.assertEqual(target.imu, {'head': 'val'})
+
 
 if __name__ == '__main__':
     unittest.main()

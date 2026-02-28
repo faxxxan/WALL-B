@@ -12,6 +12,8 @@ logwrapper:
 
 personality:
   enabled: true
+  inject:
+    servos: "Servo_*"
 
 input_recorder:
   enabled: true
@@ -29,6 +31,10 @@ telegram:
 
 controller_handler:
   enabled: true
+  inject:
+    controller: XboxController
+  on_inject:
+    - start
 
 xbox_controller:
   enabled: true

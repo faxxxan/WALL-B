@@ -108,6 +108,7 @@ class ModuleLoader:
                         dir_name = os.path.basename(dir_path)
                         module_config['_py_file'] = os.path.join(dir_path, f"{dir_name}.py")
                         module_config['_class'] = module_config.get('class')
+                        module_config['_module_key'] = module_name
                         loaded_modules.append(module_config)
                 except yaml.YAMLError as e:
                     print(f"Error loading {file_path}: {e}")
@@ -119,6 +120,118 @@ class ModuleLoader:
             if 'MessagingService' in name:
                 continue
             module.messaging_service = messaging_service
+
+    def inject_dependencies(self, instances):
+        """
+        Inject module dependencies as declared in the environment YAML file and wire
+        the messaging service.  Call this once after load_modules().
+
+        Each module in the environment file can declare:
+
+            inject:
+                attr_name: TargetInstanceKey         # simple attribute injection
+                attr_name: "Prefix_*"                # wildcard → {inst.identifier: inst} dict
+                dict_attr.subkey: TargetInstanceKey  # dict-path (e.g. imu.head, imu.body)
+
+            on_inject:
+                - method_name                        # method(s) to call after all injections
+
+        The messaging service is always injected first for all loaded modules.
+
+        Example (modules/environments/archie.yml):
+        ---
+        personality:
+          inject:
+            servos: "Servo_*"
+            imu.head: BNO055_imu_head
+            imu.body: BNO055_imu_body
+            vision: Vision
+        controller_handler:
+          inject:
+            controller: XboxController
+          on_inject:
+            - start
+        """
+        # Step 1: inject messaging service for all modules
+        if 'MessagingService' in instances:
+            messaging_service = instances['MessagingService'].messaging_service
+            self.set_messaging_service(instances, messaging_service)
+
+        # Step 2: build a map from environment module_key → instance keys
+        module_key_to_instances = {}
+        for module in self.modules:
+            module_key = module.get('_module_key')
+            class_name = module.get('_class')
+            if not module_key or not class_name:
+                continue
+            related = [k for k in instances if k == class_name or k.startswith(class_name + '_')]
+            module_key_to_instances[module_key] = related
+
+        # Step 3: process inject / on_inject declarations from the environment config
+        env_config = self._load_environment_config()
+        for module_key, env_entry in env_config.items():
+            inject_map = env_entry.get('inject', {})
+            on_inject = env_entry.get('on_inject', [])
+            if not inject_map and not on_inject:
+                continue
+
+            target_keys = module_key_to_instances.get(module_key, [])
+            for target_key in target_keys:
+                target = instances.get(target_key)
+                if target is None:
+                    continue
+
+                for attr_path, source_spec in inject_map.items():
+                    value = self._resolve_inject_source(source_spec, instances)
+                    if value is None:
+                        print(f"[ModuleLoader] inject: source '{source_spec}' not found for {target_key}.{attr_path}")
+                        continue
+                    self._set_attr(target, attr_path, value)
+                    print(f"[ModuleLoader] inject: {target_key}.{attr_path} = {source_spec}")
+
+                if isinstance(on_inject, str):
+                    on_inject = [on_inject]
+                for method_name in on_inject:
+                    method = getattr(target, method_name, None)
+                    if callable(method):
+                        print(f"[ModuleLoader] on_inject: {target_key}.{method_name}()")
+                        method()
+                    else:
+                        print(f"[ModuleLoader] on_inject: {target_key}.{method_name} not found or not callable")
+
+    def _resolve_inject_source(self, source_spec, instances):
+        """
+        Resolve an inject source specification to a value.
+
+        - "InstanceKey"   → instances['InstanceKey']
+        - "Prefix_*"      → {inst.identifier (or key_suffix): inst} for all matching keys
+        """
+        if '*' in str(source_spec):
+            prefix = source_spec.replace('*', '')
+            result = {}
+            for key, inst in instances.items():
+                if key.startswith(prefix):
+                    id_key = getattr(inst, 'identifier', None) or key[len(prefix):]
+                    result[id_key] = inst
+            return result if result else None
+        return instances.get(source_spec)
+
+    def _set_attr(self, target, attr_path, value):
+        """
+        Set an attribute on target using dotted path notation.
+
+        - "vision"    → target.vision = value
+        - "imu.head"  → target.imu['head'] = value  (creates dict if absent)
+        """
+        if '.' in attr_path:
+            attr_name, sub_key = attr_path.split('.', 1)
+            container = getattr(target, attr_name, None)
+            if isinstance(container, dict):
+                container[sub_key] = value
+            else:
+                setattr(target, attr_name, {sub_key: value})
+        else:
+            setattr(target, attr_path, value)
 
     def load_modules(self):
         """Dynamically load and instantiate the modules based on the config."""

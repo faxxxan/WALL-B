@@ -12,6 +12,11 @@ logwrapper:
 
 personality:
   enabled: true
+  inject:
+    servos: "Servo_*"
+    imu.head: BNO055_imu_head
+    imu.body: BNO055_imu_body
+    vision: Vision
 
 input_recorder:
   enabled: true
@@ -29,6 +34,10 @@ telegram:
 
 controller_handler:
   enabled: true
+  inject:
+    controller: XboxController
+  on_inject:
+    - start
 
 xbox_controller:
   enabled: true
