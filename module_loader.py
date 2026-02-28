@@ -8,61 +8,76 @@ class ModuleLoader:
         """
         ModuleLoader class
         :param config_folder: root folder to search for module config.yml files (searched recursively)
+        :param environment: name of the environment to load (e.g. 'archie', 'laptop', 'server').
+            Must match a YAML file in <config_folder>/environments/<environment>.yml.
 
         Each module lives in its own directory containing:
           - <module>.py   (Python implementation, filename matches directory name)
-          - config.yml    (module configuration with 'class' key for the Python class name)
+          - config.yml    (generic module configuration with 'class' key for the Python class name)
           - README.md     (documentation)
           - tests/        (unit tests)
 
-        Which modules are enabled is controlled by a single file:
-          <config_folder>/enabled.yml
+        Which modules are enabled, and any device-specific configuration overrides, are
+        controlled by a per-environment file:
+          <config_folder>/environments/<environment>.yml
 
-        Example module config.yml:
+        Example environment file (modules/environments/archie.yml):
         ---
-        buzzer:
-            class: Buzzer  # Python class name (required)
-            config:        # Passed as **kwargs to __init__ (optional)
-                pin: 27
-                name: 'buzzer'
-
-        Example enabled.yml:
-        ---
-        buzzer:
-            enabled: true
         messaging_service:
             enabled: true
+        logwrapper:
+            enabled: true
+        gpio_motion:
+            enabled: true
+            config:            # merged over the module's generic config
+                pin: 9
+        bus_servo:
+            enabled: true
+            instances:         # replaces the module's instances list
+              - name: leg_r_tilt
+                id: 1
+                range: [2511, 3944]
+
+        Example module config.yml (modules/gpio/motion/config.yml):
+        ---
+        gpio_motion:
+            class: Motion      # Python class name (required)
+            config:            # generic defaults (device-specific values go in environment file)
+                test_on_boot: false
 
         Example:
-        loader = ModuleLoader()
+        loader = ModuleLoader(environment='archie')
         modules = loader.load_modules()
 
         Reference module once loaded:
         translator_inst = modules['Translator']
         """
         self.config_folder = config_folder
-        self.environment = environment or 'robot'
+        self.environment = environment or 'archie'
         print(f"[ModuleLoader] Loading modules for environment: {self.environment}")
         self.modules = self.load_yaml_files()
 
-    def _load_enabled_config(self):
-        """Load enabled.yml from the config folder to determine which modules are active."""
-        enabled_file = os.path.join(self.config_folder, 'enabled.yml')
-        if not os.path.exists(enabled_file):
+    def _load_environment_config(self):
+        """Load the environment YAML file to determine which modules are active and their overrides."""
+        env_file = os.path.join(self.config_folder, 'environments', f'{self.environment}.yml')
+        if not os.path.exists(env_file):
+            print(f"[ModuleLoader] Warning: environment file not found: {env_file}")
             return {}
-        with open(enabled_file, 'r') as f:
+        with open(env_file, 'r') as f:
             try:
                 return yaml.safe_load(f) or {}
             except yaml.YAMLError as e:
-                print(f"Error loading {enabled_file}: {e}")
+                print(f"Error loading {env_file}: {e}")
                 return {}
 
     def load_yaml_files(self):
         """Recursively search config_folder for config.yml files and load enabled module configurations."""
-        enabled = self._load_enabled_config()
+        env_config = self._load_environment_config()
 
         config_files = []
         for root, dirs, files in os.walk(self.config_folder):
+            # Skip the environments subdirectory — those are not module config files
+            dirs[:] = [d for d in dirs if d != 'environments']
             for f in files:
                 if f == 'config.yml':
                     config_files.append(os.path.join(root, f))
@@ -73,19 +88,21 @@ class ModuleLoader:
                 try:
                     config = yaml.safe_load(stream)
                     for module_name, module_config in config.items():
-                        # Enabled status and environment come from enabled.yml
-                        enabled_entry = enabled.get(module_name, {})
-                        if not enabled_entry.get('enabled', False):
+                        # Check if this module is enabled in the environment file
+                        env_entry = env_config.get(module_name, {})
+                        if not env_entry.get('enabled', False):
                             continue
-                        env_field = enabled_entry.get('environment')
-                        print(f"[ModuleLoader] Found module: {module_name} with environment filter: {env_field}")
-                        if env_field is not None:
-                            if isinstance(env_field, str):
-                                if env_field != self.environment:
-                                    continue
-                            elif isinstance(env_field, list):
-                                if self.environment not in env_field:
-                                    continue
+                        print(f"[ModuleLoader] Loading module: {module_name}")
+
+                        # Merge environment config overrides into module config (shallow merge)
+                        env_config_override = env_entry.get('config', {})
+                        if env_config_override:
+                            module_config['config'] = {**(module_config.get('config') or {}), **env_config_override}
+
+                        # Environment can also supply/override the instances list
+                        if 'instances' in env_entry:
+                            module_config['instances'] = env_entry['instances']
+
                         # Infer the Python file path from the config.yml directory
                         dir_path = os.path.dirname(file_path)
                         dir_name = os.path.basename(dir_path)

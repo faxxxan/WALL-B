@@ -1,12 +1,6 @@
 tft_display:
+  class: TFTDisplayEye
   config:
-    bus: 0
-    device: 0
-    rst_pin: 27
-    dc_pin: 25
-    bl_pin: 18
-    rotation: -90.0
-    test_on_boot: true
     colors:
       red: (255, 32, 32)
       blue: (0, 245, 255)
@@ -18,9 +12,8 @@ tft_display:
       dark_gray: (64, 64, 64)
   dependencies:
     unix:
-    - python3-pip
-    - python3-pil
-    - python3-numpy
+      - python3-pip
+      - python3-pil
+      - python3-numpy
     python:
-    - spidev
-  class: TFTDisplayEye
+      - spidev

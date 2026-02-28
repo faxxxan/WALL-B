@@ -1,8 +1,5 @@
 laser:
-  config:
-    pin: 6
-    test_on_boot: false
+  class: Laser
   dependencies:
     python:
-    - gpiozero
-  class: Laser
+      - gpiozero

@@ -1,8 +1,5 @@
 gpio_motion:
-  config:
-    pin: 9
-    test_on_boot: false
+  class: Motion
   dependencies:
     python:
-    - gpiozero
-  class: Motion
+      - gpiozero

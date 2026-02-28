@@ -12,7 +12,7 @@ def main():
     # Get environment argument (default to 'robot') using argparse
     import argparse
     parser = argparse.ArgumentParser(description="Modular Biped Main Script")
-    parser.add_argument('--env', default='robot', help="Set the environment (default: robot)")
+    parser.add_argument('--env', default='archie', help="Set the environment (e.g. archie, buddy, cody, server, laptop)")
     args = parser.parse_args()
     env = args.env
 

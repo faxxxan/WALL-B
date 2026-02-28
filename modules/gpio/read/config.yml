@@ -1,8 +1,5 @@
 gpio_read:
-  config:
-    pin: 5
-    test_on_boot: false
+  class: Read
   dependencies:
     python:
-    - gpiozero
-  class: Read
+      - gpiozero

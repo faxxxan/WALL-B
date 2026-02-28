@@ -1,14 +1,9 @@
 oled_display:
-  config:
-    test_on_boot: false
-    time_on_boot: false
-    reset_pin: 26
-    dc_pin: 24
+  class: WaveshareOLED
   dependencies:
     unix:
-    - python3-pip
-    - python3-pil
-    - python3-numpy
+      - python3-pip
+      - python3-pil
+      - python3-numpy
     python:
-    - RPi.GPIO
-  class: WaveshareOLED
+      - RPi.GPIO

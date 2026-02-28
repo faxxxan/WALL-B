@@ -1,14 +1,6 @@
 bno055:
-  instances:
-  - name: imu_head
-    test_on_boot: false
-    address: 0x28
-  - name: imu_body
-    test_on_boot: false
-    line_offset: 1
-    address: 0x29
+  class: BNO055
   dependencies:
     python:
-    - adafruit-circuitpython-bno055
-    - adafruit-blinka
-  class: BNO055
+      - adafruit-circuitpython-bno055
+      - adafruit-blinka
