@@ -45,10 +45,10 @@ class TestModuleLoader(unittest.TestCase):
         return {'test_module': module_config}
 
     def test_initialization_default_env(self):
-        # Should default to 'archie' environment
+        # Should default to 'laptop' environment
         self.mock_walk.return_value = []
         loader = ModuleLoader(config_folder='modules')
-        self.assertEqual(loader.environment, 'archie')
+        self.assertEqual(loader.environment, 'laptop')
 
     def test_load_yaml_files_enabled(self):
         # Module enabled in environment config is loaded
@@ -56,7 +56,7 @@ class TestModuleLoader(unittest.TestCase):
         self.mock_open.return_value.__enter__.return_value = MagicMock()
         self.mock_yaml.return_value = self._setup_module_config()
         self.mock_env.return_value = {'test_module': {'enabled': True}}
-        loader = ModuleLoader(config_folder='modules', environment='archie')
+        loader = ModuleLoader(config_folder='modules', environment='laptop')
         self.assertEqual(len(loader.modules), 1)
 
     def test_load_yaml_files_disabled(self):
@@ -65,7 +65,7 @@ class TestModuleLoader(unittest.TestCase):
         self.mock_open.return_value.__enter__.return_value = MagicMock()
         self.mock_yaml.return_value = self._setup_module_config()
         self.mock_env.return_value = {'test_module': {'enabled': False}}
-        loader = ModuleLoader(config_folder='modules', environment='archie')
+        loader = ModuleLoader(config_folder='modules', environment='laptop')
         self.assertEqual(len(loader.modules), 0)
 
     def test_load_yaml_files_not_in_env(self):
@@ -83,7 +83,7 @@ class TestModuleLoader(unittest.TestCase):
         self.mock_open.return_value.__enter__.return_value = MagicMock()
         self.mock_yaml.return_value = self._setup_module_config(config={'pin': 5, 'test_on_boot': False})
         self.mock_env.return_value = {'test_module': {'enabled': True, 'config': {'pin': 9}}}
-        loader = ModuleLoader(config_folder='modules', environment='archie')
+        loader = ModuleLoader(config_folder='modules', environment='laptop')
         self.assertEqual(len(loader.modules), 1)
         # pin should be overridden to 9, test_on_boot should still be False
         self.assertEqual(loader.modules[0]['config']['pin'], 9)
@@ -97,7 +97,7 @@ class TestModuleLoader(unittest.TestCase):
         env_instances = [{'name': 'env_override', 'id': 99}]
         self.mock_yaml.return_value = self._setup_module_config(instances=module_instances)
         self.mock_env.return_value = {'test_module': {'enabled': True, 'instances': env_instances}}
-        loader = ModuleLoader(config_folder='modules', environment='archie')
+        loader = ModuleLoader(config_folder='modules', environment='laptop')
         self.assertEqual(len(loader.modules), 1)
         self.assertEqual(loader.modules[0]['instances'], env_instances)
 
@@ -107,7 +107,7 @@ class TestModuleLoader(unittest.TestCase):
         self.mock_open.return_value.__enter__.return_value = MagicMock()
         self.mock_yaml.side_effect = yaml.YAMLError('YAML error')
         self.mock_env.return_value = {'test_module': {'enabled': True}}
-        loader = ModuleLoader(config_folder='modules', environment='archie')
+        loader = ModuleLoader(config_folder='modules', environment='laptop')
         # Should not raise, just print error
         self.assertEqual(loader.modules, [])
         self.mock_yaml.side_effect = None
@@ -133,7 +133,7 @@ class TestModuleLoader(unittest.TestCase):
         setattr(mock_mod, 'TestModule', Dummy)
         mock_spec.loader.exec_module.side_effect = lambda mod: mod.__setattr__('TestModule', Dummy)
 
-        loader = ModuleLoader(config_folder='modules', environment='archie')
+        loader = ModuleLoader(config_folder='modules', environment='laptop')
         with patch('importlib.util.module_from_spec', return_value=mock_mod):
             instances_dict = loader.load_modules()
         self.assertIn('TestModule_foo', instances_dict)
@@ -158,7 +158,7 @@ class TestModuleLoader(unittest.TestCase):
         setattr(mock_mod, 'TestModule', Dummy)
         mock_spec.loader.exec_module.side_effect = lambda mod: mod.__setattr__('TestModule', Dummy)
 
-        loader = ModuleLoader(config_folder='modules', environment='archie')
+        loader = ModuleLoader(config_folder='modules', environment='laptop')
         with patch('importlib.util.module_from_spec', return_value=mock_mod):
             instances_dict = loader.load_modules()
         self.assertIn('TestModule', instances_dict)
@@ -179,7 +179,7 @@ class TestModuleLoader(unittest.TestCase):
             raise Exception('Import error')
         mock_spec.loader.exec_module.side_effect = raise_import
 
-        loader = ModuleLoader(config_folder='modules', environment='archie')
+        loader = ModuleLoader(config_folder='modules', environment='laptop')
         with patch('importlib.util.module_from_spec', return_value=mock_mod):
             instances_dict = loader.load_modules()
         self.assertIsInstance(instances_dict, dict)
@@ -213,7 +213,7 @@ class TestModuleLoader(unittest.TestCase):
         """Create a ModuleLoader with a single pre-loaded module (bypassing file I/O)."""
         loader = ModuleLoader.__new__(ModuleLoader)
         loader.config_folder = 'modules'
-        loader.environment = 'archie'
+        loader.environment = 'laptop'
         loader.modules = [{'_module_key': module_key, '_class': class_name}]
         return loader
 

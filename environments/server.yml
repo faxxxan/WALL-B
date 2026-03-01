@@ -13,3 +13,5 @@ logwrapper:
 
 discordbot:
   enabled: true
+  inject:
+    ai_instance: ChatGPT

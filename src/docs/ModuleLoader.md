@@ -71,7 +71,7 @@ bus_servo:
 ```python
 from module_loader import ModuleLoader
 
-loader = ModuleLoader(config_folder="modules", environment="archie")
+loader = ModuleLoader(config_folder="modules", environment="laptop")
 module_instances = loader.load_modules()
 loader.inject_dependencies(module_instances)
 ```

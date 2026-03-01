@@ -4,7 +4,7 @@
 #   ./autolaunch.sh [enable [<environment>] | disable]
 #
 # <environment> is the device configuration to use (e.g. archie, buddy, cody, server, laptop).
-# Defaults to 'archie' when not specified.
+# Defaults to 'laptop' when not specified.
 # Available environments: environments/*.yml
 
 # Get the current user
@@ -20,7 +20,7 @@ SERVICE_FILE_PATH="/etc/systemd/system/$SERVICE_NAME"
 
 # Function to install the service
 install_service() {
-    local ENV_NAME="${1:-archie}"
+    local ENV_NAME="${1:-laptop}"
     echo "Installing the $SERVICE_NAME service for environment: $ENV_NAME..."
 
     # Validate that the environment file exists
@@ -95,8 +95,8 @@ case "$1" in
         remove_service
         ;;
     "")
-        echo "No argument provided. Enabling the service with default environment (archie)."
-        install_service "archie"
+        echo "No argument provided. Enabling the service with default environment (laptop)."
+        install_service "laptop"
         echo
         echo "To use a different environment, run:"
         echo "  $0 enable <environment>   (e.g. $0 enable buddy)"

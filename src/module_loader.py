@@ -48,14 +48,14 @@ class ModuleLoader:
                 test_on_boot: false
 
         Example:
-        loader = ModuleLoader(environment='archie')
+        loader = ModuleLoader(environment='laptop')
         modules = loader.load_modules()
 
         Reference module once loaded:
         translator_inst = modules['Translator']
         """
         self.config_folder = config_folder
-        self.environment = environment or 'archie'
+        self.environment = environment or 'laptop'
         # Resolve environments folder: use provided value, or 'environments' at the project root
         # module_loader.py lives in src/, so project root is one level up
         _src_dir = os.path.dirname(os.path.abspath(__file__))
