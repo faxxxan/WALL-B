@@ -30,5 +30,5 @@ if [ -n "$1" ]; then
 else
 	ENV_ARG=""
 fi
-"$BASE_DIR/myenv/bin/python3" "$BASE_DIR/main.py" $ENV_ARG
+"$BASE_DIR/myenv/bin/python3" "$BASE_DIR/src/main.py" $ENV_ARG
 

@@ -1,0 +1,134 @@
+# Buddy — biped robot with PWM servos (pigpio), NeoPixel LEDs, and motion sensor.
+# Device-specific hardware configuration (servo pins, GPIO pins) lives here.
+# Generic module configuration stays in each module's config.yml.
+
+# ── Core ──────────────────────────────────────────────────────────────────────
+
+messaging_service:
+  enabled: true
+
+logwrapper:
+  enabled: true
+
+personality:
+  enabled: true
+  inject:
+    servos: "Servo_*"
+
+input_recorder:
+  enabled: true
+
+animate:
+  enabled: true
+
+# ── Connectivity ──────────────────────────────────────────────────────────────
+
+chatgpt:
+  enabled: false
+
+telegram:
+  enabled: false
+
+controller_handler:
+  enabled: false
+
+xbox_controller:
+  enabled: false
+
+# ── Servos ────────────────────────────────────────────────────────────────────
+
+# Buddy uses standard PWM servos via pigpio instead of bus servos
+servo:
+  enabled: true
+  instances:
+    - name: leg_l_hip
+      id: 0
+      pin: 9
+      range: [0, 180]
+      start: 40
+    - name: leg_l_knee
+      id: 1
+      pin: 10
+      range: [0, 180]
+      start: 10
+    - name: leg_l_ankle
+      id: 2
+      pin: 11
+      range: [5, 165]
+      start: 100
+    - name: leg_r_hip
+      id: 3
+      pin: 6
+      range: [0, 180]
+      start: 60
+    - name: leg_r_knee
+      id: 4
+      pin: 7
+      range: [0, 180]
+      start: 90
+    - name: leg_r_ankle
+      id: 5
+      pin: 8
+      range: [10, 180]
+      start: 0
+    - name: tilt
+      id: 6
+      pin: 2
+      range: [60, 120]
+      start: 50
+    - name: pan
+      id: 7
+      pin: 3
+      range: [30, 150]
+      start: 50
+
+# ── NeoPixels ─────────────────────────────────────────────────────────────────
+
+neopixel:
+  enabled: true
+  config:
+    pin: 12
+    protocol: 'I2C'
+    count: 12
+    brightness: [0.2, 0.2, 0.2, 0.2, 0.2, 1, 1, 1, 1, 1, 1, 1]
+    positions:
+      status1: 0
+      status2: 1
+      status3: 2
+      status4: 3
+      status5: 4
+      right: 5
+      top_right: 6
+      top_left: 7
+      left: 8
+      bottom_left: 9
+      bottom_right: 10
+      middle: 11
+
+# ── Sensors ───────────────────────────────────────────────────────────────────
+
+pitemperature:
+  enabled: true
+
+# ── GPIO ──────────────────────────────────────────────────────────────────────
+
+gpio_motion:
+  enabled: true
+  config:
+    pin: 26
+    test_on_boot: false
+
+# ── Display ───────────────────────────────────────────────────────────────────
+
+oled_display:
+  enabled: true
+  config:
+    test_on_boot: false
+    time_on_boot: false
+    reset_pin: 26
+    dc_pin: 24
+
+# ── Audio ─────────────────────────────────────────────────────────────────────
+
+ttsmodule:
+  enabled: false

@@ -5,7 +5,7 @@
 #
 # <environment> is the device configuration to use (e.g. archie, buddy, cody, server, laptop).
 # Defaults to 'archie' when not specified.
-# Available environments: modules/environments/*.yml
+# Available environments: environments/*.yml
 
 # Get the current user
 USER=$(whoami)
@@ -24,11 +24,11 @@ install_service() {
     echo "Installing the $SERVICE_NAME service for environment: $ENV_NAME..."
 
     # Validate that the environment file exists
-    ENV_FILE="$BASE_DIR/modules/environments/$ENV_NAME.yml"
+    ENV_FILE="$BASE_DIR/environments/$ENV_NAME.yml"
     if [ ! -f "$ENV_FILE" ]; then
         echo "Error: Environment file not found: $ENV_FILE"
         echo "Available environments:"
-        ls "$BASE_DIR/modules/environments/" 2>/dev/null | sed 's/\.yml//' | sed 's/^/  /'
+        ls "$BASE_DIR/environments/" 2>/dev/null | sed 's/\.yml//' | sed 's/^/  /'
         exit 1
     fi
 
@@ -107,7 +107,7 @@ case "$1" in
     *)
         echo "Usage: $0 [enable [<environment>] | disable]"
         echo "Available environments:"
-        ls "$BASE_DIR/modules/environments/" 2>/dev/null | sed 's/\.yml//' | sed 's/^/  /'
+        ls "$BASE_DIR/environments/" 2>/dev/null | sed 's/\.yml//' | sed 's/^/  /'
         exit 1
         ;;
 esac
