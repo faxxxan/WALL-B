@@ -1,5 +1,6 @@
-# Cody — biped robot with I2C servos (PCA9685) and minimal sensor suite.
-# Device-specific hardware configuration (servo pins, GPIO pins) lives here.
+# Cody — biped robot with I2C servos (PCA9685), IMU, vision, and TFT display.
+# Based on the develop branch robot-environment configuration.
+# Device-specific hardware configuration (servo pins, GPIO pins, I2C addresses) lives here.
 # Generic module configuration stays in each module's config.yml.
 
 # ── Core ──────────────────────────────────────────────────────────────────────
@@ -20,6 +21,9 @@ personality:
 
 input_recorder:
   enabled: true
+    imu.head: BNO055_imu_head
+    imu.body: BNO055_imu_body
+    vision: Vision
 
 animate:
   enabled: true
@@ -50,34 +54,47 @@ i2c_servo:
 
 # ── Sensors ───────────────────────────────────────────────────────────────────
 
+bno055:
+  enabled: true
+  instances:
+    - name: imu_head
+      test_on_boot: false
+      address: 0x28
+    - name: imu_body
+      test_on_boot: false
+      line_offset: 1
+      address: 0x29
+
 pitemperature:
   enabled: true
 
-# ── GPIO ──────────────────────────────────────────────────────────────────────
-
-gpio_motion:
-  enabled: true
-  config:
-    pin: 9
-    test_on_boot: false
-
-laser:
-  enabled: true
-  config:
-    pin: 6
-    test_on_boot: false
-
 # ── Display ───────────────────────────────────────────────────────────────────
 
-oled_display:
+tft_display:
   enabled: true
   config:
-    test_on_boot: false
-    time_on_boot: false
-    reset_pin: 26
-    dc_pin: 24
+    bus: 0
+    device: 0
+    rst_pin: 27
+    dc_pin: 25
+    bl_pin: 18
+    rotation: -90.0
+    test_on_boot: true
 
 # ── Audio ─────────────────────────────────────────────────────────────────────
 
 ttsmodule:
   enabled: true
+  config:
+    service: "elevenlabs"
+    voice_id: "pMsXgVXv3BLzUgSXRplE"
+
+# ── Vision ────────────────────────────────────────────────────────────────────
+
+vision_imx500:
+  enabled: true
+  config:
+    preview: false
+
+tracking:
+  enabled: false

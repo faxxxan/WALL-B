@@ -1,4 +1,4 @@
-# Buddy — biped robot with PWM servos (pigpio), NeoPixel LEDs, and motion sensor.
+# Buddy — biped robot with PWM servos (pigpio), NeoPixel LEDs, motion sensor, and vision.
 # Device-specific hardware configuration (servo pins, GPIO pins) lives here.
 # Generic module configuration stays in each module's config.yml.
 
@@ -10,20 +10,16 @@ messaging_service:
 logwrapper:
   enabled: true
 
+# Personality is disabled on Buddy — no IMU for pose feedback
 personality:
-  enabled: true
-  inject:
-    servos: "Servo_*"
-
-input_recorder:
-  enabled: true
+  enabled: false
 
 animate:
   enabled: true
 
 # ── Servos ────────────────────────────────────────────────────────────────────
 
-# Buddy uses standard PWM servos via pigpio instead of bus servos
+# Buddy uses standard PWM servos via pigpio
 servo:
   enabled: true
   instances:
@@ -104,3 +100,21 @@ gpio_motion:
     pin: 26
     test_on_boot: false
 
+# ── Vision ────────────────────────────────────────────────────────────────────
+
+vision_imx500:
+  enabled: true
+  config:
+    preview: false
+
+tracking:
+  enabled: true
+  config:
+    active: true
+    name: tracking
+    filter: person
+
+# ── Audio ─────────────────────────────────────────────────────────────────────
+
+ttsmodule:
+  enabled: false
