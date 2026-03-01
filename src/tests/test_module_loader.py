@@ -101,8 +101,10 @@ class TestModuleLoader(unittest.TestCase):
         self.assertEqual(len(loader.modules), 1)
         self.assertEqual(loader.modules[0]['instances'], env_instances)
 
+    @patch.dict('sys.modules', {'yaml': MagicMock()})
     def test_load_yaml_files_yaml_error(self):
         import yaml
+        yaml.YAMLError = type('MockYAMLError', (Exception,), {})
         self.mock_walk.return_value = [('modules/test', [], ['config.yml'])]
         self.mock_open.return_value.__enter__.return_value = MagicMock()
         self.mock_yaml.side_effect = yaml.YAMLError('YAML error')
