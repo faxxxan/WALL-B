@@ -1,10 +1,9 @@
-# Open Source, 3D Printable, Modular Bipedal Robot Project
+# Open Source, 3D Printable, Modular Robot Project
 
-The **Modular Bipedal Robot** project aims to educate and inspire individuals interested in robotics and electronics. This open-source initiative focuses on creating a fully autonomous companion robot with a variety of advanced features.
+The **Modular Robot** project aims to educate and inspire individuals interested in robotics and electronics. This open-source initiative focuses on creating a fully autonomous companion robot with a variety of advanced features.
 
 ## Key Features
 
-- **Bipedal Design**: The robot includes articulated legs for bipedal movement.
 - **Control Systems**: Utilizes Arduino and Raspberry Pi, managed through custom PCBs.
 - **Modular Body**: Configurable body components allow for easy customization and adaptability.
 - **Software Modules**:
@@ -30,7 +29,7 @@ The **Modular Bipedal Robot** project aims to educate and inspire individuals in
 
 ## Project Background
 
-The Modular Biped Robot Project is designed to provide a flexible and modular framework for robotics development using Python and C++ on the Raspberry Pi and Arduino platforms. It aims to enable developers, robotics enthusiasts, and curious individuals to experiment, create, and customize their own biped robots. With a range of features and functionalities and the option to add your own easily, the Modular Biped Robot Project offers an exciting opportunity to explore the world of robotics.
+The Modular Robot Project is designed to provide a flexible and modular framework for robotics development using Python and C++ on the Raspberry Pi and Arduino platforms. It aims to enable developers, robotics enthusiasts, and curious individuals to experiment, create, and customize their own robots. With a range of features and functionalities and the option to add your own easily, the Modular Robot Project offers an exciting opportunity to explore the world of robotics.
 
 ## Modularity
 
@@ -38,7 +37,7 @@ The open source framework is designed for flexibility, allowing users to easily 
 
 ## Resources
 
-- **Documentation**: For detailed information, visit the project’s GitHub wiki: [Modular Biped Documentation](https://github.com/makerforgetech/modular-biped/wiki)
+- **Documentation**: For detailed information, visit the project’s GitHub wiki: [Modular Robot Documentation](https://github.com/makerforgetech/modular-biped/wiki)
 - **Code**: Check out the modular open source software on [GitHub](https://github.com/makerforgetech/modular-biped)
 - **YouTube Playlist**: Explore the development process through our build videos: [Watch on YouTube](https://www.youtube.com/watch?v=2DVJ5xxAuWY&list=PL_ua9QbuRTv6Kh8hiEXXVqywS8pklZraT)
 - **Community**: Have a question or want to show off your build? Join the communities on [GitHub](https://bit.ly/maker-forge-community) and [Discord](https://bit.ly/makerforge-community)!
@@ -46,7 +45,7 @@ The open source framework is designed for flexibility, allowing users to easily 
 
 ## A Note On Branches
 
-The `main` branch is the latest stable release of the Modular Biped Robot project. This is compatible with the 'buddy' release, the latest supported release.
+The `main` branch is the latest stable release of the Modular Robot project. This is compatible with the 'buddy' release, the latest supported release.
 
 The `develop` branch is the development branch and may contain experimental features and changes that are not yet stable. Please use the `main` branch for the most stable experience. This will eventually become the next release, 'cody'. To facilitate testing modules are disabled by default in the `develop` branch. Enable each as needed in the config yaml files to test.
 

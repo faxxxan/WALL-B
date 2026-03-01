@@ -21,20 +21,6 @@ input_recorder:
 animate:
   enabled: true
 
-# ── Connectivity ──────────────────────────────────────────────────────────────
-
-chatgpt:
-  enabled: false
-
-telegram:
-  enabled: false
-
-controller_handler:
-  enabled: false
-
-xbox_controller:
-  enabled: false
-
 # ── Servos ────────────────────────────────────────────────────────────────────
 
 # Buddy uses standard PWM servos via pigpio instead of bus servos
@@ -118,17 +104,3 @@ gpio_motion:
     pin: 26
     test_on_boot: false
 
-# ── Display ───────────────────────────────────────────────────────────────────
-
-oled_display:
-  enabled: true
-  config:
-    test_on_boot: false
-    time_on_boot: false
-    reset_pin: 26
-    dc_pin: 24
-
-# ── Audio ─────────────────────────────────────────────────────────────────────
-
-ttsmodule:
-  enabled: false

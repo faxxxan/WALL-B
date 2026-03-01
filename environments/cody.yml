@@ -14,6 +14,9 @@ personality:
   enabled: true
   inject:
     servos: "Servo_*"
+    imu.head: BNO055_imu_head
+    imu.body: BNO055_imu_body
+    vision: Vision
 
 input_recorder:
   enabled: true

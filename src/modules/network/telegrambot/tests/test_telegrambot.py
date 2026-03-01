@@ -16,8 +16,9 @@ class TestTelegramBot(unittest.TestCase):
                 TelegramBot()
 
     def test_init_with_token(self):
-        bot = TelegramBot(token='test_token_123')
-        self.assertEqual(bot.token, 'test_token_123')
+            with patch.dict('os.environ', {}, clear=True):
+                bot = TelegramBot(token='test_token_123')
+                self.assertEqual(bot.token, 'test_token_123')
 
 if __name__ == '__main__':
     unittest.main()

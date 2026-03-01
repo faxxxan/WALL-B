@@ -35,7 +35,7 @@ install_service() {
     # Create the service file
     cat <<EOF | sudo tee "$SERVICE_FILE_PATH" > /dev/null
 [Unit]
-Description=Modular Biped Launcher ($ENV_NAME)
+Description=Modular Robot Launcher ($ENV_NAME)
 After=network.target
 
 [Service]

@@ -16,7 +16,7 @@ def main():
 
     # Get environment argument (default to 'laptop') using argparse
     import argparse
-    parser = argparse.ArgumentParser(description="Modular Biped Main Script")
+    parser = argparse.ArgumentParser(description="Makerforge Modular Robot")
     parser.add_argument('--env', default='laptop', help="Set the environment (e.g. archie, buddy, cody, server, laptop)")
     args = parser.parse_args()
     env = args.env

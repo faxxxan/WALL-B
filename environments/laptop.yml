@@ -13,4 +13,4 @@ logwrapper:
 # ── Connectivity ──────────────────────────────────────────────────────────────
 
 chatgpt:
-  enabled: true
+  enabled: false
