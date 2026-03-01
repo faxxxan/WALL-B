@@ -152,3 +152,63 @@ INFO: 01/30/2025 12:05:27 PM [PiTemperature.monitor:30] Temperature: 42.2°C
 INFO: 01/30/2025 12:05:28 PM [PiTemperature.monitor:30] Temperature: 42.2°C
 INFO: 01/30/2025 12:05:28 PM [Main] Loop ended
 ```
+
+# Getting Started
+
+1. Clone the repository and navigate to the project directory.
+2. Review the environment configuration files in the `environments` folder and create your own if needed.
+3. Run install.sh <environment> to set up the necessary dependencies and configurations for your chosen environment.
+4. Add any environment variables required to /home/$USER/.myenv (this file is sourced on startup to set environment variables for the session).
+5. Test by running startup.sh to start the robot. You should see logs in the CLI and app.log file indicating that the robot is running.
+6. Ctrl+C to stop the robot.
+7. To enable autolaunch on boot, run `./installers/autolaunch.sh enable <environment>` (defaults to laptop if no environment specified). To disable autolaunch, run `./installers/autolaunch.sh disable`.
+
+# Adding New Modules
+To add a new module, create a new directory in the `src/modules` directory with the name of your module. 
+
+Inside this directory, create a Python file with the same name as the directory. This file should contain a class that extends the BaseModule class. 
+
+Implement the necessary methods and functionality for your module. 
+
+- `__init__(self, config, messaging_service)`: Initialize your module and set up any necessary variables or connections. The `config` parameter contains the configuration for your module from the YAML
+- `setup_messaging(self)`: Set up any necessary subscriptions to topics using the `subscribe` method from the BaseModule class. You can subscribe to other topics or system/loop/<interval> for timed loops. See the wiki for more details on the messaging service and available topics.
+- `loop(self)`: Implement the looping functionality of your module in this method. This method will be called repeatedly in the main loop of the robot.
+- `__exit__(self)`: Clean up any resources or connections when the module is stopped. 
+
+Create a configuration YAML file for your module in the new module's directory called `config.yml`. This file should include the class name of your module and any dependencies it requires, as well as any non-environment specific configuration.
+
+
+```yaml
+bno055:
+  class: BNO055
+  config:
+    some_config: <this will be passed to the module's init method via kwargs>
+  dependencies:
+    python:
+      - adafruit-circuitpython-bno055
+      - adafruit-blinka
+```
+
+Finally, add your module to the configuration YAML file for your environment to enable it. 
+
+You may wish to include environment specific configuration in the environment YAML file, which will be passed to the module's init method via kwargs.
+
+```yaml
+bus_servo:
+  enabled: true
+  config:
+    poses:
+      - legs_forward: {leg_r_tilt: 2806, leg_r_hip: 1989, leg_r_knee: 1349, leg_r_ankle: 2754, neck_pan: 1698, neck_tilt: 118, leg_l_tilt: 1619, leg_l_hip: 1028, leg_l_knee: 2634, leg_l_ankle: 1567}
+  instances:
+    - name: leg_r_tilt
+      model: ST3215
+      id: 1
+      range: [2511, 3944]
+      range_degrees: 125.9
+      start: 2810
+    - name: leg_r_hip
+      model: ST3215
+      id: 3
+      range: [0, 2063]
+      range_degrees: 181.3
+```
