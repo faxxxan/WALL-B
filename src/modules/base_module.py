@@ -31,6 +31,10 @@ class BaseModule:
         if self.messaging_service is None:
             raise ValueError("Messaging service not set.")
         self.messaging_service.subscribe(topic, callback, **kwargs)
+
+    def loop(self):
+        """Called every system loop cycle. Override in subclasses that need per-cycle polling."""
+        pass
         
     def log(self, message, level='info'):
         """

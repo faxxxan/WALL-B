@@ -52,5 +52,10 @@ class TestBaseModule(unittest.TestCase):
             self.assertTrue('log/debug' in args)
             self.assertTrue('[BaseModule.test_log' in kwargs['message'])
 
+    def test_loop_is_noop(self):
+        """loop() is a no-op placeholder — should return None without raising."""
+        result = self.module.loop()
+        self.assertIsNone(result)
+
 if __name__ == '__main__':
     unittest.main()
