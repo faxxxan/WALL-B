@@ -7,6 +7,10 @@ import os
 import types
 sys.modules['pubsub'] = types.ModuleType('pubsub')
 sys.modules['pubsub'].pub = MagicMock()
+# mock yaml before importing module_loader
+sys.modules['yaml'] = MagicMock()
+sys.modules['yaml'].safe_load = MagicMock()
+import yaml
 from module_loader import ModuleLoader
 
 
@@ -103,8 +107,6 @@ class TestModuleLoader(unittest.TestCase):
 
     @patch.dict('sys.modules', {'yaml': MagicMock()})
     def test_load_yaml_files_yaml_error(self):
-        import yaml
-        yaml.YAMLError = type('MockYAMLError', (Exception,), {})
         self.mock_walk.return_value = [('modules/test', [], ['config.yml'])]
         self.mock_open.return_value.__enter__.return_value = MagicMock()
         self.mock_yaml.side_effect = yaml.YAMLError('YAML error')
