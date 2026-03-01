@@ -1,5 +1,9 @@
 messaging_service:
   config:
+    # Messaging backend to activate.
+    # pubsub  — in-process pypubsub only (default, no broker required)
+    # mqtt    — MQTT broker only
+    # both    — pypubsub AND MQTT simultaneously
     protocol: pubsub
     mqtt_host: localhost
     mqtt_port: 1883

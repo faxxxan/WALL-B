@@ -20,7 +20,13 @@ class BaseModule:
         if self.messaging_service is None:
             raise ValueError("Messaging service not set.")
         self.messaging_service.publish(topic, *args, **kwargs)
-        
+
+    def publish_mqtt(self, topic, *args, **kwargs):
+        """Publish only to the MQTT backend (no-op if MQTT is not configured)."""
+        if self.messaging_service is None:
+            raise ValueError("Messaging service not set.")
+        self.messaging_service.publish_mqtt(topic, *args, **kwargs)
+
     def subscribe(self, topic, callback, **kwargs):
         if self.messaging_service is None:
             raise ValueError("Messaging service not set.")

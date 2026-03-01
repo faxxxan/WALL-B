@@ -23,6 +23,16 @@ class TestBaseModule(unittest.TestCase):
         self.module.publish('test/topic', arg1='value1')
         self.mock_messaging_service.publish.assert_called_with('test/topic', arg1='value1')
 
+    def test_publish_mqtt_with_messaging_service(self):
+        self.module.publish_mqtt('test/topic', arg1='value1')
+        self.mock_messaging_service.publish_mqtt.assert_called_with('test/topic', arg1='value1')
+
+    def test_publish_mqtt_no_messaging_service(self):
+        self.module.messaging_service = None
+        with self.assertRaises(ValueError) as context:
+            self.module.publish_mqtt('test/topic')
+        self.assertEqual(str(context.exception), "Messaging service not set.")
+
     def test_subscribe_no_messaging_service(self):
         self.module.messaging_service = None
         with self.assertRaises(ValueError) as context:
