@@ -51,11 +51,14 @@ class LogWrapper(BaseModule):
         self.subscribe('log/error', self.log, type='error')
         self.subscribe('log/critical', self.log, type='critical')
         self.subscribe('log/warning', self.log, type='warning')
+        self.subscribe('log/file', self.log, type='file')
 
     def __del__(self):
         try:
             if os.path.isfile(self.file):
-                prev_dir = os.path.join(os.path.dirname(self.file), 'previous')
+                logs_dir = os.path.join(os.path.dirname(self.file), 'logs')
+                os.makedirs(logs_dir, exist_ok=True)
+                prev_dir = os.path.join(logs_dir, 'previous')
                 os.makedirs(prev_dir, exist_ok=True)
                 timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
                 base = os.path.basename(self.file)
@@ -77,6 +80,10 @@ class LogWrapper(BaseModule):
         self.log('info', message)
 
     def log(self,  message, type='info'):
+        if type=='file':
+            self.create_file(message)
+            return
+            
         # if message is a json object as a string
         if isinstance(message, str) and message.startswith('{'):
             message = json.loads(message)['message']
@@ -89,3 +96,21 @@ class LogWrapper(BaseModule):
         if LogWrapper.levels.index(self.cli_level) <= LogWrapper.levels.index(type):
             print('log/' + type + ': ' + str(message))
     
+    def create_file(self, message):
+        # Extract caller information (format: [{class_name}.{method_name}:{frame.lineno}] {str(message)})
+        caller = message.split(']')[0][1:]  # Get text between [ and ]
+        # Extract class name
+        class_name = caller.split('.')[0]
+        # Create filename from caller and timestamp
+        timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+        filename = f"{caller}_{timestamp}.log".replace(':', '_')  # Replace : with _ for filename safety
+        # file path should include logs directory, create if doesn't exist
+        logs_dir = os.path.join(self.path, 'logs')
+        os.makedirs(logs_dir, exist_ok=True)
+        # add class name to file path as directory, create if not present
+        class_dir = os.path.join(logs_dir, class_name)
+        os.makedirs(class_dir, exist_ok=True)
+        filepath = os.path.join(class_dir, filename)
+        with open(filepath, 'w') as f:
+            f.write(message)
+        print(f"[Created log file at {filepath}]")

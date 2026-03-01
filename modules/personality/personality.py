@@ -215,6 +215,11 @@ class Personality(BaseModule):
             self.publish('display/body/text', text=f"{self.pose}", font_size=20)
 
     def loop_10(self):
+        # loop 3 times:
+        # for i in range(3):
+        #     self.servos['leg_l_ankle'].move(1000, speed=0)
+        #     self.servos['leg_l_ankle'].move(1500, speed=0) 
+        # self.servos['leg_l_ankle'].move_degrees(50)
         # self.scan_vision()
         # self.output_current_pose()
         # self.publish('servo/pose', pose_name='wave_1') # For testing pose movement
@@ -223,9 +228,12 @@ class Personality(BaseModule):
         # if current_pose not in self.servos['leg_r_tilt'].poses:
         #     return
         # if current_pose == 'sit':
-        #     self.publish('servo/pose', pose_name='wave_1') # For testing pose movement
-        #     self.publish('servo/pose', pose_name='wave_2') # For testing pose movement
-        #     self.pose = 'sit'
+            # self.publish('servo/pose', pose_name='wave_1') # For testing pose movement
+            # self.publish('servo/pose', pose_name='wave_2') # For testing pose movement
+            # self.publish('servo/pose', pose_name='wave_1') # For testing pose movement
+            # self.publish('servo/pose', pose_name='wave_2') # For testing pose movement
+            # self.publish('servo/pose', pose_name='sit') # For testing pose movement
+            # self.pose = 'sit'
         # elif current_pose == 'sit_edge':
         #     self.pose = 'sit_edge_swing_l'
         # elif current_pose == 'sit_edge_swing_l':
