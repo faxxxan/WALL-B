@@ -6,14 +6,25 @@ VALID_PROTOCOLS = ('pubsub', 'mqtt', 'both')
 
 class MessagingService:
     """
-    Unified messaging façade that supports pypubsub, MQTT, or both simultaneously.
+    Unified messaging façade that supports pypubsub, MQTT, or both.
 
     Config options (via config.yml or environment override):
       protocol: pubsub   # in-process pypubsub only (default)
       protocol: mqtt     # MQTT broker only
-      protocol: both     # pypubsub AND MQTT simultaneously
+      protocol: both     # pypubsub + MQTT available simultaneously
       mqtt_host: localhost
       mqtt_port: 1883
+
+    Routing:
+      subscribe()     — registers the callback on ALL active backends so it
+                        receives messages from either path.
+      publish()       — sends via the *primary* backend only:
+                          pubsub / both → pypubsub
+                          mqtt          → MQTT
+      publish_mqtt()  — sends to the MQTT backend only (no-op when MQTT is
+                        not active).  Use this when you need to push data to
+                        an external broker without also triggering local
+                        pypubsub listeners.
     """
 
     def __init__(self, **kwargs):
@@ -40,17 +51,30 @@ class MessagingService:
             self._mqtt = MQTTMessagingService(broker=host, port=port)
 
     def subscribe(self, topic, callback, **kwargs):
-        """Subscribe to a topic on all active messaging backends."""
+        """
+        Subscribe to a topic on all active messaging backends.
+
+        When ``protocol`` is ``both``, the callback is registered on both
+        backends so it receives messages published via either path.
+        """
         if self._pubsub:
             self._pubsub.subscribe(topic, callback, **kwargs)
         if self._mqtt:
             self._mqtt.subscribe(topic, callback, **kwargs)
 
     def publish(self, topic, *args, **kwargs):
-        """Publish a message to all active messaging backends."""
+        """
+        Publish a message via the primary backend.
+
+        - ``pubsub`` (default) and ``both`` → publishes to pypubsub only.
+        - ``mqtt`` → publishes to MQTT only.
+
+        Use :meth:`publish_mqtt` to target the MQTT backend explicitly when
+        ``protocol`` is ``both``.
+        """
         if self._pubsub:
             self._pubsub.publish(topic, *args, **kwargs)
-        if self._mqtt:
+        elif self._mqtt:
             self._mqtt.publish(topic, *args, **kwargs)
 
     def publish_mqtt(self, topic, *args, **kwargs):

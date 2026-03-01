@@ -77,12 +77,12 @@ class TestMessagingServiceBoth(unittest.TestCase):
             mock_ps_sub.assert_called_once_with('test/topic', cb)
             mock_mqtt_sub.assert_called_once_with('test/topic', cb)
 
-    def test_publish_calls_both_backends(self):
+    def test_publish_uses_pubsub_when_both_available(self):
         with patch.object(self.ms._pubsub, 'publish') as mock_ps_pub, \
              patch.object(self.ms._mqtt, 'publish') as mock_mqtt_pub:
             self.ms.publish('test/topic', message='hello')
             mock_ps_pub.assert_called_once_with('test/topic', message='hello')
-            mock_mqtt_pub.assert_called_once_with('test/topic', message='hello')
+            mock_mqtt_pub.assert_not_called()
 
     def test_publish_mqtt_only_calls_mqtt(self):
         with patch.object(self.ms._pubsub, 'publish') as mock_ps_pub, \
