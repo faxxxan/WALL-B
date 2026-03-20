@@ -26,20 +26,24 @@
 
 ---
 
-## Overview
+## Project Overview
 
-Buddy Robotics is a fully open-source modular bipedal robot platform designed for research, education, and hobbyist robotics development. Built on Arduino and Raspberry Pi, this project combines advanced servo control, computer vision, AI integration, and real-time motion planning.
+The Modular Biped Robot Project provides a flexible framework for robotics development using Python and C++ on the Raspberry Pi and Arduino platforms. Buddy builds on the lessons learned from the original Archie release, offering improved stability, larger build size, and enhanced features.
 
 ### Key Features
 
 | Feature | Description |
 |---------|-------------|
-| **Modular Architecture** | Hot-swappable components for easy upgrades and repairs |
-| **AI Integration** | ChatGPT-powered conversational AI and voice interaction |
-| **Computer Vision** | IMX500 AI Camera with real-time object tracking |
-| **Multi-DOF Control** | High-precision servo control for bipedal locomotion |
-| **ROS2 Compatible** | Full ROS2 integration for advanced robotics development |
-| **RTL-SDR Support** | Software-defined radio for wireless communication |
+| **Stable Platform** | Larger, more robust build for reliable operation and easier assembly |
+| **Modular Design** | Custom PCBs for Raspberry Pi and Arduino, supporting rapid prototyping and expansion |
+| **Servo Control** | SG5010 and TowerPro MG92B servos for leg, neck, head, and ear movement |
+| **Vision** | Raspberry Pi-compatible camera module with wide-angle lens for vision input |
+| **Audio** | Buzzer for simple audio output |
+| **Neopixel Eye** | Adafruit Neopixel Jewel for expressive robot eye |
+| **Sensor Integration** | MPU6050 accelerometer/gyroscope for balancing, RCWL-0516 microwave sensor for movement detection |
+| **Power Management** | USB-C PD and 18650 battery support, XL4015 buck converters for safe voltage regulation |
+| **3D Printed Parts** | STL files available for printing the robot body, joints, and accessories |
+| **Open Source Code** | Python and C++ code for robot control, available on GitHub |
 
 ### Assembly Preview
 
