@@ -1,43 +1,389 @@
-# Open Source, 3D Printable, Modular Bipedal Robot Project
+# Buddy Robotics - Modular Biped
 
-The **Modular Bipedal Robot** project aims to educate and inspire individuals interested in robotics and electronics. This open-source initiative focuses on creating a fully autonomous companion robot with a variety of advanced features.
+<p align="center">
+  <img src="images/full_project_front_pi5.jpg" alt="Buddy Robotics Banner" width="100%"/>
+</p>
 
-## Key Features
+<p align="center">
+  <strong>Open-Source Modular Bipedal Robot Platform - Arduino + Raspberry Pi Powered</strong>
+</p>
 
-- **Bipedal Design**: The robot includes articulated legs for bipedal movement.
-- **Control Systems**: Utilizes Arduino and Raspberry Pi, managed through custom PCBs.
-- **Modular Body**: Configurable body components allow for easy customization and adaptability.
-- **Software Modules**:
-  - Animation: Handles the animation of the robot, including walking, turning, and other movements.
-  - Braillespeak: Converts text to Braille and speaks it using a proprietary audio output using the onboard buzzer.
-  - Buzzer: Controls the buzzer for audio output. Includes the ability to play tones and melodies.
-  - ChatGPT: Uses the OpenAI GPT models to process text based on user input.
-  - Logging: Logs data to a file for debugging and analysis.
-  - Motion Detection: Handles motion detection using an onboard microwave motion sensor.
-  - Neopixel: Controls the onboard Neopixel LEDs for visual feedback.
-  - PiServo: Controls the servos connected to the Raspberry Pi.
-  - PiTemperature: Reads the temperature from the integrated temperature sensor on the Raspberry Pi.
-  - RTLSDR: Uses an RTL-SDR dongle to receive and process radio signals.
-  - Serial Connection: Handles serial communication between the Raspberry Pi and Arduino.
-  - Servos: Controls the servos connected to the Arduino via the Raspberry Pi and the serial connection.
-  - Tracking: Uses computer vision to track objects and faces using the onboard camera.
-  - Translator: Translates text between languages using the Google Translate API.
-  - TTS: Converts text to speech using the onboard speaker.
-  - Viam: Uses the VIAM API to integrate Viam modules for additional functionality.
-  - Vision: Handles image processing and computer vision tasks using the onboard IMX500 Raspberry Pi AI camera.
-  - [Read more](https://github.com/makerforgetech/modular-biped/wiki/Software#modules)!
+<p align="center">
+  <a href="#overview">Overview</a> •
+  <a href="#specifications">Specifications</a> •
+  <a href="#assembly">Assembly</a> •
+  <a href="#software-modules">Software</a> •
+  <a href="#getting-started">Getting Started</a> •
+  <a href="#documentation">Documentation</a>
+</p>
 
-## Project Background
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-58.2%25-blue?style=flat-square&logo=python" alt="Python"/>
+  <img src="https://img.shields.io/badge/C++-38.9%25-orange?style=flat-square&logo=cplusplus" alt="C++"/>
+  <img src="https://img.shields.io/badge/License-GPL--3.0-green?style=flat-square" alt="License"/>
+  <img src="https://img.shields.io/badge/Platform-Raspberry%20Pi%205-red?style=flat-square&logo=raspberrypi" alt="Platform"/>
+</p>
 
-The Modular Biped Robot Project is designed to provide a flexible and modular framework for robotics development using Python and C++ on the Raspberry Pi and Arduino platforms. It aims to enable developers, robotics enthusiasts, and curious individuals to experiment, create, and customize their own biped robots. With a range of features and functionalities and the option to add your own easily, the Modular Biped Robot Project offers an exciting opportunity to explore the world of robotics.
+---
 
-## Modularity
+## Overview
 
-The open source framework is designed for flexibility, allowing users to easily add or remove components to suit their specific needs. Comprehensive [guides](https://github.com/makerforgetech/modular-biped/wiki/Software#creating-a-module) are provided for integrating new modules seamlessly.
+Buddy Robotics is a fully open-source modular bipedal robot platform designed for research, education, and hobbyist robotics development. Built on Arduino and Raspberry Pi, this project combines advanced servo control, computer vision, AI integration, and real-time motion planning.
+
+### Key Features
+
+| Feature | Description |
+|---------|-------------|
+| **Modular Architecture** | Hot-swappable components for easy upgrades and repairs |
+| **AI Integration** | ChatGPT-powered conversational AI and voice interaction |
+| **Computer Vision** | IMX500 AI Camera with real-time object tracking |
+| **Multi-DOF Control** | High-precision servo control for bipedal locomotion |
+| **ROS2 Compatible** | Full ROS2 integration for advanced robotics development |
+| **RTL-SDR Support** | Software-defined radio for wireless communication |
+
+### Assembly Preview
+
+<table>
+<tr>
+<td align="center" width="33%">
+<img src="images/assembly_head.png" width="100%" />
+
+**Head Assembly**<br>
+<sub>IMX500 AI Camera integration with pan-tilt servo mount. Features real-time face tracking and object detection.</sub>
+</td>
+<td align="center" width="33%">
+<img src="images/assembly_body.png" width="100%" />
+
+**Body Assembly**<br>
+<sub>Central torso housing Raspberry Pi 5, power distribution, and main controller board.</sub>
+</td>
+<td align="center" width="33%">
+<img src="images/assembly_leg.png" width="100%" />
+
+**Leg Assembly**<br>
+<sub>Multi-DOF leg mechanism with high-torque servos for stable bipedal walking.</sub>
+</td>
+</tr>
+</table>
+
+### Full Assembly
+
+<table>
+<tr>
+<td align="center" width="50%">
+<img src="images/assembly_full.png" width="100%" />
+
+**Complete Assembly View**<br>
+<sub>Full robot assembly showing all mechanical components and wiring layout.</sub>
+</td>
+<td align="center" width="50%">
+<img src="images/assembly_neck.png" width="100%" />
+
+**Neck Mechanism**<br>
+<sub>2-DOF neck joint for head movement with cable management system.</sub>
+</td>
+</tr>
+</table>
+
+---
+
+## Specifications
+
+### Hardware Overview
+
+| Component | Specification |
+|-----------|---------------|
+| **Main Controller** | Raspberry Pi 5 (8GB RAM) |
+| **Motion Controller** | Arduino Mega 2560 |
+| **Camera** | Sony IMX500 AI Camera |
+| **Radio** | RTL-SDR USB Dongle |
+| **Servos** | High-Torque Digital Servos |
+| **Power** | LiPo Battery Pack (11.1V / 14.8V) |
+| **Communication** | WiFi, Bluetooth, I2C, Serial |
+
+### Servo Configuration
+
+| Location | Type | Quantity | Function |
+|----------|------|----------|----------|
+| Head | Pan-Tilt | 2 | Camera orientation |
+| Neck | Servo | 2 | Head movement |
+| Arms | Standard | 6 | Arm articulation |
+| Legs | High-Torque | 12 | Bipedal locomotion |
+| **Total** | | **22 DOF** | |
+
+### Degrees of Freedom (DOF)
+
+```
+                    HEAD (2 DOF)
+                    ├── Pan (Yaw)
+                    └── Tilt (Pitch)
+                         │
+                    NECK (2 DOF)
+                    ├── Rotate
+                    └── Tilt
+                         │
+            ┌────────────┼────────────┐
+            │                         │
+       LEFT ARM (3 DOF)          RIGHT ARM (3 DOF)
+       ├── Shoulder Pitch        ├── Shoulder Pitch
+       ├── Shoulder Roll         ├── Shoulder Roll
+       └── Elbow                 └── Elbow
+                         │
+                    TORSO (0 DOF)
+                         │
+            ┌────────────┼────────────┐
+            │                         │
+       LEFT LEG (6 DOF)          RIGHT LEG (6 DOF)
+       ├── Hip Yaw               ├── Hip Yaw
+       ├── Hip Roll              ├── Hip Roll
+       ├── Hip Pitch             ├── Hip Pitch
+       ├── Knee Pitch            ├── Knee Pitch
+       ├── Ankle Pitch           ├── Ankle Pitch
+       └── Ankle Roll            └── Ankle Roll
+```
+
+**Total: 22 DOF**
+
+---
+
+## Software Modules
+
+The software architecture is built on a modular design pattern, allowing each component to be developed, tested, and deployed independently.
+
+### Core Modules
+
+| Module | Description | Technology |
+|--------|-------------|------------|
+| **Animation** | Motion sequence playback and keyframe animation | Python |
+| **ChatGPT** | Conversational AI integration with OpenAI API | Python |
+| **Vision** | Computer vision and image processing with IMX500 | Python, OpenCV |
+| **Tracking** | Real-time object and face tracking | Python, TensorFlow |
+| **TTS** | Text-to-speech synthesis | Python |
+| **Servos** | Low-level servo PWM control | C++, Arduino |
+| **Neopixel** | RGB LED visual feedback | Python |
+| **RTLSDR** | Software-defined radio processing | Python |
+| **Braillespeak** | Text to Braille audio conversion | Python |
+| **Motion Detection** | Microwave sensor integration | Python |
+| **PiServo** | Raspberry Pi servo control | Python |
+| **Translator** | Multi-language translation | Python |
+| **Serial Connection** | RPi-Arduino communication | Python |
+| **Viam** | VIAM API integration | Python |
+
+### System Architecture
+
+```mermaid
+graph TB
+    subgraph "High-Level Control"
+        AI[ChatGPT AI]
+        VIS[Vision System]
+        TTS[Text-to-Speech]
+    end
+
+    subgraph "Main Controller - Raspberry Pi 5"
+        ROS[ROS2 Core]
+        PY[Python Runtime]
+        CAM[IMX500 AI Camera]
+        SDR[RTL-SDR Radio]
+        NEO[Neopixel LEDs]
+    end
+
+    subgraph "Motion Controller - Arduino"
+        MC[Motion Controller]
+        IMU[IMU Sensor]
+        PWM[PWM Generator]
+        BUZ[Buzzer]
+    end
+
+    subgraph "Actuators"
+        HS[Head Servos x2]
+        NS[Neck Servos x2]
+        AS[Arm Servos x6]
+        LS[Leg Servos x12]
+    end
+
+    AI <--> ROS
+    VIS <--> ROS
+    TTS <--> ROS
+
+    ROS <--> PY
+    PY <--> CAM
+    PY <--> SDR
+    PY <--> NEO
+    ROS <--> MC
+
+    MC <--> IMU
+    MC <--> PWM
+    MC <--> BUZ
+
+    PWM --> HS & NS & AS & LS
+```
+
+---
+
+## Project Structure
+
+```
+BuddyRobotics/
+├── arduino/                    # Arduino firmware
+│   ├── servo_control/         # Servo PWM control
+│   ├── imu_fusion/            # IMU sensor fusion
+│   └── communication/         # Serial communication
+├── python/                     # Python modules
+│   ├── animation/             # Motion sequences
+│   ├── chatgpt/               # AI integration
+│   ├── vision/                # Computer vision
+│   ├── tracking/              # Object tracking
+│   ├── speech/                # Voice interaction
+│   ├── neopixel/              # LED control
+│   ├── rtlsdr/                # Radio processing
+│   └── viam/                  # VIAM integration
+├── ros2/                       # ROS2 packages
+│   ├── buddy_control/         # Control package
+│   ├── buddy_vision/          # Vision package
+│   └── buddy_msgs/            # Custom messages
+├── hardware/                   # Hardware designs
+│   ├── cad/                   # 3D models (STL/STEP)
+│   ├── pcb/                   # PCB schematics
+│   └── bom/                   # Bill of materials
+├── images/                     # Documentation images
+├── docs/                       # Documentation
+├── configs/                    # Configuration files
+├── tests/                      # Test scripts
+├── requirements.txt            # Python dependencies
+└── README.md                   # This file
+```
+
+---
+
+## Getting Started
+
+### Prerequisites
+
+| Requirement | Version |
+|-------------|---------|
+| Python | 3.10+ |
+| ROS2 | Humble / Iron |
+| Arduino IDE | 2.0+ |
+| CMake | 3.16+ |
+| OpenCV | 4.5+ |
+
+### Hardware Setup
+
+1. **Raspberry Pi 5** - Flash Raspberry Pi OS (64-bit)
+2. **Arduino Mega** - Connect via USB to Raspberry Pi
+3. **IMX500 Camera** - Connect to CSI port
+4. **Servos** - Wire to Arduino PWM pins
+5. **Power** - Connect LiPo battery to power distribution board
+
+### Software Installation
+
+```bash
+# Clone repository
+git clone https://github.com/Buddyrobotics/BuddyRobotics.git
+cd BuddyRobotics
+
+# Install Python dependencies
+pip install -r requirements.txt
+
+# Install ROS2 dependencies
+rosdep install --from-paths ros2 --ignore-src -y
+
+# Build ROS2 workspace
+colcon build
+source install/setup.bash
+
+# Upload Arduino firmware
+cd arduino/servo_control
+arduino-cli compile --fqbn arduino:avr:mega
+arduino-cli upload --fqbn arduino:avr:mega --port /dev/ttyUSB0
+```
+
+### Quick Start
+
+```bash
+# Launch full robot stack
+ros2 launch buddy_control full_robot.launch.py
+
+# Run standalone vision module
+python python/vision/camera_node.py
+
+# Test servo control
+python python/servo_test.py --port /dev/ttyUSB0
+
+# Start ChatGPT interaction
+python python/chatgpt/chat_interface.py
+```
+
+---
+
+## Roadmap
+
+- [x] Core servo control firmware
+- [x] Basic locomotion algorithms
+- [x] IMX500 camera integration
+- [x] ChatGPT API integration
+- [x] Neopixel LED feedback
+- [x] RTL-SDR radio module
+- [ ] Advanced bipedal walking gait
+- [ ] Real-time SLAM navigation
+- [ ] Gesture recognition
+- [ ] Voice wake word detection
+- [ ] Mobile app control interface
+- [ ] Cloud telemetry dashboard
+
+---
+
+## Documentation
+
+| Category | Description |
+|----------|-------------|
+| [Assembly Guide](docs/assembly.md) | Step-by-step assembly instructions |
+| [Electronics Setup](docs/electronics.md) | Wiring diagrams and connections |
+| [Software Setup](docs/software.md) | Software installation guide |
+| [Module Guide](https://github.com/makerforgetech/modular-biped/wiki/Software#modules) | Software module documentation |
+| [Troubleshooting](docs/troubleshooting.md) | Common issues and solutions |
+
+---
 
 ## Resources
 
-- **Documentation**: For detailed information, visit the project’s GitHub wiki: [Modular Biped Documentation](https://github.com/makerforgetech/modular-biped/wiki)
-- **Code**: Check out the modular open source software on [GitHub](https://github.com/makerforgetech/modular-biped)
-- **YouTube Playlist**: Explore the development process through our build videos: [Watch on YouTube](https://www.youtube.com/watch?v=2DVJ5xxAuWY&list=PL_ua9QbuRTv6Kh8hiEXXVqywS8pklZraT)
-- **Community**: Have a question or want to show off your build? Join the communities on [GitHub](https://bit.ly/maker-forge-community) and [Discord](https://bit.ly/makerforge-community)!
+| Resource | Link |
+|----------|------|
+| **Wiki Documentation** | [Modular Biped Wiki](https://github.com/makerforgetech/modular-biped/wiki) |
+| **YouTube Playlist** | [Build Videos](https://www.youtube.com/watch?v=2DVJ5xxAuWY&list=PL_ua9QbuRTv6Kh8hiEXXVqywS8pklZraT) |
+| **GitHub Community** | [Join Discussion](https://bit.ly/maker-forge-community) |
+| **Discord** | [Join Server](https://bit.ly/makerforge-community) |
+
+---
+
+## Contributing
+
+We welcome contributions from the community! Please read our [Contributing Guidelines](CONTRIBUTING.md) before submitting pull requests.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+---
+
+## License
+
+This project is licensed under the GNU General Public License v3.0 - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## Acknowledgments
+
+- **MakerForge Tech** - Original modular-biped project
+- **Open Source Robotics Community** - ROS2 and related tools
+- **Raspberry Pi Foundation** - Hardware platform
+- **Arduino** - Microcontroller platform
+
+---
+
+<p align="center">
+  <strong>Buddy Robotics</strong><br>
+  <em>Building the Future of Personal Robotics - One Module at a Time</em>
+</p>
