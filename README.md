@@ -1,7 +1,7 @@
 <p align="center">
   <a href="https://x.com/robotsbuddy"><img src="https://img.shields.io/twitter/follow/robotsbuddy?style=social" alt="X Follow"></a>
   <br>
-  <code>  </code>
+  <code> 9LZ5Wmoy7tcXmzRpHWQ8c4Edck8p8yVnZvWudDR7pump </code>
 </p>
 # Buddy Robotics - Modular Biped
 
