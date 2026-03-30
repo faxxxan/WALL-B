@@ -3,7 +3,7 @@
   <br>
   <code> 9LZ5Wmoy7tcXmzRpHWQ8c4Edck8p8yVnZvWudDR7pump </code>
 </p>
-# Buddy Robotics - Modular Biped
+# Dobby Robotics - Modular Biped
 
 <p align="center">
   <img src="images/full_project_front_pi5.jpg" alt="Buddy Robotics Banner" width="100%"/>
@@ -232,7 +232,7 @@ graph TB
 ## Project Structure
 
 ```
-BuddyRobotics/
+DobbyRobotics/
 ├── arduino/                    # Arduino firmware
 │   ├── servo_control/         # Servo PWM control
 │   ├── imu_fusion/            # IMU sensor fusion
@@ -247,9 +247,9 @@ BuddyRobotics/
 │   ├── rtlsdr/                # Radio processing
 │   └── viam/                  # VIAM integration
 ├── ros2/                       # ROS2 packages
-│   ├── buddy_control/         # Control package
-│   ├── buddy_vision/          # Vision package
-│   └── buddy_msgs/            # Custom messages
+│   ├── Dobby_control/         # Control package
+│   ├── Dobby_vision/          # Vision package
+│   └── Dobby_msgs/            # Custom messages
 ├── hardware/                   # Hardware designs
 │   ├── cad/                   # 3D models (STL/STEP)
 │   ├── pcb/                   # PCB schematics
@@ -288,7 +288,7 @@ BuddyRobotics/
 
 ```bash
 # Clone repository
-git clone https://github.com/Buddyrobotics/BuddyRobotics.git
+git clone https://github.com/Dobby-PI/DubbyRobotics.git
 cd BuddyRobotics
 
 # Install Python dependencies
@@ -311,7 +311,7 @@ arduino-cli upload --fqbn arduino:avr:mega --port /dev/ttyUSB0
 
 ```bash
 # Launch full robot stack
-ros2 launch buddy_control full_robot.launch.py
+ros2 launch Dobby_control full_robot.launch.py
 
 # Run standalone vision module
 python python/vision/camera_node.py
@@ -349,19 +349,7 @@ python python/chatgpt/chat_interface.py
 | [Assembly Guide](docs/assembly.md) | Step-by-step assembly instructions |
 | [Electronics Setup](docs/electronics.md) | Wiring diagrams and connections |
 | [Software Setup](docs/software.md) | Software installation guide |
-| [Module Guide](https://github.com/makerforgetech/modular-biped/wiki/Software#modules) | Software module documentation |
 | [Troubleshooting](docs/troubleshooting.md) | Common issues and solutions |
-
----
-
-## Resources
-
-| Resource | Link |
-|----------|------|
-| **Wiki Documentation** | [Modular Biped Wiki](https://github.com/makerforgetech/modular-biped/wiki) |
-| **YouTube Playlist** | [Build Videos](https://www.youtube.com/watch?v=2DVJ5xxAuWY&list=PL_ua9QbuRTv6Kh8hiEXXVqywS8pklZraT) |
-| **GitHub Community** | [Join Discussion](https://bit.ly/maker-forge-community) |
-| **Discord** | [Join Server](https://bit.ly/makerforge-community) |
 
 ---
 
@@ -385,7 +373,6 @@ This project is licensed under the GNU General Public License v3.0 - see the [LI
 
 ## Acknowledgments
 
-- **MakerForge Tech** - Original modular-biped project
 - **Open Source Robotics Community** - ROS2 and related tools
 - **Raspberry Pi Foundation** - Hardware platform
 - **Arduino** - Microcontroller platform
@@ -393,6 +380,6 @@ This project is licensed under the GNU General Public License v3.0 - see the [LI
 ---
 
 <p align="center">
-  <strong>Buddy Robotics</strong><br>
+  <strong>Dobby Robotics</strong><br>
   <em>Building the Future of Personal Robotics - One Module at a Time</em>
 </p>
