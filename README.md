@@ -288,7 +288,7 @@ DobbyRobotics/
 
 ```bash
 # Clone repository
-git clone https://github.com/Dobby-PI/DubbyRobotics.git
+git clone https://github.com/Dobby-PI/DobbyRobotics.git
 cd BuddyRobotics
 
 # Install Python dependencies
