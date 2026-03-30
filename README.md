@@ -1,12 +1,12 @@
 <p align="center">
   <a href="https://x.com/robotsbuddy"><img src="https://img.shields.io/twitter/follow/robotsbuddy?style=social" alt="X Follow"></a>
   <br>
-  <code> 9LZ5Wmoy7tcXmzRpHWQ8c4Edck8p8yVnZvWudDR7pump </code>
+  <code></code>
 </p>
 # Dobby Robotics - Modular Biped
 
 <p align="center">
-  <img src="images/full_project_front_pi5.jpg" alt="Buddy Robotics Banner" width="100%"/>
+  <img src="images/d.jpeg" alt="Buddy Robotics Banner" width="100%"/>
 </p>
 
 <p align="center">
