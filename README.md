@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://x.com/robotsbuddy"><img src="https://img.shields.io/twitter/follow/robotsbuddy?style=social" alt="X Follow"></a>
+  <a href="(https://x.com/robotsbuddy)"><img src="https://img.shields.io/twitter/follow/robotsbuddy?style=social" alt="X Follow"></a>
   <br>
   <code></code>
 </p>
