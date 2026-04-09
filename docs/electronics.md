@@ -575,6 +575,6 @@ Arduino Mega                  Servo Connector Board
 
 ## Next Steps
 
-After wiring is complete, proceed to the [Software Setup Guide](/docs/software.md) to install and configure the required software.
+After wiring is complete, proceed to the [Software Setup Guide](software.md) to install and configure the required software.
 
-For troubleshooting electrical issues, see the [Troubleshooting Guide](/docs/troubleshooting.md).
+For troubleshooting electrical issues, see the [Troubleshooting Guide](troubleshooting.md).

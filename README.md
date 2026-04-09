@@ -2,7 +2,7 @@
 
 An autonomous/remote-controlled robot inspired by WALL-E, built with Arduino and Raspberry Pi.
 
-![WALL-B Robot - Full Assembly](/faxxxan/WALL-B/blob/main/images/full_project_front_pi5.jpg)
+![WALL-B Robot - Full Assembly](https://raw.githubusercontent.com/faxxxan/WALL-B/main/images/full_project_front_pi5.jpg)
 
 **Open-Source Modular Bipedal Robot Platform - Arduino + Raspberry Pi Powered**
 
@@ -44,25 +44,25 @@ This project provides a flexible framework for robotics development using Python
 
 | **Head Assembly** Sony IMX500 AI Camera integration with pan-tilt servo mount. Features real-time face tracking and object detection. |
 | --- |
-| ![Head Assembly](/faxxxan/WALL-B/blob/main/images/assembly_head.png) |
+| ![Head Assembly](https://raw.githubusercontent.com/faxxxan/WALL-B/main/images/assembly_head.png) |
 
 | **Body Assembly** Central torso housing Raspberry Pi 5, power distribution, and main controller board. |
 | --- |
-| ![Body Assembly](/faxxxan/WALL-B/blob/main/images/assembly_body.png) |
+| ![Body Assembly](https://raw.githubusercontent.com/faxxxan/WALL-B/main/images/assembly_body.png) |
 
 | **Leg Assembly** Multi-DOF leg mechanism with high-torque servos for stable bipedal walking. |
 | --- |
-| ![Leg Assembly](/faxxxan/WALL-B/blob/main/images/assembly_leg.png) |
+| ![Leg Assembly](https://raw.githubusercontent.com/faxxxan/WALL-B/main/images/assembly_leg.png) |
 
 ### Full Assembly
 
 | **Complete Assembly View** Full robot assembly showing all mechanical components and wiring layout. |
 | --- |
-| ![Full Assembly](/faxxxan/WALL-B/blob/main/images/assembly_full.png) |
+| ![Full Assembly](https://raw.githubusercontent.com/faxxxan/WALL-B/main/images/assembly_full.png) |
 
 | **Neck Mechanism** 2-DOF neck joint for head movement with cable management system. |
 | --- |
-| ![Neck Mechanism](/faxxxan/WALL-B/blob/main/images/assembly_neck.png) |
+| ![Neck Mechanism](https://raw.githubusercontent.com/faxxxan/WALL-B/main/images/assembly_neck.png) |
 
 ---
 
@@ -316,16 +316,16 @@ python python/chatgpt/chat_interface.py
 
 | Category | Description |
 | --- | --- |
-| [Assembly Guide](/faxxxan/WALL-B/blob/main/docs/assembly.md) | Step-by-step assembly instructions |
-| [Electronics Setup](/faxxxan/WALL-B/blob/main/docs/electronics.md) | Wiring diagrams and connections |
-| [Software Setup](/faxxxan/WALL-B/blob/main/docs/software.md) | Software installation guide |
-| [Troubleshooting](/faxxxan/WALL-B/blob/main/docs/troubleshooting.md) | Common issues and solutions |
+| [Assembly Guide](docs/assembly.md) | Step-by-step assembly instructions |
+| [Electronics Setup](docs/electronics.md) | Wiring diagrams and connections |
+| [Software Setup](docs/software.md) | Software installation guide |
+| [Troubleshooting](docs/troubleshooting.md) | Common issues and solutions |
 
 ---
 
 ## Contributing
 
-We welcome contributions from the community! Please read our [Contributing Guidelines](/faxxxan/WALL-B/blob/main/CONTRIBUTING.md) before submitting pull requests.
+We welcome contributions from the community! Please read our [Contributing Guidelines](CONTRIBUTING.md) before submitting pull requests.
 
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/amazing-feature`)
@@ -337,7 +337,7 @@ We welcome contributions from the community! Please read our [Contributing Guide
 
 ## License
 
-This project is licensed under the GNU General Public License v3.0 - see the [LICENSE](/faxxxan/WALL-B/blob/main/LICENSE) file for details.
+This project is licensed under the GNU General Public License v3.0 - see the [LICENSE](LICENSE) file for details.
 
 ---
 

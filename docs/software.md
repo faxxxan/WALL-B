@@ -312,7 +312,7 @@ arduino-cli core list
 
 4. **Modify servo pin configuration if needed:**
    - Edit `config.h` to match your wiring
-   - Verify all pin assignments match the [Electronics Guide](/docs/electronics.md)
+   - Verify all pin assignments match the [Electronics Guide](electronics.md)
 
 5. **Compile firmware:**
    ```bash
@@ -651,7 +651,7 @@ vcgencmd get_camera
 libcamera-hello
 ```
 
-For more troubleshooting help, see the [Troubleshooting Guide](/docs/troubleshooting.md).
+For more troubleshooting help, see the [Troubleshooting Guide](troubleshooting.md).
 
 ---
 
@@ -659,7 +659,7 @@ For more troubleshooting help, see the [Troubleshooting Guide](/docs/troubleshoo
 
 After installation and testing:
 
-1. Review the [Contributing Guidelines](/CONTRIBUTING.md) if you plan to contribute
+1. Review the [Contributing Guidelines](../CONTRIBUTING.md) if you plan to contribute
 2. Explore the Python modules in `python/` directory
 3. Check the ROS2 packages in `ros2/` directory
 4. Experiment with the animation system in `python/animation/`

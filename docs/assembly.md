@@ -415,9 +415,9 @@ Assembly Time: Approximately 1 hour
 
 ## Next Steps
 
-After completing assembly, proceed to the [Electronics Setup Guide](/docs/electronics.md) for detailed wiring information, then the [Software Setup Guide](/docs/software.md) to install the required software.
+After completing assembly, proceed to the [Electronics Setup Guide](electronics.md) for detailed wiring information, then the [Software Setup Guide](software.md) to install the required software.
 
-For troubleshooting common issues, see the [Troubleshooting Guide](/docs/troubleshooting.md).
+For troubleshooting common issues, see the [Troubleshooting Guide](troubleshooting.md).
 
 ---
 
@@ -425,6 +425,6 @@ For troubleshooting common issues, see the [Troubleshooting Guide](/docs/trouble
 
 If you encounter any issues during assembly:
 
-1. Check the [Troubleshooting Guide](/docs/troubleshooting.md) for common solutions
+1. Check the [Troubleshooting Guide](troubleshooting.md) for common solutions
 2. Search existing [GitHub Issues](https://github.com/faxxxan/WALL-B/issues) for similar problems
 3. Create a new issue with detailed photos and description
