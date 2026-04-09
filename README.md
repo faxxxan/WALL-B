@@ -1,6 +1,6 @@
-Official X account: https://x.com/DobbyBipedal
+Official X account: 
 
-CA: 3KRjyWJgG5zbZV864Kez1F7td1bstTvcJjQ1n4wRpump
+CA: 
 
 </p>
 # Dobby Robotics - Modular Biped
