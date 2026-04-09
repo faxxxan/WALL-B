@@ -1,0 +1,934 @@
+# Source URL: https://github.com/faxxxan/WALL-B
+# Content Length: 23961 characters
+# Extracted at: 2026-04-09 12:49:32
+#============================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+GitHub - faxxxan/WALL-B: WALL-B Open Source Modular Biped Robot · GitHub
+
+
+
+
+
+
+
+
+
+
+
+
+[Skip to content](#start-of-content)
+
+
+
+
+
+Navigation Menu
+---------------
+
+Toggle navigation
+
+ 
+
+
+
+
+
+
+[Sign in](/login?return_to=https%3A%2F%2Fgithub.com%2Ffaxxxan%2FWALL-B)
+ 
+
+
+Appearance settings
+
+
+
+
+
+
+
+
+* Platform
+  + AI CODE CREATION
+    - [GitHub CopilotWrite better code with AI](https://github.com/features/copilot)
+    - [GitHub SparkBuild and deploy intelligent apps](https://github.com/features/spark)
+    - [GitHub ModelsManage and compare prompts](https://github.com/features/models)
+    - [MCP RegistryNewIntegrate external tools](https://github.com/mcp)
+  + DEVELOPER WORKFLOWS
+    - [ActionsAutomate any workflow](https://github.com/features/actions)
+    - [CodespacesInstant dev environments](https://github.com/features/codespaces)
+    - [IssuesPlan and track work](https://github.com/features/issues)
+    - [Code ReviewManage code changes](https://github.com/features/code-review)
+  + APPLICATION SECURITY
+    - [GitHub Advanced SecurityFind and fix vulnerabilities](https://github.com/security/advanced-security)
+    - [Code securitySecure your code as you build](https://github.com/security/advanced-security/code-security)
+    - [Secret protectionStop leaks before they start](https://github.com/security/advanced-security/secret-protection)
+  + EXPLORE
+    - [Why GitHub](https://github.com/why-github)
+    - [Documentation](https://docs.github.com)
+    - [Blog](https://github.blog)
+    - [Changelog](https://github.blog/changelog)
+    - [Marketplace](https://github.com/marketplace)[View all features](https://github.com/features)
+* Solutions
+  + BY COMPANY SIZE
+    - [Enterprises](https://github.com/enterprise)
+    - [Small and medium teams](https://github.com/team)
+    - [Startups](https://github.com/enterprise/startups)
+    - [Nonprofits](https://github.com/solutions/industry/nonprofits)
+  + BY USE CASE
+    - [App Modernization](https://github.com/solutions/use-case/app-modernization)
+    - [DevSecOps](https://github.com/solutions/use-case/devsecops)
+    - [DevOps](https://github.com/solutions/use-case/devops)
+    - [CI/CD](https://github.com/solutions/use-case/ci-cd)
+    - [View all use cases](https://github.com/solutions/use-case)
+  + BY INDUSTRY
+    - [Healthcare](https://github.com/solutions/industry/healthcare)
+    - [Financial services](https://github.com/solutions/industry/financial-services)
+    - [Manufacturing](https://github.com/solutions/industry/manufacturing)
+    - [Government](https://github.com/solutions/industry/government)
+    - [View all industries](https://github.com/solutions/industry)[View all solutions](https://github.com/solutions)
+* Resources
+  + EXPLORE BY TOPIC
+    - [AI](https://github.com/resources/articles?topic=ai)
+    - [Software Development](https://github.com/resources/articles?topic=software-development)
+    - [DevOps](https://github.com/resources/articles?topic=devops)
+    - [Security](https://github.com/resources/articles?topic=security)
+    - [View all topics](https://github.com/resources/articles)
+  + EXPLORE BY TYPE
+    - [Customer stories](https://github.com/customer-stories)
+    - [Events & webinars](https://github.com/resources/events)
+    - [Ebooks & reports](https://github.com/resources/whitepapers)
+    - [Business insights](https://github.com/solutions/executive-insights)
+    - [GitHub Skills](https://skills.github.com)
+  + SUPPORT & SERVICES
+    - [Documentation](https://docs.github.com)
+    - [Customer support](https://support.github.com)
+    - [Community forum](https://github.com/orgs/community/discussions)
+    - [Trust center](https://github.com/trust-center)
+    - [Partners](https://github.com/partners)[View all resources](https://github.com/resources)
+* Open Source
+  + COMMUNITY
+    - [GitHub SponsorsFund open source developers](https://github.com/sponsors)
+  + PROGRAMS
+    - [Security Lab](https://securitylab.github.com)
+    - [Maintainer Community](https://maintainers.github.com)
+    - [Accelerator](https://github.com/accelerator)
+    - [GitHub Stars](https://stars.github.com)
+    - [Archive Program](https://archiveprogram.github.com)
+  + REPOSITORIES
+    - [Topics](https://github.com/topics)
+    - [Trending](https://github.com/trending)
+    - [Collections](https://github.com/collections)
+* Enterprise
+  + ENTERPRISE SOLUTIONS
+    - [Enterprise platformAI-powered developer platform](https://github.com/enterprise)
+  + AVAILABLE ADD-ONS
+    - [GitHub Advanced SecurityEnterprise-grade security features](https://github.com/security/advanced-security)
+    - [Copilot for BusinessEnterprise-grade AI features](https://github.com/features/copilot/copilot-business)
+    - [Premium SupportEnterprise-grade 24/7 support](https://github.com/premium-support)
+* [Pricing](https://github.com/pricing)
+
+
+
+Search or jump to...
+
+
+
+
+Search code, repositories, users, issues, pull requests...
+==========================================================
+
+ 
+Search
+
+
+
+
+Clear
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+[Search syntax tips](https://docs.github.com/search-github/github-code-search/understanding-github-code-search-syntax) 
+
+
+
+
+
+
+
+Provide feedback
+================
+
+
+
+
+
+ 
+
+We read every piece of feedback, and take your input very seriously.
+
+
+
+Include my email address so I can be contacted
+
+
+  Cancel
+
+ Submit feedback
+
+
+
+Saved searches
+==============
+
+Use saved searches to filter your results more quickly
+------------------------------------------------------
+
+
+
+
+
+ 
+
+Name
+
+
+
+
+Query
+
+To see all available qualifiers, see our [documentation](https://docs.github.com/search-github/github-code-search/understanding-github-code-search-syntax).
+
+ 
+
+
+
+
+  Cancel
+
+ Create saved search
+
+
+
+
+
+
+[Sign in](/login?return_to=https%3A%2F%2Fgithub.com%2Ffaxxxan%2FWALL-B)
+
+[Sign up](/signup?ref_cta=Sign+up&ref_loc=header+logged+out&ref_page=%2F%3Cuser-name%3E%2F%3Crepo-name%3E&source=header-repo&source_repo=faxxxan%2FWALL-B)
+ 
+
+
+Appearance settings
+
+
+
+
+
+Resetting focus
+
+
+
+
+
+You signed in with another tab or window. Reload to refresh your session.
+You signed out in another tab or window. Reload to refresh your session.
+You switched accounts on another tab or window. Reload to refresh your session.
+ 
+
+
+Dismiss alert
+
+
+
+{{ message }}
+
+
+
+
+
+[faxxxan](/faxxxan) 
+/
+**[WALL-B](/faxxxan/WALL-B)**
+Public
+
+
+* [Notifications](/login?return_to=%2Ffaxxxan%2FWALL-B) You must be signed in to change notification settings
+* [Fork
+  0](/login?return_to=%2Ffaxxxan%2FWALL-B)
+* [Star
+   0](/login?return_to=%2Ffaxxxan%2FWALL-B)
+
+
+
+* [Code](/faxxxan/WALL-B)
+* [Issues
+  0](/faxxxan/WALL-B/issues)
+* [Pull requests
+  0](/faxxxan/WALL-B/pulls)
+* [Actions](/faxxxan/WALL-B/actions)
+* [Projects](/faxxxan/WALL-B/projects)
+* [Security and quality
+  0](/faxxxan/WALL-B/security)
+* [Insights](/faxxxan/WALL-B/pulse)
+
+ 
+ 
+
+
+Additional navigation options
+ 
+
+* [Code](/faxxxan/WALL-B)
+* [Issues](/faxxxan/WALL-B/issues)
+* [Pull requests](/faxxxan/WALL-B/pulls)
+* [Actions](/faxxxan/WALL-B/actions)
+* [Projects](/faxxxan/WALL-B/projects)
+* [Security and quality](/faxxxan/WALL-B/security)
+* [Insights](/faxxxan/WALL-B/pulse)
+
+
+ 
+
+
+
+   
+
+faxxxan/WALL-B
+==============
+
+
+ main[Branches](/faxxxan/WALL-B/branches)[Tags](/faxxxan/WALL-B/tags)Go to fileCodeOpen more actions menu
+
+Folders and files
+-----------------
+
+| Name | Name | Last commit message | Last commit date |
+| --- | --- | --- | --- |
+| Latest commit History[532 Commits](/faxxxan/WALL-B/commits/main/)532 Commits |
+| [.circleci](/faxxxan/WALL-B/tree/main/.circleci) | [.circleci](/faxxxan/WALL-B/tree/main/.circleci) |  |  |
+| [.github](/faxxxan/WALL-B/tree/main/.github) | [.github](/faxxxan/WALL-B/tree/main/.github) |  |  |
+| [.vscode](/faxxxan/WALL-B/tree/main/.vscode) | [.vscode](/faxxxan/WALL-B/tree/main/.vscode) |  |  |
+| [3d\_prints/v2](/faxxxan/WALL-B/tree/main/3d_prints/v2) | [3d\_prints/v2](/faxxxan/WALL-B/tree/main/3d_prints/v2) |  |  |
+| [animations](/faxxxan/WALL-B/tree/main/animations) | [animations](/faxxxan/WALL-B/tree/main/animations) |  |  |
+| [arduino\_sketch](/faxxxan/WALL-B/tree/main/arduino_sketch) | [arduino\_sketch](/faxxxan/WALL-B/tree/main/arduino_sketch) |  |  |
+| [circuits](/faxxxan/WALL-B/tree/main/circuits) | [circuits](/faxxxan/WALL-B/tree/main/circuits) |  |  |
+| [config](/faxxxan/WALL-B/tree/main/config) | [config](/faxxxan/WALL-B/tree/main/config) |  |  |
+| [images](/faxxxan/WALL-B/tree/main/images) | [images](/faxxxan/WALL-B/tree/main/images) |  |  |
+| [installers](/faxxxan/WALL-B/tree/main/installers) | [installers](/faxxxan/WALL-B/tree/main/installers) |  |  |
+| [modules](/faxxxan/WALL-B/tree/main/modules) | [modules](/faxxxan/WALL-B/tree/main/modules) |  |  |
+| [tests](/faxxxan/WALL-B/tree/main/tests) | [tests](/faxxxan/WALL-B/tree/main/tests) |  |  |
+| [.gitignore](/faxxxan/WALL-B/blob/main/.gitignore) | [.gitignore](/faxxxan/WALL-B/blob/main/.gitignore) |  |  |
+| [LICENSE](/faxxxan/WALL-B/blob/main/LICENSE) | [LICENSE](/faxxxan/WALL-B/blob/main/LICENSE) |  |  |
+| [README.md](/faxxxan/WALL-B/blob/main/README.md) | [README.md](/faxxxan/WALL-B/blob/main/README.md) |  |  |
+| [Software Architecture.drawio.svg](/faxxxan/WALL-B/blob/main/Software%20Architecture.drawio.svg) | [Software Architecture.drawio.svg](/faxxxan/WALL-B/blob/main/Software%20Architecture.drawio.svg) |  |  |
+| [\_\_init\_\_.py](/faxxxan/WALL-B/blob/main/__init__.py) | [\_\_init\_\_.py](/faxxxan/WALL-B/blob/main/__init__.py) |  |  |
+| [install.sh](/faxxxan/WALL-B/blob/main/install.sh) | [install.sh](/faxxxan/WALL-B/blob/main/install.sh) |  |  |
+| [main.py](/faxxxan/WALL-B/blob/main/main.py) | [main.py](/faxxxan/WALL-B/blob/main/main.py) |  |  |
+| [module\_loader.py](/faxxxan/WALL-B/blob/main/module_loader.py) | [module\_loader.py](/faxxxan/WALL-B/blob/main/module_loader.py) |  |  |
+| [requirements.txt](/faxxxan/WALL-B/blob/main/requirements.txt) | [requirements.txt](/faxxxan/WALL-B/blob/main/requirements.txt) |  |  |
+| [shutdown\_pi.py](/faxxxan/WALL-B/blob/main/shutdown_pi.py) | [shutdown\_pi.py](/faxxxan/WALL-B/blob/main/shutdown_pi.py) |  |  |
+| [startup.sh](/faxxxan/WALL-B/blob/main/startup.sh) | [startup.sh](/faxxxan/WALL-B/blob/main/startup.sh) |  |  |
+| [stop.sh](/faxxxan/WALL-B/blob/main/stop.sh) | [stop.sh](/faxxxan/WALL-B/blob/main/stop.sh) |  |  |
+| View all files |
+
+Repository files navigation
+---------------------------
+
+* [README](#)
+* [GPL-3.0 license](#)
+
+Official X account:
+
+CA:
+
+# WALL B Robotics - Modular Biped An autonomous/remote-controlled robot inspired by WALL-E, built with Arduino.
+
+[![]()](/faxxxan/WALL-B/blob/main/images/d.jpeg)
+
+**Open-Source Modular Bipedal Robot Platform - Arduino + Raspberry Pi Powered**
+
+[Overview](#overview) •
+[Specifications](#specifications) •
+[Assembly](#assembly) •
+[Software](#software-modules) •
+[Getting Started](#getting-started) •
+[Documentation](#documentation)
+
+[![]()](https://camo.githubusercontent.com/19e82e157665f9f3d4ccbf426d331202b4c8a38e9548a30405e529870bf2a6ae/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f507974686f6e2d35382e322532352d626c75653f7374796c653d666c61742d737175617265266c6f676f3d707974686f6e)
+[![]()](https://camo.githubusercontent.com/9fb8a159821ab7c6f4e30862aef95bf01aadaca6664f6cfa863bac45775d9788/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f432b2b2d33382e392532352d6f72616e67653f7374796c653d666c61742d737175617265266c6f676f3d63706c7573706c7573)
+[![]()](https://camo.githubusercontent.com/2b86ef6f1923895283b40645474db5f40faa0e2266ac0affb21e126980f09180/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f4c6963656e73652d47504c2d2d332e302d677265656e3f7374796c653d666c61742d737175617265)
+[![]()](https://camo.githubusercontent.com/26045cbae232a38c22fc7070b326ed27fbf3f0478267b508201961c17fcf9e44/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f506c6174666f726d2d5261737062657272792532305069253230352d7265643f7374796c653d666c61742d737175617265266c6f676f3d7261737062657272797069)
+
+---
+
+
+Project Overview
+----------------
+
+The Modular Biped Robot Project provides a flexible framework for robotics development using Python and C++ on the Raspberry Pi and Arduino platforms. Buddy builds on the lessons learned from the original Archie release, offering improved stability, larger build size, and enhanced features.
+
+### Key Features
+
+
+| Feature | Description |
+| --- | --- |
+| **Stable Platform** | Larger, more robust build for reliable operation and easier assembly |
+| **Modular Design** | Custom PCBs for Raspberry Pi and Arduino, supporting rapid prototyping and expansion |
+| **Servo Control** | SG5010 and TowerPro MG92B servos for leg, neck, head, and ear movement |
+| **Vision** | Raspberry Pi-compatible camera module with wide-angle lens for vision input |
+| **Audio** | Buzzer for simple audio output |
+| **Neopixel Eye** | Adafruit Neopixel Jewel for expressive robot eye |
+| **Sensor Integration** | MPU6050 accelerometer/gyroscope for balancing, RCWL-0516 microwave sensor for movement detection |
+| **Power Management** | USB-C PD and 18650 battery support, XL4015 buck converters for safe voltage regulation |
+| **3D Printed Parts** | STL files available for printing the robot body, joints, and accessories |
+| **Open Source Code** | Python and C++ code for robot control, available on GitHub |
+
+
+### Assembly Preview
+
+
+| **Head Assembly** IMX500 AI Camera integration with pan-tilt servo mount. Features real-time face tracking and object detection. | **Body Assembly** Central torso housing Raspberry Pi 5, power distribution, and main controller board. | **Leg Assembly** Multi-DOF leg mechanism with high-torque servos for stable bipedal walking. |
+| --- | --- | --- |
+
+
+### Full Assembly
+
+
+| **Complete Assembly View** Full robot assembly showing all mechanical components and wiring layout. | **Neck Mechanism** 2-DOF neck joint for head movement with cable management system. |
+| --- | --- |
+
+
+---
+
+
+Specifications
+--------------
+
+
+### Hardware Overview
+
+
+| Component | Specification |
+| --- | --- |
+| **Main Controller** | Raspberry Pi 5 (8GB RAM) |
+| **Motion Controller** | Arduino Mega 2560 |
+| **Camera** | Sony IMX500 AI Camera |
+| **Radio** | RTL-SDR USB Dongle |
+| **Servos** | High-Torque Digital Servos |
+| **Power** | LiPo Battery Pack (11.1V / 14.8V) |
+| **Communication** | WiFi, Bluetooth, I2C, Serial |
+
+
+### Servo Configuration
+
+
+| Location | Type | Quantity | Function |
+| --- | --- | --- | --- |
+| Head | Pan-Tilt | 2 | Camera orientation |
+| Neck | Servo | 2 | Head movement |
+| Arms | Standard | 6 | Arm articulation |
+| Legs | High-Torque | 12 | Bipedal locomotion |
+| **Total** |  | **22 DOF** |  |
+
+
+### Degrees of Freedom (DOF)
+
+
+```
+                    HEAD (2 DOF)
+                    ├── Pan (Yaw)
+                    └── Tilt (Pitch)
+                         │
+                    NECK (2 DOF)
+                    ├── Rotate
+                    └── Tilt
+                         │
+            ┌────────────┼────────────┐
+            │                         │
+       LEFT ARM (3 DOF)          RIGHT ARM (3 DOF)
+       ├── Shoulder Pitch        ├── Shoulder Pitch
+       ├── Shoulder Roll         ├── Shoulder Roll
+       └── Elbow                 └── Elbow
+                         │
+                    TORSO (0 DOF)
+                         │
+            ┌────────────┼────────────┐
+            │                         │
+       LEFT LEG (6 DOF)          RIGHT LEG (6 DOF)
+       ├── Hip Yaw               ├── Hip Yaw
+       ├── Hip Roll              ├── Hip Roll
+       ├── Hip Pitch             ├── Hip Pitch
+       ├── Knee Pitch            ├── Knee Pitch
+       ├── Ankle Pitch           ├── Ankle Pitch
+       └── Ankle Roll            └── Ankle Roll
+
+```
+
+**Total: 22 DOF**
+
+---
+
+
+Software Modules
+----------------
+
+The software architecture is built on a modular design pattern, allowing each component to be developed, tested, and deployed independently.
+
+### Core Modules
+
+
+| Module | Description | Technology |
+| --- | --- | --- |
+| **Animation** | Motion sequence playback and keyframe animation | Python |
+| **ChatGPT** | Conversational AI integration with OpenAI API | Python |
+| **Vision** | Computer vision and image processing with IMX500 | Python, OpenCV |
+| **Tracking** | Real-time object and face tracking | Python, TensorFlow |
+| **TTS** | Text-to-speech synthesis | Python |
+| **Servos** | Low-level servo PWM control | C++, Arduino |
+| **Neopixel** | RGB LED visual feedback | Python |
+| **RTLSDR** | Software-defined radio processing | Python |
+| **Braillespeak** | Text to Braille audio conversion | Python |
+| **Motion Detection** | Microwave sensor integration | Python |
+| **PiServo** | Raspberry Pi servo control | Python |
+| **Translator** | Multi-language translation | Python |
+| **Serial Connection** | RPi-Arduino communication | Python |
+| **Viam** | VIAM API integration | Python |
+
+
+### System Architecture
+
+
+```
+graph TB
+    subgraph "High-Level Control"
+        AI[ChatGPT AI]
+        VIS[Vision System]
+        TTS[Text-to-Speech]
+    end
+
+    subgraph "Main Controller - Raspberry Pi 5"
+        ROS[ROS2 Core]
+        PY[Python Runtime]
+        CAM[IMX500 AI Camera]
+        SDR[RTL-SDR Radio]
+        NEO[Neopixel LEDs]
+    end
+
+    subgraph "Motion Controller - Arduino"
+        MC[Motion Controller]
+        IMU[IMU Sensor]
+        PWM[PWM Generator]
+        BUZ[Buzzer]
+    end
+
+    subgraph "Actuators"
+        HS[Head Servos x2]
+        NS[Neck Servos x2]
+        AS[Arm Servos x6]
+        LS[Leg Servos x12]
+    end
+
+    AI <--> ROS
+    VIS <--> ROS
+    TTS <--> ROS
+
+    ROS <--> PY
+    PY <--> CAM
+    PY <--> SDR
+    PY <--> NEO
+    ROS <--> MC
+
+    MC <--> IMU
+    MC <--> PWM
+    MC <--> BUZ
+
+    PWM --> HS & NS & AS & LS
+
+```
+
+
+ Loading
+
+
+
+---
+
+
+Project Structure
+-----------------
+
+
+```
+WALLBRobotics/
+├── arduino/                    # Arduino firmware
+│   ├── servo_control/         # Servo PWM control
+│   ├── imu_fusion/            # IMU sensor fusion
+│   └── communication/         # Serial communication
+├── python/                     # Python modules
+│   ├── animation/             # Motion sequences
+│   ├── chatgpt/               # AI integration
+│   ├── vision/                # Computer vision
+│   ├── tracking/              # Object tracking
+│   ├── speech/                # Voice interaction
+│   ├── neopixel/              # LED control
+│   ├── rtlsdr/                # Radio processing
+│   └── viam/                  # VIAM integration
+├── ros2/                       # ROS2 packages
+│   ├── WALLB_control/         # Control package
+│   ├── WALLB_vision/          # Vision package
+│   └── WALLB_msgs/            # Custom messages
+├── hardware/                   # Hardware designs
+│   ├── cad/                   # 3D models (STL/STEP)
+│   ├── pcb/                   # PCB schematics
+│   └── bom/                   # Bill of materials
+├── images/                     # Documentation images
+├── docs/                       # Documentation
+├── configs/                    # Configuration files
+├── tests/                      # Test scripts
+├── requirements.txt            # Python dependencies
+└── README.md                   # This file
+
+```
+
+---
+
+
+Getting Started
+---------------
+
+
+### Prerequisites
+
+
+| Requirement | Version |
+| --- | --- |
+| Python | 3.10+ |
+| ROS2 | Humble / Iron |
+| Arduino IDE | 2.0+ |
+| CMake | 3.16+ |
+| OpenCV | 4.5+ |
+
+
+### Hardware Setup
+
+1. **Raspberry Pi 5** - Flash Raspberry Pi OS (64-bit)
+2. **Arduino Mega** - Connect via USB to Raspberry Pi
+3. **IMX500 Camera** - Connect to CSI port
+4. **Servos** - Wire to Arduino PWM pins
+5. **Power** - Connect LiPo battery to power distribution board
+
+### Software Installation
+
+
+```
+# Clone repository
+git clone (https://github.com/faxxxan/WALL-B).git
+cd BuddyRobotics
+
+# Install Python dependencies
+pip install -r requirements.txt
+
+# Install ROS2 dependencies
+rosdep install --from-paths ros2 --ignore-src -y
+
+# Build ROS2 workspace
+colcon build
+source install/setup.bash
+
+# Upload Arduino firmware
+cd arduino/servo_control
+arduino-cli compile --fqbn arduino:avr:mega
+arduino-cli upload --fqbn arduino:avr:mega --port /dev/ttyUSB0
+```
+
+### Quick Start
+
+
+```
+# Launch full robot stack
+ros2 launch Dobby_control full_robot.launch.py
+
+# Run standalone vision module
+python python/vision/camera_node.py
+
+# Test servo control
+python python/servo_test.py --port /dev/ttyUSB0
+
+# Start ChatGPT interaction
+python python/chatgpt/chat_interface.py
+```
+
+---
+
+
+Roadmap
+-------
+
+* Core servo control firmware
+* Basic locomotion algorithms
+* IMX500 camera integration
+* ChatGPT API integration
+* Neopixel LED feedback
+* RTL-SDR radio module
+* Advanced bipedal walking gait
+* Real-time SLAM navigation
+* Gesture recognition
+* Voice wake word detection
+* Mobile app control interface
+* Cloud telemetry dashboard
+
+---
+
+
+Documentation
+-------------
+
+
+| Category | Description |
+| --- | --- |
+| [Assembly Guide](/faxxxan/WALL-B/blob/main/docs/assembly.md) | Step-by-step assembly instructions |
+| [Electronics Setup](/faxxxan/WALL-B/blob/main/docs/electronics.md) | Wiring diagrams and connections |
+| [Software Setup](/faxxxan/WALL-B/blob/main/docs/software.md) | Software installation guide |
+| [Troubleshooting](/faxxxan/WALL-B/blob/main/docs/troubleshooting.md) | Common issues and solutions |
+
+
+---
+
+
+Contributing
+------------
+
+We welcome contributions from the community! Please read our [Contributing Guidelines](/faxxxan/WALL-B/blob/main/CONTRIBUTING.md) before submitting pull requests.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+---
+
+
+License
+-------
+
+This project is licensed under the GNU General Public License v3.0 - see the [LICENSE](/faxxxan/WALL-B/blob/main/LICENSE) file for details.
+
+---
+
+
+Acknowledgments
+---------------
+
+* **Open Source Robotics Community** - ROS2 and related tools
+* **Raspberry Pi Foundation** - Hardware platform
+* **Arduino** - Microcontroller platform
+
+---
+
+**Dobby Robotics**  
+
+*Building the Future of Personal Robotics - One Module at a Time*
+
+About
+-----
+
+WALL-B Open Source Modular Biped Robot
+
+### Resources
+
+[Readme](#readme-ov-file) 
+### License
+
+[GPL-3.0 license](#GPL-3.0-1-ov-file)
+
+### Uh oh!
+
+
+
+There was an error while loading. Please reload this page.
+
+
+
+ 
+ 
+
+[Activity](/faxxxan/WALL-B/activity) 
+### Stars
+
+[**0**
+stars](/faxxxan/WALL-B/stargazers) 
+### Watchers
+
+[**0**
+watching](/faxxxan/WALL-B/watchers) 
+### Forks
+
+[**0**
+forks](/faxxxan/WALL-B/forks) 
+[Report repository](/contact/report-content?content_url=https%3A%2F%2Fgithub.com%2Ffaxxxan%2FWALL-B&report=faxxxan+%28user%29) 
+
+
+
+[Releases](/faxxxan/WALL-B/releases)
+------------------------------------
+
+[3
+tags](/faxxxan/WALL-B/tags)
+
+
+[Packages
+0](/users/faxxxan/packages?repo_name=WALL-B)
+------------------------------------------------------
+
+ 
+
+ 
+
+ 
+
+### Uh oh!
+
+
+
+There was an error while loading. Please reload this page.
+
+
+
+ 
+ 
+
+
+
+[Contributors](/faxxxan/WALL-B/graphs/contributors)
+---------------------------------------------------
+
+
+
+### Uh oh!
+
+
+
+There was an error while loading. Please reload this page.
+
+
+
+ 
+ 
+
+
+
+Languages
+---------
+
+
+
+
+* [Python
+  58.2%](/faxxxan/WALL-B/search?l=python)
+* [C++
+  38.9%](/faxxxan/WALL-B/search?l=c%2B%2B)
+* [Shell
+  1.5%](/faxxxan/WALL-B/search?l=shell)
+* Other
+  1.4%
+
+
+
+   
+
+
+
+
+
+
+Footer
+------
+
+© 2026 GitHub, Inc.
+
+
+### Footer navigation
+
+* [Terms](https://docs.github.com/site-policy/github-terms/github-terms-of-service)
+* [Privacy](https://docs.github.com/site-policy/privacy-policies/github-privacy-statement)
+* [Security](https://github.com/security)
+* [Status](https://www.githubstatus.com/)
+* [Community](https://github.community/)
+* [Docs](https://docs.github.com/)
+* [Contact](https://support.github.com?tags=dotcom-footer)
+* Manage cookies
+* Do not share my personal information
+
+
+
+
+You can’t perform that action at this time.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
