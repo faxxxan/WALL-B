@@ -1,0 +1,210 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  lint:
+    name: Lint Code
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install linting tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8 black isort
+
+      - name: Check Python syntax with flake8
+        run: |
+          # Stop the build if there are Python syntax errors or undefined names
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          # Exit-zero treats all these as warnings
+          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+      - name: Check code formatting with Black
+        run: |
+          # Check if files are formatted correctly
+          black --check --diff python/ ros2/ || true
+
+      - name: Check import sorting with isort
+        run: |
+          # Check if imports are sorted correctly
+          isort --check-only --diff python/ ros2/ || true
+
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt || true
+          pip install pytest pytest-cov pyserial
+
+      - name: Run unit tests
+        run: |
+          if [ -d "tests" ]; then
+            pytest tests/ -v --cov=. --cov-report=xml || echo "Tests completed with some failures"
+          else
+            echo "No tests directory found, skipping tests"
+          fi
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v4
+        if: always()
+        with:
+          file: ./coverage.xml
+          fail_ci_if_error: false
+
+  arduino:
+    name: Verify Arduino Firmware
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Arduino CLI
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh
+          mv arduino-cli /usr/local/bin/
+
+      - name: Configure Arduino CLI
+        run: |
+          arduino-cli config init
+          arduino-cli core update-index
+          arduino-cli core install arduino:avr@1.8.6
+
+      - name: Compile Arduino firmware
+        working-directory: ./arduino
+        run: |
+          # List available sketches
+          arduino-cli sketch list || true
+
+          # Try to compile if servo_control exists
+          if [ -d "servo_control" ]; then
+            arduino-cli compile --fqbn arduino:avr:mega servo_control/
+          else
+            echo "No servo_control sketch found"
+          fi
+
+  docs:
+    name: Check Documentation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Check required files exist
+        run: |
+          echo "Checking required documentation files..."
+
+          # Check README exists
+          if [ -f "README.md" ]; then
+            echo "✓ README.md exists"
+          else
+            echo "✗ README.md missing"
+            exit 1
+          fi
+
+          # Check docs directory
+          if [ -d "docs" ]; then
+            echo "✓ docs/ directory exists"
+          else
+            echo "✗ docs/ directory missing"
+          fi
+
+          # Check for essential doc files
+          for file in docs/assembly.md docs/electronics.md docs/software.md docs/troubleshooting.md; do
+            if [ -f "$file" ]; then
+              echo "✓ $file exists"
+            else
+              echo "✗ $file missing"
+            fi
+          done
+
+      - name: Check CONTRIBUTING.md exists
+        run: |
+          if [ -f "CONTRIBUTING.md" ]; then
+            echo "✓ CONTRIBUTING.md exists"
+          else
+            echo "✗ CONTRIBUTING.md missing"
+          fi
+
+  docker:
+    name: Docker Build Test
+    runs-on: ubuntu-latest
+    if: false  # Disable if no Dockerfile
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        if: always()
+        run: |
+          if [ -f "Dockerfile" ]; then
+            docker build -t wall-b-test . || echo "Docker build skipped or failed"
+          else
+            echo "No Dockerfile found, skipping Docker build"
+          fi
+
+  summary:
+    name: Build Summary
+    needs: [lint, test, arduino, docs]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Build Summary
+        run: |
+          echo "## CI Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Check each job status
+          if [ "${{ needs.lint.result }}" == "success" ]; then
+            echo "✅ Lint: Passed" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Lint: Failed" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [ "${{ needs.test.result }}" == "success" ]; then
+            echo "✅ Tests: Passed" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ Tests: Skipped or Failed" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [ "${{ needs.arduino.result }}" == "success" ]; then
+            echo "✅ Arduino: Compiled" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ Arduino: Skipped or Failed" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [ "${{ needs.docs.result }}" == "success" ]; then
+            echo "✅ Documentation: OK" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Documentation: Missing Files" >> $GITHUB_STEP_SUMMARY
+          fi

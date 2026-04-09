@@ -1,98 +1,52 @@
-Official X account: 
+# WALL-B - Modular Biped Robot
 
-CA: 
+An autonomous/remote-controlled robot inspired by WALL-E, built with Arduino and Raspberry Pi.
 
-</p>
-# WALL B Robotics - Modular Biped An autonomous/remote-controlled robot inspired by WALL-E, built with Arduino.
+![WALL-B Robot](/faxxxan/WALL-B/blob/main/images/d.jpeg)
 
-<p align="center">
-  <img src="images/d.jpeg" alt="WALL B Robotics Banner" width="100%"/>
-</p>
+**Open-Source Modular Bipedal Robot Platform - Arduino + Raspberry Pi Powered**
 
-<p align="center">
-  <strong>Open-Source Modular Bipedal Robot Platform - Arduino + Raspberry Pi Powered</strong>
-</p>
+[![Stars](https://img.shields.io/github/stars/faxxxan/WALL-B?style=flat-square)](https://github.com/faxxxan/WALL-B/stargazers)
+[![Forks](https://img.shields.io/github/forks/faxxxan/WALL-B?style=flat-square)](https://github.com/faxxxan/WALL-B/network)
+[![Issues](https://img.shields.io/github/issues/faxxxan/WALL-B?style=flat-square)](https://github.com/faxxxan/WALL-B/issues)
+[![Last Commit](https://img.shields.io/github/last-commit/faxxxan/WALL-B?style=flat-square)](https://github.com/faxxxan/WALL-B/commits)
+[![Repo Size](https://img.shields.io/github/repo-size/faxxxan/WALL-B?style=flat-square)](https://github.com/faxxxan/WALL-B)
+[![License](https://img.shields.io/github/license/faxxxan/WALL-B?style=flat-square)](https://github.com/faxxxan/WALL-B/blob/main/LICENSE)
+[![CI](https://img.shields.io/github/actions/workflow/status/faxxxan/WALL-B/ci.yml?style=flat-square)](https://github.com/faxxxan/WALL-B/actions/workflows/ci.yml)
 
-<p align="center">
-  <a href="#overview">Overview</a> •
-  <a href="#specifications">Specifications</a> •
-  <a href="#assembly">Assembly</a> •
-  <a href="#software-modules">Software</a> •
-  <a href="#getting-started">Getting Started</a> •
-  <a href="#documentation">Documentation</a>
-</p>
-
-<p align="center">
-  <img src="https://img.shields.io/badge/Python-58.2%25-blue?style=flat-square&logo=python" alt="Python"/>
-  <img src="https://img.shields.io/badge/C++-38.9%25-orange?style=flat-square&logo=cplusplus" alt="C++"/>
-  <img src="https://img.shields.io/badge/License-GPL--3.0-green?style=flat-square" alt="License"/>
-  <img src="https://img.shields.io/badge/Platform-Raspberry%20Pi%205-red?style=flat-square&logo=raspberrypi" alt="Platform"/>
-</p>
+[Overview](#overview) • [Specifications](#specifications) • [Assembly](#assembly) • [Software](#software-modules) • [Getting Started](#getting-started) • [Documentation](#documentation)
 
 ---
 
-## Project Overview
+## Overview
 
-The Modular Biped Robot Project provides a flexible framework for robotics development using Python and C++ on the Raspberry Pi and Arduino platforms. Buddy builds on the lessons learned from the original Archie release, offering improved stability, larger build size, and enhanced features.
+WALL-B (Working Autonomous Life-Like Biped) is an open-source modular bipedal robot platform built with Arduino Mega 2560 and Raspberry Pi 5. The robot features 22 degrees of freedom (DOF) for expressive movement and stable bipedal locomotion.
+
+This project provides a flexible framework for robotics development using Python and C++ on the Raspberry Pi and Arduino platforms. WALL-B builds on lessons learned from previous robotics projects, offering improved stability, larger build size, and enhanced features.
 
 ### Key Features
 
 | Feature | Description |
-|---------|-------------|
-| **Stable Platform** | Larger, more robust build for reliable operation and easier assembly |
-| **Modular Design** | Custom PCBs for Raspberry Pi and Arduino, supporting rapid prototyping and expansion |
-| **Servo Control** | SG5010 and TowerPro MG92B servos for leg, neck, head, and ear movement |
-| **Vision** | Raspberry Pi-compatible camera module with wide-angle lens for vision input |
-| **Audio** | Buzzer for simple audio output |
-| **Neopixel Eye** | Adafruit Neopixel Jewel for expressive robot eye |
-| **Sensor Integration** | MPU6050 accelerometer/gyroscope for balancing, RCWL-0516 microwave sensor for movement detection |
-| **Power Management** | USB-C PD and 18650 battery support, XL4015 buck converters for safe voltage regulation |
-| **3D Printed Parts** | STL files available for printing the robot body, joints, and accessories |
-| **Open Source Code** | Python and C++ code for robot control, available on GitHub |
+| --- | --- |
+| **22 DOF Bipedal Design** | 22 servos for expressive movement including head, neck, arms, and legs |
+| **Modular Architecture** | Custom PCBs for Raspberry Pi and Arduino, supporting rapid prototyping |
+| **High-Torque Servos** | SG5010 and TowerPro MG92B servos for reliable leg and arm movement |
+| **Sony IMX500 AI Camera** | Real-time face tracking and object detection capabilities |
+| **Sensor Integration** | MPU6050 IMU for balancing, RCWL-0516 microwave sensor for motion detection |
+| **Neopixel LED Eyes** | Adafruit Neopixel Jewel for expressive robot eye animations |
+| **Power Management** | USB-C PD and 18650 battery support with XL4015 buck converters |
+| **3D Printed Body** | STL files available for printing all mechanical components |
+| **ROS2 Compatible** | Full ROS2 Humble/Iron integration for advanced robotics applications |
 
 ### Assembly Preview
 
-<table>
-<tr>
-<td align="center" width="33%">
-<img src="images/assembly_head.png" width="100%" />
-
-**Head Assembly**<br>
-<sub>IMX500 AI Camera integration with pan-tilt servo mount. Features real-time face tracking and object detection.</sub>
-</td>
-<td align="center" width="33%">
-<img src="images/assembly_body.png" width="100%" />
-
-**Body Assembly**<br>
-<sub>Central torso housing Raspberry Pi 5, power distribution, and main controller board.</sub>
-</td>
-<td align="center" width="33%">
-<img src="images/assembly_leg.png" width="100%" />
-
-**Leg Assembly**<br>
-<sub>Multi-DOF leg mechanism with high-torque servos for stable bipedal walking.</sub>
-</td>
-</tr>
-</table>
+| **Head Assembly** Sony IMX500 AI Camera integration with pan-tilt servo mount. Features real-time face tracking and object detection. | **Body Assembly** Central torso housing Raspberry Pi 5, power distribution, and main controller board. | **Leg Assembly** Multi-DOF leg mechanism with high-torque servos for stable bipedal walking. |
+| --- | --- | --- |
 
 ### Full Assembly
 
-<table>
-<tr>
-<td align="center" width="50%">
-<img src="images/assembly_full.png" width="100%" />
-
-**Complete Assembly View**<br>
-<sub>Full robot assembly showing all mechanical components and wiring layout.</sub>
-</td>
-<td align="center" width="50%">
-<img src="images/assembly_neck.png" width="100%" />
-
-**Neck Mechanism**<br>
-<sub>2-DOF neck joint for head movement with cable management system.</sub>
-</td>
-</tr>
-</table>
+| **Complete Assembly View** Full robot assembly showing all mechanical components and wiring layout. | **Neck Mechanism** 2-DOF neck joint for head movement with cable management system. |
+| --- | --- |
 
 ---
 
@@ -101,7 +55,7 @@ The Modular Biped Robot Project provides a flexible framework for robotics devel
 ### Hardware Overview
 
 | Component | Specification |
-|-----------|---------------|
+| --- | --- |
 | **Main Controller** | Raspberry Pi 5 (8GB RAM) |
 | **Motion Controller** | Arduino Mega 2560 |
 | **Camera** | Sony IMX500 AI Camera |
@@ -113,12 +67,12 @@ The Modular Biped Robot Project provides a flexible framework for robotics devel
 ### Servo Configuration
 
 | Location | Type | Quantity | Function |
-|----------|------|----------|----------|
+| --- | --- | --- | --- |
 | Head | Pan-Tilt | 2 | Camera orientation |
 | Neck | Servo | 2 | Head movement |
 | Arms | Standard | 6 | Arm articulation |
 | Legs | High-Torque | 12 | Bipedal locomotion |
-| **Total** | | **22 DOF** | |
+| **Total** |  | **22 DOF** |  |
 
 ### Degrees of Freedom (DOF)
 
@@ -136,19 +90,19 @@ The Modular Biped Robot Project provides a flexible framework for robotics devel
        LEFT ARM (3 DOF)          RIGHT ARM (3 DOF)
        ├── Shoulder Pitch        ├── Shoulder Pitch
        ├── Shoulder Roll         ├── Shoulder Roll
-       └── Elbow                 └── Elbow
+       └── Elbow                  └── Elbow
                          │
                     TORSO (0 DOF)
                          │
             ┌────────────┼────────────┐
             │                         │
        LEFT LEG (6 DOF)          RIGHT LEG (6 DOF)
-       ├── Hip Yaw               ├── Hip Yaw
-       ├── Hip Roll              ├── Hip Roll
-       ├── Hip Pitch             ├── Hip Pitch
-       ├── Knee Pitch            ├── Knee Pitch
-       ├── Ankle Pitch           ├── Ankle Pitch
-       └── Ankle Roll            └── Ankle Roll
+       ├── Hip Yaw                ├── Hip Yaw
+       ├── Hip Roll               ├── Hip Roll
+       ├── Hip Pitch              ├── Hip Pitch
+       ├── Knee Pitch             ├── Knee Pitch
+       ├── Ankle Pitch            ├── Ankle Pitch
+       └── Ankle Roll             └── Ankle Roll
 ```
 
 **Total: 22 DOF**
@@ -162,7 +116,7 @@ The software architecture is built on a modular design pattern, allowing each co
 ### Core Modules
 
 | Module | Description | Technology |
-|--------|-------------|------------|
+| --- | --- | --- |
 | **Animation** | Motion sequence playback and keyframe animation | Python |
 | **ChatGPT** | Conversational AI integration with OpenAI API | Python |
 | **Vision** | Computer vision and image processing with IMX500 | Python, OpenCV |
@@ -180,7 +134,7 @@ The software architecture is built on a modular design pattern, allowing each co
 
 ### System Architecture
 
-```mermaid
+```
 graph TB
     subgraph "High-Level Control"
         AI[ChatGPT AI]
@@ -232,28 +186,28 @@ graph TB
 ## Project Structure
 
 ```
-WALLBRobotics/
+WALL-B/
 ├── arduino/                    # Arduino firmware
-│   ├── servo_control/         # Servo PWM control
-│   ├── imu_fusion/            # IMU sensor fusion
-│   └── communication/         # Serial communication
+│   ├── servo_control/          # Servo PWM control
+│   ├── imu_fusion/             # IMU sensor fusion
+│   └── communication/          # Serial communication
 ├── python/                     # Python modules
-│   ├── animation/             # Motion sequences
-│   ├── chatgpt/               # AI integration
-│   ├── vision/                # Computer vision
-│   ├── tracking/              # Object tracking
-│   ├── speech/                # Voice interaction
-│   ├── neopixel/              # LED control
-│   ├── rtlsdr/                # Radio processing
-│   └── viam/                  # VIAM integration
+│   ├── animation/              # Motion sequences
+│   ├── chatgpt/                # AI integration
+│   ├── vision/                 # Computer vision
+│   ├── tracking/               # Object tracking
+│   ├── speech/                 # Voice interaction
+│   ├── neopixel/               # LED control
+│   ├── rtlsdr/                 # Radio processing
+│   └── viam/                   # VIAM integration
 ├── ros2/                       # ROS2 packages
-│   ├── WALLB_control/         # Control package
-│   ├── WALLB_vision/          # Vision package
-│   └── WALLB_msgs/            # Custom messages
+│   ├── wallb_control/          # Control package
+│   ├── wallb_vision/           # Vision package
+│   └── wallb_msgs/             # Custom messages
 ├── hardware/                   # Hardware designs
-│   ├── cad/                   # 3D models (STL/STEP)
-│   ├── pcb/                   # PCB schematics
-│   └── bom/                   # Bill of materials
+│   ├── cad/                    # 3D models (STL/STEP)
+│   ├── pcb/                    # PCB schematics
+│   └── bom/                    # Bill of materials
 ├── images/                     # Documentation images
 ├── docs/                       # Documentation
 ├── configs/                    # Configuration files
@@ -269,7 +223,7 @@ WALLBRobotics/
 ### Prerequisites
 
 | Requirement | Version |
-|-------------|---------|
+| --- | --- |
 | Python | 3.10+ |
 | ROS2 | Humble / Iron |
 | Arduino IDE | 2.0+ |
@@ -288,8 +242,8 @@ WALLBRobotics/
 
 ```bash
 # Clone repository
-git clone (https://github.com/faxxxan/WALL-B).git
-cd BuddyRobotics
+git clone https://github.com/faxxxan/WALL-B.git
+cd WALL-B
 
 # Install Python dependencies
 pip install -r requirements.txt
@@ -311,7 +265,7 @@ arduino-cli upload --fqbn arduino:avr:mega --port /dev/ttyUSB0
 
 ```bash
 # Launch full robot stack
-ros2 launch Dobby_control full_robot.launch.py
+ros2 launch wallb_control full_robot.launch.py
 
 # Run standalone vision module
 python python/vision/camera_node.py
@@ -345,17 +299,17 @@ python python/chatgpt/chat_interface.py
 ## Documentation
 
 | Category | Description |
-|----------|-------------|
-| [Assembly Guide](docs/assembly.md) | Step-by-step assembly instructions |
-| [Electronics Setup](docs/electronics.md) | Wiring diagrams and connections |
-| [Software Setup](docs/software.md) | Software installation guide |
-| [Troubleshooting](docs/troubleshooting.md) | Common issues and solutions |
+| --- | --- |
+| [Assembly Guide](/faxxxan/WALL-B/blob/main/docs/assembly.md) | Step-by-step assembly instructions |
+| [Electronics Setup](/faxxxan/WALL-B/blob/main/docs/electronics.md) | Wiring diagrams and connections |
+| [Software Setup](/faxxxan/WALL-B/blob/main/docs/software.md) | Software installation guide |
+| [Troubleshooting](/faxxxan/WALL-B/blob/main/docs/troubleshooting.md) | Common issues and solutions |
 
 ---
 
 ## Contributing
 
-We welcome contributions from the community! Please read our [Contributing Guidelines](CONTRIBUTING.md) before submitting pull requests.
+We welcome contributions from the community! Please read our [Contributing Guidelines](/faxxxan/WALL-B/blob/main/CONTRIBUTING.md) before submitting pull requests.
 
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/amazing-feature`)
@@ -367,7 +321,7 @@ We welcome contributions from the community! Please read our [Contributing Guide
 
 ## License
 
-This project is licensed under the GNU General Public License v3.0 - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the GNU General Public License v3.0 - see the [LICENSE](/faxxxan/WALL-B/blob/main/LICENSE) file for details.
 
 ---
 
@@ -379,7 +333,31 @@ This project is licensed under the GNU General Public License v3.0 - see the [LI
 
 ---
 
-<p align="center">
-  <strong>Dobby Robotics</strong><br>
-  <em>Building the Future of Personal Robotics - One Module at a Time</em>
-</p>
+**WALL-B Robotics**
+*Building the Future of Personal Robotics - One Module at a Time*
+
+---
+
+<!--
+================================================================================
+REPOSITORY TOPICS
+================================================================================
+To improve discoverability, please add these topics to your repository via GitHub:
+1. Go to https://github.com/faxxxan/WALL-B/settings
+2. Click on "Topics" in the left sidebar
+3. Add the following topics:
+
+robot
+robotics
+raspberry-pi
+arduino
+biped-robot
+open-source
+python
+ros2
+servo
+humanoid-robot
+3d-printing
+computer-vision
+================================================================================
+-->
