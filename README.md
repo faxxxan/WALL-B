@@ -2,9 +2,11 @@
 
 An autonomous/remote-controlled robot inspired by WALL-E, built with Arduino and Raspberry Pi.
 
-![WALL-B Robot](/faxxxan/WALL-B/blob/main/images/d.jpeg)
+![WALL-B Robot - Full Assembly](/faxxxan/WALL-B/blob/main/images/full_project_front_pi5.jpg)
 
 **Open-Source Modular Bipedal Robot Platform - Arduino + Raspberry Pi Powered**
+
+*Inspired by WALL-E, built with passion*
 
 [![Stars](https://img.shields.io/github/stars/faxxxan/WALL-B?style=flat-square)](https://github.com/faxxxan/WALL-B/stargazers)
 [![Forks](https://img.shields.io/github/forks/faxxxan/WALL-B?style=flat-square)](https://github.com/faxxxan/WALL-B/network)
@@ -40,13 +42,27 @@ This project provides a flexible framework for robotics development using Python
 
 ### Assembly Preview
 
-| **Head Assembly** Sony IMX500 AI Camera integration with pan-tilt servo mount. Features real-time face tracking and object detection. | **Body Assembly** Central torso housing Raspberry Pi 5, power distribution, and main controller board. | **Leg Assembly** Multi-DOF leg mechanism with high-torque servos for stable bipedal walking. |
-| --- | --- | --- |
+| **Head Assembly** Sony IMX500 AI Camera integration with pan-tilt servo mount. Features real-time face tracking and object detection. |
+| --- |
+| ![Head Assembly](/faxxxan/WALL-B/blob/main/images/assembly_head.png) |
+
+| **Body Assembly** Central torso housing Raspberry Pi 5, power distribution, and main controller board. |
+| --- |
+| ![Body Assembly](/faxxxan/WALL-B/blob/main/images/assembly_body.png) |
+
+| **Leg Assembly** Multi-DOF leg mechanism with high-torque servos for stable bipedal walking. |
+| --- |
+| ![Leg Assembly](/faxxxan/WALL-B/blob/main/images/assembly_leg.png) |
 
 ### Full Assembly
 
-| **Complete Assembly View** Full robot assembly showing all mechanical components and wiring layout. | **Neck Mechanism** 2-DOF neck joint for head movement with cable management system. |
-| --- | --- |
+| **Complete Assembly View** Full robot assembly showing all mechanical components and wiring layout. |
+| --- |
+| ![Full Assembly](/faxxxan/WALL-B/blob/main/images/assembly_full.png) |
+
+| **Neck Mechanism** 2-DOF neck joint for head movement with cable management system. |
+| --- |
+| ![Neck Mechanism](/faxxxan/WALL-B/blob/main/images/assembly_neck.png) |
 
 ---
 
