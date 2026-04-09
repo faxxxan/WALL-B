@@ -11,6 +11,7 @@ CA:
 
 <p align="center">
   <strong>Open-Source Modular Bipedal Robot Platform - Arduino + Raspberry Pi Powered</strong>
+
   An autonomous/remote-controlled robot inspired by WALL-E, built with Arduino.
 </p>
 
