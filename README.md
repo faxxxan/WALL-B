@@ -232,7 +232,7 @@ graph TB
 ## Project Structure
 
 ```
-DobbyRobotics/
+WALLBRobotics/
 ├── arduino/                    # Arduino firmware
 │   ├── servo_control/         # Servo PWM control
 │   ├── imu_fusion/            # IMU sensor fusion
@@ -247,9 +247,9 @@ DobbyRobotics/
 │   ├── rtlsdr/                # Radio processing
 │   └── viam/                  # VIAM integration
 ├── ros2/                       # ROS2 packages
-│   ├── Dobby_control/         # Control package
-│   ├── Dobby_vision/          # Vision package
-│   └── Dobby_msgs/            # Custom messages
+│   ├── WALLB_control/         # Control package
+│   ├── WALLB_vision/          # Vision package
+│   └── WALLB_msgs/            # Custom messages
 ├── hardware/                   # Hardware designs
 │   ├── cad/                   # 3D models (STL/STEP)
 │   ├── pcb/                   # PCB schematics
@@ -288,7 +288,7 @@ DobbyRobotics/
 
 ```bash
 # Clone repository
-git clone https://github.com/Dobby-PI/DobbyRobotics.git
+git clone (https://github.com/faxxxan/WALL-B).git
 cd BuddyRobotics
 
 # Install Python dependencies
