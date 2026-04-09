@@ -2,9 +2,8 @@ Official X account:
 
 CA: 
 
-An autonomous/remote-controlled robot inspired by WALL-E, built with Arduino.
 </p>
-# WALL B Robotics - Modular Biped
+# WALL B Robotics - Modular Biped An autonomous/remote-controlled robot inspired by WALL-E, built with Arduino.
 
 <p align="center">
   <img src="images/d.jpeg" alt="WALL B Robotics Banner" width="100%"/>
