@@ -3,10 +3,10 @@ Official X account:
 CA: 
 
 </p>
-# Dobby Robotics - Modular Biped
+# WALL B Robotics - Modular Biped
 
 <p align="center">
-  <img src="images/d.jpeg" alt="Buddy Robotics Banner" width="100%"/>
+  <img src="images/d.jpeg" alt="WALL B Robotics Banner" width="100%"/>
 </p>
 
 <p align="center">
