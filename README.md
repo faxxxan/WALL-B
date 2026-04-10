@@ -1,4 +1,4 @@
-Account X :
+Account X : https://x.com/WallBipedal
 
 CA:
 
