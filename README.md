@@ -1,6 +1,6 @@
 Account X : https://x.com/WallBipedal
 
-CA:
+CA: 8FNKzjPxfxDza9cgBrfcyBTQARoWV8A6dDm1j5nGpump
 
 # WALL-B - Modular Biped Robot
 
